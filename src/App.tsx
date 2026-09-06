@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import { Sparkles, Shield, ArrowRight, CheckCircle2, Lock } from "lucide-react";
+import { Sparkles, Shield, ArrowRight, CheckCircle2, Lock, X } from "lucide-react";
 
 type Language = "en" | "pt" | "es";
 
 const TRANSLATIONS = {
   en: {
-    badge: "DESTINYVOX ORACLE • HERMETIC ARTIFICIAL INTELLIGENCE",
+    badge: "DESTINYVOX ORACLE",
+    badgeDesktop: "DESTINYVOX ORACLE • HERMETIC ARTIFICIAL INTELLIGENCE",
     syncTitle: "EPHEMERIDES & ORACLE SYNCHRONIZED FOR:",
     syncNote: "• The Oracle on Reddit will be unlocked immediately after activation",
     subBrand: "AI ORACLE",
@@ -31,8 +32,8 @@ const TRANSLATIONS = {
         desc: "Ask deep questions, clear doubts about relationships, and dissect dilemmas without conversational limits.",
       },
       {
-        title: "✦ REDDIT AFFINITY RADAR",
-        desc: "Consult the Oracle on dynamics and friction points with any Reddit user through Hermetic Synastry.",
+        title: "✦ DAILY COSMIC ANALYSES",
+        desc: "Daily personalized insights synchronized with your personal day and current planetary transit cycles.",
       },
       {
         title: "✦ PRIORITY ARCHETYPAL REASONING",
@@ -44,11 +45,13 @@ const TRANSLATIONS = {
     pricingDesc: "Immediate access to speak with your chart's artificial intelligence inside Reddit.",
     plan1: {
       name: "ESSENTIAL ORACLE",
-      badge: "ONE-TIME PAYMENT",
-      price: "$5.99",
-      altPrice: "/ or R$ 29,90",
+      badge: "ONE PAYMENT",
+      price: "$9",
+      period: "/month for 1 month",
       userNote: (user: string) => `Access for u/${user || "you"}`,
       perks: [
+        "1 Map included",
+        "Daily personalized analyses",
         "50 personalized consultations with the Oracle",
         "Deep inquiries on love, finances, and vocation",
         "12-Month Personal Year strategic forecast",
@@ -58,17 +61,17 @@ const TRANSLATIONS = {
       buttonLoading: "CONNECTING TO STRIPE...",
     },
     plan2: {
-      popularTag: "MOST POPULAR • UNLIMITED QUERIES",
+      popularTag: "MOST POPULAR • UNLIMITED CHARTS",
       name: "VIP UNLIMITED ORACLE",
-      badge: "LIFETIME",
-      price: "$9.99",
-      altPrice: "/ or R$ 49,90",
+      badge: "LIFESTYLE",
+      price: "$19",
+      period: "lifestyle",
       subText: "Unlimited questions forever",
       perks: [
+        "Unlimited Maps",
+        "Daily personalized analyses",
         "100% Unlimited consultations with AI Oracle",
         "In-depth expanded reasoning & tailored answers",
-        "Synastry cross-analysis & advice with anyone",
-        "Generate new charts & questions for third parties",
         "Golden VIP Initiate badge on r/DestinyVox",
       ],
       button: "GET UNLIMITED ORACLE ⟶",
@@ -78,9 +81,15 @@ const TRANSLATIONS = {
     footerGuarantee: "7-Day Unconditional Guarantee",
     footerSync: "Instant Sync with Reddit",
     footerCopyright: `DESTINYVOX ORACLE © ${new Date().getFullYear()} — HERMETIC COSMIC INTELLIGENCE.`,
+    modalTitle: "CONFIRM YOUR REDDIT USERNAME",
+    modalDesc: "To ensure your cosmic map and Oracle access are unlocked immediately in Reddit, enter your Reddit username below:",
+    modalPlaceholder: "e.g. YourRedditUsername",
+    modalButton: "CONTINUE TO SECURE CHECKOUT ⟶",
+    modalCancel: "Cancel",
   },
   pt: {
-    badge: "ORÁCULO DESTINYVOX • INTELIGÊNCIA ARTIFICIAL HERMÉTICA",
+    badge: "ORÁCULO DESTINYVOX",
+    badgeDesktop: "ORÁCULO DESTINYVOX • INTELIGÊNCIA ARTIFICIAL HERMÉTICA",
     syncTitle: "EFEMÉRIDES & ORÁCULO SINCRONIZADOS PARA:",
     syncNote: "• O Oráculo no Reddit será desbloqueado automaticamente após a ativação",
     subBrand: "ORÁCULO IA",
@@ -106,8 +115,8 @@ const TRANSLATIONS = {
         desc: "Faça perguntas profundas, tire dúvidas sobre relacionamentos e explore dilemas sem limite de interação.",
       },
       {
-        title: "✦ RADAR DE AFINIDADE NO REDDIT",
-        desc: "Pergunte ao Oráculo sobre dinâmicas e atritos com qualquer usuário do Reddit através da Sinastria.",
+        title: "✦ ANÁLISES DIÁRIAS",
+        desc: "Insights diários personalizados sincronizados com o seu dia pessoal e trânsitos arquetípicos.",
       },
       {
         title: "✦ RESPOSTAS PRIORITÁRIAS",
@@ -119,11 +128,13 @@ const TRANSLATIONS = {
     pricingDesc: "Acesso imediato para conversar com a inteligência artificial do seu mapa dentro do Reddit.",
     plan1: {
       name: "ORÁCULO ESSENCIAL",
-      badge: "PAGAMENTO ÚNICO",
-      price: "R$ 29,90",
-      altPrice: "/ ou $5.99",
+      badge: "ONE PAYMENT",
+      price: "$9",
+      period: "/month for 1 month",
       userNote: (user: string) => `Acesso para u/${user || "você"}`,
       perks: [
+        "1 Mapa incluído",
+        "Análises diárias personalizadas",
         "50 Consultas personalizadas com o Oráculo",
         "Análise de perguntas sobre amor, dinheiro e carreira",
         "Previsão dos 12 meses do seu Ano Pessoal",
@@ -133,17 +144,17 @@ const TRANSLATIONS = {
       buttonLoading: "CONECTANDO AO STRIPE...",
     },
     plan2: {
-      popularTag: "MAIS PROCURADO • CONSULTAS LIVRES",
+      popularTag: "MAIS PROCURADO • MAPAS ILIMITADOS",
       name: "ORÁCULO ILIMITADO VIP",
-      badge: "VITALÍCIO",
-      price: "R$ 49,90",
-      altPrice: "/ ou $9.99",
+      badge: "LIFESTYLE",
+      price: "$19",
+      period: "lifestyle",
       subText: "Perguntas sem limites para sempre",
       perks: [
+        "Mapas Ilimitados",
+        "Análises diárias personalizadas",
         "Consultas 100% Ilimitadas com o Oráculo IA",
         "Respostas longas e detalhadas com raciocínio expandido",
-        "Cruzamento e conselho de Sinastria com qualquer pessoa",
-        "Geração de novos mapas e perguntas para terceiros",
         "Selo Dourado de Iniciado VIP no r/DestinyVox",
       ],
       button: "OBTER ORÁCULO ILIMITADO ⟶",
@@ -153,9 +164,15 @@ const TRANSLATIONS = {
     footerGuarantee: "Garantia Incondicional de 7 Dias",
     footerSync: "Sincronização Instantânea com o Reddit",
     footerCopyright: `DESTINYVOX ORACLE © ${new Date().getFullYear()} — INTELIGÊNCIA CÓSMICA HERMÉTICA.`,
+    modalTitle: "CONFIRME SEU USUÁRIO DO REDDIT",
+    modalDesc: "Para vincular e desbloquear seu Oráculo imediatamente no aplicativo do Reddit, informe seu usuário:",
+    modalPlaceholder: "ex: SeuUsuarioReddit",
+    modalButton: "PROSSEGUIR PARA PAGAMENTO SEGURO ⟶",
+    modalCancel: "Cancelar",
   },
   es: {
-    badge: "ORÁCULO DESTINYVOX • INTELIGENCIA ARTIFICIAL HERMÉTICA",
+    badge: "ORÁCULO DESTINYVOX",
+    badgeDesktop: "ORÁCULO DESTINYVOX • INTELIGENCIA ARTIFICIAL HERMÉTICA",
     syncTitle: "EFEMÉRIDES & ORÁCULO SINCRONIZADOS PARA:",
     syncNote: "• El Oráculo en Reddit se desbloqueará de inmediato tras la activación",
     subBrand: "ORÁCULO IA",
@@ -181,8 +198,8 @@ const TRANSLATIONS = {
         desc: "Haz preguntas profundas, resuelve dudas sentimentales y analiza dilemas sin restricciones de consulta.",
       },
       {
-        title: "✦ RADAR DE AFINIDAD EN REDDIT",
-        desc: "Consulta al Oráculo sobre la dinámica y compatibilidad con cualquier usuario de Reddit mediante Sinastría.",
+        title: "✦ ANÁLISIS DIARIOS",
+        desc: "Perspectivas diarias personalizadas sincronizadas con tu día personal y ciclos planetarios.",
       },
       {
         title: "✦ RAZONAMIENTO ARQUETÍPICO PRIORITARIO",
@@ -194,11 +211,13 @@ const TRANSLATIONS = {
     pricingDesc: "Acceso inmediato para conversar con la inteligencia artificial de tu carta dentro de Reddit.",
     plan1: {
       name: "ORÁCULO ESENCIAL",
-      badge: "PAGO ÚNICO",
-      price: "$5.99",
-      altPrice: "/ o R$ 29,90",
+      badge: "ONE PAYMENT",
+      price: "$9",
+      period: "/month for 1 month",
       userNote: (user: string) => `Acceso para u/${user || "ti"}`,
       perks: [
+        "1 Carta incluida",
+        "Análisis diarios personalizados",
         "50 Consultas personalizadas con el Oráculo",
         "Análisis de preguntas sobre amor, finanzas y vocación",
         "Pronóstico de los 12 meses de tu Año Personal",
@@ -208,17 +227,17 @@ const TRANSLATIONS = {
       buttonLoading: "CONECTANDO CON STRIPE...",
     },
     plan2: {
-      popularTag: "MÁS POPULAR • CONSULTAS LIBRES",
+      popularTag: "MÁS POPULAR • CARTAS ILIMITADAS",
       name: "ORÁCULO ILIMITADO VIP",
-      badge: "VITALICIO",
-      price: "$9.99",
-      altPrice: "/ o R$ 49,90",
+      badge: "LIFESTYLE",
+      price: "$19",
+      period: "lifestyle",
       subText: "Preguntas sin límites para siempre",
       perks: [
+        "Cartas Ilimitadas",
+        "Análisis diarios personalizados",
         "Consultas 100% Ilimitadas con el Oráculo IA",
         "Respuestas extensas con razonamiento profundo",
-        "Cruce y consejos de Sinastría con cualquier persona",
-        "Genera nuevas cartas y preguntas para terceros",
         "Insignia Dorada de Iniciado VIP en r/DestinyVox",
       ],
       button: "OBTENER ORÁCULO ILIMITADO ⟶",
@@ -228,18 +247,32 @@ const TRANSLATIONS = {
     footerGuarantee: "Garantía Incondicional de 7 Días",
     footerSync: "Sincronización Instantánea con Reddit",
     footerCopyright: `DESTINYVOX ORACLE © ${new Date().getFullYear()} — INTELIGENCIA CÓSMICA HERMÉTICA.`,
+    modalTitle: "CONFIRMA TU USUARIO DE REDDIT",
+    modalDesc: "Para asegurar que tu carta y el Oráculo se desbloqueen al instante en Reddit, escribe tu usuario:",
+    modalPlaceholder: "ej: TuUsuarioReddit",
+    modalButton: "CONTINUAR AL PAGO SEGURO ⟶",
+    modalCancel: "Cancelar",
   },
 };
 
 export function App() {
-  // Inglês como padrão
   const [lang, setLang] = useState<Language>("en");
   const [redditUser, setRedditUser] = useState<string>("");
+  const [userToken, setUserToken] = useState<string>("");
   const [isRedirecting, setIsRedirecting] = useState<boolean>(false);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [pendingPlan, setPendingPlan] = useState<"essential" | "vip" | null>(null);
+  const [modalInput, setModalInput] = useState<string>("");
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const user = params.get("user") || params.get("reddit_user") || "";
+    
+    const refToken = params.get("ref") || params.get("token") || "";
+    if (refToken) {
+      setUserToken(refToken.trim());
+    }
+
+    const user = params.get("user") || params.get("reddit_user") || params.get("u") || "";
     if (user) {
       setRedditUser(user.replace(/^u\//i, "").trim());
     }
@@ -252,16 +285,87 @@ export function App() {
 
   const t = TRANSLATIONS[lang];
 
-  const handleCheckout = (priceId: string) => {
+  const proceedToStripe = (plan: "essential" | "vip", identifier: string) => {
     setIsRedirecting(true);
-    const stripePaymentUrl = `https://buy.stripe.com/test_destinyvox?client_reference_id=${encodeURIComponent(
-      redditUser || "guest"
-    )}&price=${priceId}&locale=${lang}`;
-    window.location.href = stripePaymentUrl;
+
+    const essentialBase =
+      import.meta.env.VITE_STRIPE_LINK_ESSENTIAL ||
+      "https://buy.stripe.com/test_destinyvox_essential";
+    const vipBase =
+      import.meta.env.VITE_STRIPE_LINK_VIP ||
+      "https://buy.stripe.com/test_destinyvox_vip";
+
+    const baseUrl = plan === "vip" ? vipBase : essentialBase;
+
+    try {
+      const url = new URL(baseUrl);
+      if (identifier) {
+        url.searchParams.set("client_reference_id", identifier);
+      }
+      url.searchParams.set("locale", lang);
+      window.location.href = url.toString();
+    } catch {
+      const separator = baseUrl.includes("?") ? "&" : "?";
+      const target = `${baseUrl}${separator}client_reference_id=${encodeURIComponent(
+        identifier
+      )}&locale=${lang}`;
+      window.location.href = target;
+    }
+  };
+
+  const handleCheckout = (plan: "essential" | "vip") => {
+    const activeIdentifier = userToken || (redditUser ? `u_${redditUser}` : "");
+    if (activeIdentifier) {
+      proceedToStripe(plan, activeIdentifier);
+      return;
+    }
+
+    setPendingPlan(plan);
+    setModalInput("");
+    setIsModalOpen(true);
+  };
+
+  const handleConfirmModalUser = () => {
+    const clean = modalInput.replace(/^u\//i, "").trim();
+    if (!clean) return;
+
+    setRedditUser(clean);
+    setIsModalOpen(false);
+
+    if (pendingPlan) {
+      proceedToStripe(pendingPlan, `u_${clean}`);
+    }
   };
 
   return (
     <div className="min-h-screen bg-[#040404] text-[#f5f5f5] selection:bg-white selection:text-black">
+      {/* Modal Username */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
+          <div className="bg-[#0a0a0a] border border-neutral-800 p-6 sm:p-8 w-full max-w-sm space-y-6">
+            <div className="flex justify-between items-center">
+              <h3 className="font-mono text-sm tracking-widest text-white uppercase">{t.modalTitle}</h3>
+              <button onClick={() => setIsModalOpen(false)} className="text-neutral-500 hover:text-white"><X className="w-5 h-5"/></button>
+            </div>
+            <p className="font-editorial text-neutral-400 text-sm">{t.modalDesc}</p>
+            <input
+              type="text"
+              autoFocus
+              placeholder={t.modalPlaceholder}
+              value={modalInput}
+              onChange={(e) => setModalInput(e.target.value)}
+              className="w-full bg-neutral-950 border border-neutral-800 p-3 text-white font-mono text-sm focus:outline-none focus:border-white"
+            />
+            <button
+              onClick={handleConfirmModalUser}
+              className="w-full bg-white text-black py-3 font-mono text-xs font-bold tracking-widest uppercase hover:bg-neutral-200"
+            >
+              {t.modalButton}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Top Banner Reddit Recognition */}
       {redditUser && (
         <div className="bg-[#111111] border-b border-neutral-800 py-2.5 px-4 text-center">
@@ -316,60 +420,61 @@ export function App() {
       </header>
 
       {/* Hero Section Editorial */}
-      <section className="px-6 sm:px-12 pt-20 pb-16 max-w-5xl mx-auto text-center space-y-8">
-        <div className="inline-flex items-center gap-2 border border-neutral-800 bg-neutral-950/80 px-3 py-1 font-mono text-[10px] tracking-[0.25em] text-neutral-400 uppercase">
-          <Sparkles className="w-3 h-3 text-amber-400" />
-          {t.badge}
+      <section className="px-5 sm:px-12 pt-12 sm:pt-20 pb-12 sm:pb-16 max-w-5xl mx-auto text-center space-y-6 sm:space-y-8">
+        <div className="inline-flex items-center gap-2 border border-neutral-800 bg-neutral-950/80 px-3 py-1 font-mono text-[9px] sm:text-[10px] tracking-[0.2em] sm:tracking-[0.25em] text-neutral-400 uppercase">
+          <Sparkles className="w-3 h-3 text-amber-400 shrink-0" />
+          <span className="sm:hidden">{t.badge}</span>
+          <span className="hidden sm:inline">{t.badgeDesktop}</span>
         </div>
 
-        <h1 className="font-editorial text-4xl sm:text-6xl md:text-7xl font-normal leading-[1.08] tracking-tight text-white">
+        <h1 className="font-editorial text-3xl sm:text-6xl md:text-7xl font-normal leading-[1.12] sm:leading-[1.08] tracking-tight text-white">
           {t.heroTitleLine1} <br />
           <span className="italic text-neutral-400">{t.heroTitleLine2}</span>
         </h1>
 
-        <p className="font-editorial text-lg sm:text-xl text-neutral-400 max-w-2xl mx-auto font-light leading-relaxed">
+        <p className="font-editorial text-sm sm:text-xl text-neutral-400 max-w-2xl mx-auto font-light leading-relaxed">
           {t.heroDescription}
         </p>
 
         {/* Dynamic CTA */}
-        <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
+        <div className="pt-2 sm:pt-4 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
           <a
             href="#pricing"
-            className="w-full sm:w-auto h-14 px-8 bg-white text-black hover:bg-neutral-200 font-mono text-xs font-bold tracking-[0.25em] uppercase transition-all flex items-center justify-center gap-3 shadow-2xl"
+            className="w-full sm:w-auto h-12 sm:h-14 px-6 sm:px-8 bg-white text-black hover:bg-neutral-200 font-mono text-[11px] sm:text-xs font-bold tracking-[0.2em] sm:tracking-[0.25em] uppercase transition-all flex items-center justify-center gap-3 shadow-2xl"
           >
             <span>{t.ctaMain}</span>
             <ArrowRight className="w-4 h-4" />
           </a>
-          <span className="font-mono text-[11px] text-neutral-500">
+          <span className="font-mono text-[10px] sm:text-[11px] text-neutral-500">
             {t.ctaSub}
           </span>
         </div>
       </section>
 
       {/* Feature Section */}
-      <section className="px-6 sm:px-12 py-12 max-w-5xl mx-auto">
-        <div className="border border-neutral-800 bg-[#080808] p-6 sm:p-10 relative overflow-hidden">
-          <div className="absolute top-0 right-0 bg-amber-500/10 border-b border-l border-amber-500/30 px-4 py-1.5 font-mono text-[10px] text-amber-300 tracking-widest uppercase flex items-center gap-1.5">
+      <section className="px-4 sm:px-12 py-8 sm:py-12 max-w-5xl mx-auto">
+        <div className="border border-neutral-800 bg-[#080808] p-5 sm:p-10 relative overflow-hidden">
+          <div className="absolute top-0 right-0 bg-amber-500/10 border-b border-l border-amber-500/30 px-3 sm:px-4 py-1 sm:py-1.5 font-mono text-[9px] sm:text-[10px] text-amber-300 tracking-wider sm:tracking-widest uppercase flex items-center gap-1.5">
             <Lock className="w-3 h-3 text-amber-400" />
             {t.featureTag}
           </div>
 
-          <div className="space-y-6 max-w-2xl">
-            <span className="font-mono text-xs tracking-[0.2em] text-neutral-500 uppercase block">
+          <div className="space-y-2.5 sm:space-y-3 max-w-2xl pt-7 sm:pt-3">
+            <span className="font-mono text-[10px] sm:text-xs tracking-[0.2em] text-neutral-500 uppercase block">
               {t.howItWorksTitle}
             </span>
-            <h2 className="font-editorial text-2xl sm:text-3xl text-white font-normal">
+            <h2 className="font-editorial text-xl sm:text-3xl text-white font-normal leading-tight">
               {t.howItWorksHeading}
             </h2>
-            <p className="font-editorial text-sm sm:text-base text-neutral-400 leading-relaxed">
+            <p className="font-editorial text-xs sm:text-base text-neutral-400 leading-relaxed pt-1">
               {t.howItWorksDesc(redditUser)}
             </p>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 font-mono text-xs pt-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 font-mono text-xs pt-3">
               {t.features.map((f, i) => (
-                <div key={i} className="border border-neutral-800 p-4 bg-neutral-950 space-y-1.5">
-                  <span className="text-white font-semibold block">{f.title}</span>
-                  <p className="text-neutral-400 text-[11px] font-light leading-relaxed">
+                <div key={i} className="border border-neutral-800 p-3.5 sm:p-4 bg-neutral-950 space-y-1.5">
+                  <span className="text-white text-[11px] sm:text-xs font-semibold block">{f.title}</span>
+                  <p className="text-neutral-400 text-[10px] sm:text-[11px] font-light leading-relaxed">
                     {f.desc}
                   </p>
                 </div>
@@ -380,26 +485,26 @@ export function App() {
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="px-6 sm:px-12 py-20 max-w-5xl mx-auto space-y-12 text-center">
-        <div className="space-y-3">
-          <span className="font-mono text-xs tracking-[0.25em] text-neutral-500 uppercase">
+      <section id="pricing" className="px-4 sm:px-12 py-12 sm:py-20 max-w-5xl mx-auto space-y-8 sm:space-y-12 text-center">
+        <div className="space-y-2 sm:space-y-3">
+          <span className="font-mono text-[11px] sm:text-xs tracking-[0.25em] text-neutral-500 uppercase">
             {t.pricingTag}
           </span>
-          <h2 className="font-editorial text-3xl sm:text-5xl text-white font-normal">
+          <h2 className="font-editorial text-2xl sm:text-5xl text-white font-normal">
             {t.pricingHeading}
           </h2>
-          <p className="font-editorial text-base text-neutral-400 max-w-md mx-auto">
+          <p className="font-editorial text-xs sm:text-base text-neutral-400 max-w-md mx-auto">
             {t.pricingDesc}
           </p>
         </div>
 
         {/* Pricing Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto text-left">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 max-w-4xl mx-auto text-left">
           {/* Plano 1: Oráculo Essencial */}
-          <div className="border border-neutral-800 bg-[#080808] p-8 space-y-6 flex flex-col justify-between">
+          <div className="border border-neutral-800 bg-[#080808] p-5 sm:p-8 space-y-6 flex flex-col justify-between">
             <div className="space-y-4">
               <div className="flex justify-between items-center">
-                <span className="font-mono text-xs tracking-widest text-neutral-400 uppercase">
+                <span className="font-mono text-[11px] sm:text-xs tracking-widest text-neutral-400 uppercase">
                   {t.plan1.name}
                 </span>
                 <span className="font-mono text-[9px] tracking-widest border border-neutral-800 px-2 py-0.5 text-neutral-400">
@@ -407,19 +512,19 @@ export function App() {
                 </span>
               </div>
               <div>
-                <div className="font-editorial text-4xl text-white font-normal">
-                  {t.plan1.price}{" "}
-                  <span className="text-sm font-mono text-neutral-500">{t.plan1.altPrice}</span>
+                <div className="font-editorial text-4xl sm:text-5xl md:text-6xl text-white font-normal flex items-baseline gap-2">
+                  <span>{t.plan1.price}</span>
+                  <span className="text-sm sm:text-base font-mono text-neutral-500 font-light">{t.plan1.period}</span>
                 </div>
                 <span className="font-mono text-[10px] text-neutral-500 tracking-wider">
                   {t.plan1.userNote(redditUser)}
                 </span>
               </div>
 
-              <div className="border-t border-neutral-800 pt-4 space-y-3 font-mono text-xs text-neutral-300">
+              <div className="border-t border-neutral-800 pt-4 space-y-2.5 sm:space-y-3 font-mono text-[11px] sm:text-xs text-neutral-300">
                 {t.plan1.perks.map((perk, i) => (
                   <div key={i} className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-white shrink-0" />
+                    <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white shrink-0" />
                     <span>{perk}</span>
                   </div>
                 ))}
@@ -427,23 +532,23 @@ export function App() {
             </div>
 
             <button
-              onClick={() => handleCheckout("price_individual")}
+              onClick={() => handleCheckout("essential")}
               disabled={isRedirecting}
-              className="w-full h-12 bg-white text-black hover:bg-neutral-200 font-mono text-xs font-bold tracking-widest uppercase transition-colors cursor-pointer flex items-center justify-center gap-2"
+              className="w-full h-11 sm:h-12 bg-white text-black hover:bg-neutral-200 font-mono text-[11px] sm:text-xs font-bold tracking-widest uppercase transition-colors cursor-pointer flex items-center justify-center gap-2"
             >
               <span>{isRedirecting ? t.plan1.buttonLoading : t.plan1.button}</span>
             </button>
           </div>
 
           {/* Plano 2: Oráculo Ilimitado VIP */}
-          <div className="border-2 border-white bg-[#0a0a0a] p-8 space-y-6 flex flex-col justify-between relative">
-            <div className="absolute -top-3 right-6 bg-white text-black font-mono text-[9px] font-bold tracking-[0.2em] uppercase px-3 py-0.5">
+          <div className="border-2 border-white bg-[#0a0a0a] p-5 sm:p-8 space-y-6 flex flex-col justify-between relative">
+            <div className="absolute -top-3 right-4 sm:right-6 bg-white text-black font-mono text-[8px] sm:text-[9px] font-bold tracking-[0.15em] sm:tracking-[0.2em] uppercase px-2.5 sm:px-3 py-0.5">
               {t.plan2.popularTag}
             </div>
 
             <div className="space-y-4">
               <div className="flex justify-between items-center">
-                <span className="font-mono text-xs tracking-widest text-amber-300 uppercase font-semibold">
+                <span className="font-mono text-[11px] sm:text-xs tracking-widest text-amber-300 uppercase font-semibold">
                   {t.plan2.name}
                 </span>
                 <span className="font-mono text-[9px] tracking-widest border border-white px-2 py-0.5 text-white">
@@ -451,19 +556,19 @@ export function App() {
                 </span>
               </div>
               <div>
-                <div className="font-editorial text-4xl text-white font-normal">
-                  {t.plan2.price}{" "}
-                  <span className="text-sm font-mono text-neutral-500">{t.plan2.altPrice}</span>
+                <div className="font-editorial text-4xl sm:text-5xl md:text-6xl text-white font-normal flex items-baseline gap-2">
+                  <span>{t.plan2.price}</span>
+                  <span className="text-sm sm:text-base font-mono text-neutral-400 capitalize font-light">{t.plan2.period}</span>
                 </div>
                 <span className="font-mono text-[10px] text-neutral-400 tracking-wider">
                   {t.plan2.subText}
                 </span>
               </div>
 
-              <div className="border-t border-neutral-800 pt-4 space-y-3 font-mono text-xs text-neutral-200">
+              <div className="border-t border-neutral-800 pt-4 space-y-2.5 sm:space-y-3 font-mono text-[11px] sm:text-xs text-neutral-200">
                 {t.plan2.perks.map((perk, i) => (
                   <div key={i} className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-amber-400 shrink-0" />
+                    <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400 shrink-0" />
                     <span className={i === 0 ? "font-semibold text-white" : ""}>{perk}</span>
                   </div>
                 ))}
@@ -471,9 +576,9 @@ export function App() {
             </div>
 
             <button
-              onClick={() => handleCheckout("price_vip_unlimited")}
+              onClick={() => handleCheckout("vip")}
               disabled={isRedirecting}
-              className="w-full h-12 bg-white text-black hover:bg-neutral-200 active:bg-neutral-300 font-mono text-xs font-bold tracking-widest uppercase transition-colors cursor-pointer flex items-center justify-center gap-2"
+              className="w-full h-11 sm:h-12 bg-white text-black hover:bg-neutral-200 active:bg-neutral-300 font-mono text-[11px] sm:text-xs font-bold tracking-widest uppercase transition-colors cursor-pointer flex items-center justify-center gap-2"
             >
               <span>{isRedirecting ? t.plan2.buttonLoading : t.plan2.button}</span>
             </button>

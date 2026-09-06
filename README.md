@@ -134,14 +134,27 @@ npm run dev
 To preview the portal in different localized and contextual states:
 
 ```
-# English view for redditor u/CosmicVoyager
-http://localhost:5173/?user=CosmicVoyager&lang=en
+# English view with encrypted token from Devvit app
+http://localhost:5173/?ref=enc_...&lang=en
 
-# Portuguese view for redditor u/AstroMistico
+# Portuguese view with plain username
 http://localhost:5173/?user=AstroMistico&lang=pt
 
-# Spanish view for redditor u/HermeticoLatam
-http://localhost:5173/?user=HermeticoLatam&lang=es
+# Spanish view with prompt modal triggered on checkout if no param
+http://localhost:5173/?lang=es
+```
+
+### Environment Variables (.env)
+
+The portal automatically switches Stripe links based on environment:
+
+- **Local Development / Sandbox**: `.env.development` or `.env.local`
+- **Production Deployment**: `.env.production`
+
+```env
+# Stripe Payment Links
+VITE_STRIPE_LINK_ESSENTIAL=https://buy.stripe.com/test_... # or live link in prod
+VITE_STRIPE_LINK_VIP=https://buy.stripe.com/test_...       # or live link in prod
 ```
 
 ### Production Build & Linting
