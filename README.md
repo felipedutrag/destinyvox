@@ -1,101 +1,64 @@
-﻿# ðŸŒŒ DestinyVox â€” Landing Page & Portal de Assinatura do OrÃ¡culo de IA
+# 🌌 DestinyVox — AI Oracle Portal & Subscription Landing Page
 
 <p align="center">
   <img src="https://img.shields.io/badge/React_19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React 19" />
   <img src="https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
   <img src="https://img.shields.io/badge/Vite_6-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite" />
   <img src="https://img.shields.io/badge/Tailwind_CSS_v4-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS v4" />
-  <img src="https://img.shields.io/badge/Stripe_Integration-635BFF?style=for-the-badge&logo=stripe&logoColor=white" alt="Stripe" />
+  <img src="https://img.shields.io/badge/Stripe_Checkout-635BFF?style=for-the-badge&logo=stripe&logoColor=white" alt="Stripe" />
   <img src="https://img.shields.io/badge/Reddit_Devvit_Native-FF4500?style=for-the-badge&logo=reddit&logoColor=white" alt="Reddit Devvit" />
 </p>
 
 ---
 
-## ðŸ”® VisÃ£o Geral
+## 🔮 Overview
 
-O **DestinyVox (Landing)** Ã© o portal oficial e pÃ¡gina de conversÃ£o/onboarding do ecossistema **DestinyVox** â€” a aplicaÃ§Ã£o interativa de numerologia pitagÃ³rica e inteligÃªncia artificial arquetÃ­pica desenvolvida nativamente para comunidades do **Reddit (Devvit Web Platform)**.
+**DestinyVox (Landing)** is the official portal, membership conversion page, and onboarding hub for the **DestinyVox** ecosystem—an interactive Pythagorean numerology and archetypal AI oracle application running natively on **Reddit (Devvit Web Platform)**.
 
-A landing page atua como ponte direta entre os membros do Reddit e os recursos avanÃ§ados de inteligÃªncia artificial, oferecendo uma experiÃªncia visual mÃ­stica, moderna e imersiva com suporte internacional multilÃ­ngue, sincronizaÃ§Ã£o de perfis e checkout direto via Stripe.
-
----
-
-## âœ¨ Funcionalidades Principais
-
-- **SincronizaÃ§Ã£o DinÃ¢mica com o Reddit (`u/username`):**
-  - Detecta e reflete automaticamente os parÃ¢metros da URL (`?user=...&tier=...&lang=...`), exibindo um painel contextualizado para o usuÃ¡rio do Reddit.
-- **Suporte Trilingue Completo (i18n):**
-  - AlternÃ¢ncia instantÃ¢nea entre **InglÃªs (EN)**, **PortuguÃªs (PT)** e **Espanhol (ES)**, preservando a imersÃ£o sem recarregar a pÃ¡gina.
-- **Showcase dos 5 Pilares NumerolÃ³gicos:**
-  - ApresentaÃ§Ã£o visual detalhada do *Caminho de Vida*, *Destino/ExpressÃ£o*, *Desejo da Alma*, *Personalidade* e *Ano Pessoal*.
-- **Planos & Checkout com Stripe:**
-  - ApresentaÃ§Ã£o clara de planos (Essencial vs. VitalÃ­cio/MÃ­stico), com integraÃ§Ã£o direta de checkout Stripe para ativaÃ§Ã£o imediata no aplicativo do Reddit.
-- **Design de Alta Performance:**
-  - ConstruÃ­do com **Tailwind CSS v4** e **Vite**, com efeitos de iluminaÃ§Ã£o cÃ³smica (glassmorphism, gradientes e animaÃ§Ãµes suaves).
+The landing page bridges Reddit community members to premium AI Oracle capabilities with an austere cosmic aesthetic, trilingual localization, profile synchronization, and secure Stripe Checkout redirect flows.
 
 ---
 
-## ðŸ› ï¸ Stack TecnolÃ³gica
+## ✨ Key Features
 
-| Camada | Tecnologia |
+- 🔄 **Reddit User Context Sync (`u/username`):** Parses URL parameters (`?user=...&tier=...&lang=...`) to personalize greetings and consultation tiers.
+- 🌐 **Trilingual Internationalization:** Real-time seamless switching between **English (EN)**, **Portuguese (PT)**, and **Spanish (ES)**.
+- 🔮 **Pythagorean 5-Pillar Showcase:** Visual walkthrough of Life Path, Destiny/Expression, Soul Urge, Personality, and Personal Year vectors.
+- 💳 **Stripe Checkout Integration:** Direct session redirects for instant unlock across Reddit client apps.
+- ⚡ **Cutting-Edge Stack:** Powered by React 19, Tailwind CSS v4, and Vite with cosmic glassmorphism and subtle lighting shaders.
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Technology |
 |---|---|
-| **Framework Web** | [React 19](https://react.dev/) + [Vite](https://vitejs.dev/) |
-| **Linguagem** | [TypeScript](https://www.typescriptlang.org/) |
-| **EstilizaÃ§Ã£o** | [Tailwind CSS v4](https://tailwindcss.com/) com @tailwindcss/vite |
-| **Ãcones** | [Lucide React](https://lucide.dev/) |
-| **Pagamentos** | Stripe Checkout (integraÃ§Ã£o via redirect de sessÃ£o) |
-| **Ecossistema Relacionado** | Reddit Devvit Web Platform (dgapp / destinyvox_devvit) |
+| **Framework** | React 19 + Vite 6 |
+| **Language** | TypeScript |
+| **Styling** | Tailwind CSS v4 |
+| **Payment Gateway** | Stripe Checkout API |
+| **Target Platform** | Reddit Devvit Web Platform |
 
 ---
 
-## ðŸ“ Estrutura do RepositÃ³rio
+## 🚀 Getting Started
 
 ```bash
-destinyvox/
-â”œâ”€â”€ public/              # Ãcones, favicons e manifestos estÃ¡ticos
-â”œâ”€â”€ src/
-â”‚   â”œâ”€â”€ assets/          # Logos e ilustraÃ§Ãµes
-â”‚   â”œâ”€â”€ App.tsx          # Componente principal: Hero, Features, Planos e Checkout
-â”‚   â”œâ”€â”€ App.css          # AnimaÃ§Ãµes cÃ³smicas customizadas
-â”‚   â”œâ”€â”€ index.css        # Setup do Tailwind v4
-â”‚   â””â”€â”€ main.tsx         # Ponto de entrada da aplicaÃ§Ã£o React
-â”œâ”€â”€ index.html           # Template HTML com meta tags OGP e tipografia
-â”œâ”€â”€ package.json         # Scripts e dependÃªncias
-â””â”€â”€ vite.config.ts       # ConfiguraÃ§Ã£o do Vite com suporte a Tailwind v4
-```
-
----
-
-## ðŸš€ Como Executar Localmente
-
-### PrÃ©-requisitos
-- Node.js `>= 18.0.0`
-- Gerenciador de pacotes `npm` ou `pnpm`
-
-### InstalaÃ§Ã£o
-
-```bash
-# Clone o repositÃ³rio
+# Clone the repository
 git clone https://github.com/felipedutrag/destinyvox.git
-
-# Acesse o diretÃ³rio
 cd destinyvox
 
-# Instale as dependÃªncias
+# Install dependencies
 npm install
 
-# Inicie o servidor de desenvolvimento
+# Start development server
 npm run dev
 ```
 
-Acesse a URL informada (geralmente `http://localhost:5173`). Para testar os parÃ¢metros de usuÃ¡rio vindos do Reddit:
-```
-http://localhost:5173/?user=felipedutrag&lang=pt
-```
-
 ---
 
-## ðŸ‘¤ Autor
+## 👤 Author
 
-Desenvolvido por **Felipe Dutra**  
+Developed by **Felipe Dutra**  
 - **GitHub:** [@felipedutrag](https://github.com/felipedutrag)  
-- **E-mail:** [felipedutra@outlook.com](mailto:felipedutra@outlook.com)
+- **Email:** [felipedutra@outlook.com](mailto:felipedutra@outlook.com)
