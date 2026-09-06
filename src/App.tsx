@@ -256,32 +256,61 @@ const TRANSLATIONS = {
 };
 
 export function App() {
-  const [lang, setLang] = useState<Language>("en");
-  const [redditUser, setRedditUser] = useState<string>("");
-  const [userToken, setUserToken] = useState<string>("");
+  const [lang, setLang] = useState<Language>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const l = params.get("lang")?.toLowerCase() || sessionStorage.getItem("destinyvox_landing_lang");
+        if (l === "pt" || l === "es" || l === "en") return l as Language;
+      } catch {
+        // ignore
+      }
+    }
+    return "en";
+  });
+
+  const [redditUser, setRedditUser] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const u = params.get("u") || params.get("user") || params.get("reddit_user") || sessionStorage.getItem("destinyvox_landing_user") || "";
+        if (u) return u.replace(/^u\//i, "").trim();
+      } catch {
+        // ignore
+      }
+    }
+    return "";
+  });
+
+  const [userToken] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const tok = params.get("ref") || params.get("token") || sessionStorage.getItem("destinyvox_landing_ref") || "";
+        if (tok) return tok.trim();
+      } catch {
+        // ignore
+      }
+    }
+    return "";
+  });
+
   const [isRedirecting, setIsRedirecting] = useState<boolean>(false);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [pendingPlan, setPendingPlan] = useState<"essential" | "vip" | null>(null);
   const [modalInput, setModalInput] = useState<string>("");
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    
-    const refToken = params.get("ref") || params.get("token") || "";
-    if (refToken) {
-      setUserToken(refToken.trim());
+    if (redditUser) {
+      sessionStorage.setItem("destinyvox_landing_user", redditUser);
     }
-
-    const user = params.get("user") || params.get("reddit_user") || params.get("u") || "";
-    if (user) {
-      setRedditUser(user.replace(/^u\//i, "").trim());
+    if (userToken) {
+      sessionStorage.setItem("destinyvox_landing_ref", userToken);
     }
-
-    const langParam = params.get("lang")?.toLowerCase();
-    if (langParam === "pt" || langParam === "es" || langParam === "en") {
-      setLang(langParam as Language);
+    if (lang) {
+      sessionStorage.setItem("destinyvox_landing_lang", lang);
     }
-  }, []);
+  }, [redditUser, userToken, lang]);
 
   const t = TRANSLATIONS[lang];
 
