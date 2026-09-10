@@ -488,7 +488,7 @@ export function App() {
             {t.featureTag}
           </div>
 
-          <div className="space-y-2.5 sm:space-y-3 max-w-2xl pt-7 sm:pt-3">
+          <div className="space-y-2.5 sm:space-y-3 w-full pt-7 sm:pt-3">
             <span className="font-mono text-[10px] sm:text-xs tracking-[0.2em] text-neutral-500 uppercase block">
               {t.howItWorksTitle}
             </span>
