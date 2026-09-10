@@ -48,11 +48,12 @@ export async function POST(req: NextRequest) {
 
     const stripe = getStripe();
 
-    // Determine cancel URL from origin or env var
-    const origin =
+    // Determine cancel URL from origin or env var (sanitize trailing slash)
+    const rawOrigin =
       req.headers.get("origin") ||
       process.env.NEXT_PUBLIC_APP_URL ||
       "http://localhost:3000";
+    const origin = rawOrigin.replace(/\/+$/, "");
     const cancelUrl = `${origin}/#pricing`;
 
     // Success URL redirects directly to the DestinyVox subreddit as requested
