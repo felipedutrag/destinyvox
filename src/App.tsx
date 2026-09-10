@@ -7,7 +7,6 @@ const TRANSLATIONS = {
   en: {
     badge: "DESTINYVOX ORACLE",
     badgeDesktop: "DESTINYVOX ORACLE • HERMETIC ARTIFICIAL INTELLIGENCE",
-    syncTitle: "EPHEMERIDES & ORACLE SYNCHRONIZED FOR:",
     syncNote: "• The Oracle on Reddit will be unlocked immediately after activation",
     subBrand: "AI ORACLE",
     navCta: "CONSULT ORACLE ⟶",
@@ -90,8 +89,7 @@ const TRANSLATIONS = {
   pt: {
     badge: "ORÁCULO DESTINYVOX",
     badgeDesktop: "ORÁCULO DESTINYVOX • INTELIGÊNCIA ARTIFICIAL HERMÉTICA",
-    syncTitle: "EFEMÉRIDES & ORÁCULO SINCRONIZADOS PARA:",
-    syncNote: "• O Oráculo no Reddit será desbloqueado automaticamente após a ativação",
+    syncNote: "• O Oráculo no Reddit será desbloqueado imediatamente após a ativação",
     subBrand: "ORÁCULO IA",
     navCta: "CONSULTAR ORÁCULO ⟶",
     heroTitleLine1: "Pergunte qualquer coisa",
@@ -173,7 +171,6 @@ const TRANSLATIONS = {
   es: {
     badge: "ORÁCULO DESTINYVOX",
     badgeDesktop: "ORÁCULO DESTINYVOX • INTELIGENCIA ARTIFICIAL HERMÉTICA",
-    syncTitle: "EFEMÉRIDES & ORÁCULO SINCRONIZADOS PARA:",
     syncNote: "• El Oráculo en Reddit se desbloqueará de inmediato tras la activación",
     subBrand: "ORÁCULO IA",
     navCta: "CONSULTAR ORÁCULO ⟶",
@@ -400,7 +397,6 @@ export function App() {
         <div className="bg-[#111111] border-b border-neutral-800 py-2.5 px-4 text-center">
           <div className="max-w-4xl mx-auto flex items-center justify-center gap-2 font-mono text-[11px] tracking-wider text-neutral-300">
             <span className="text-amber-400">✦</span>
-            <span>{t.syncTitle}</span>
             <span className="text-white font-bold bg-neutral-900 border border-neutral-700 px-2 py-0.5">
               u/{redditUser}
             </span>
