@@ -51,6 +51,7 @@ export async function POST(req: NextRequest) {
     // Determine cancel URL from origin or env var (sanitize trailing slash)
     const rawOrigin =
       req.headers.get("origin") ||
+      process.env.APP_URL ||
       process.env.NEXT_PUBLIC_APP_URL ||
       "http://localhost:3000";
     const origin = rawOrigin.replace(/\/+$/, "");
