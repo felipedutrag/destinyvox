@@ -99,7 +99,7 @@
         "transform": "lodash/{{member}}"
       }
     },
-    "outputFileTracingRoot": "D:\\projects\\portfolio_repos\\destinyvox",
+    "outputFileTracingRoot": "D:\\projects\\reddit\\landing",
     "experimental": {
       "useSkewCookie": false,
       "cacheLife": {
@@ -288,10 +288,10 @@
     "bundlePagesRouterDependencies": false,
     "configFileName": "next.config.ts",
     "turbopack": {
-      "root": "D:\\projects\\portfolio_repos\\destinyvox"
+      "root": "D:\\projects\\reddit\\landing"
     }
   },
-  "appDir": "D:\\projects\\portfolio_repos\\destinyvox",
+  "appDir": "D:\\projects\\reddit\\landing",
   "relativeAppDir": "",
   "files": [
     ".next\\routes-manifest.json",

@@ -45,37 +45,36 @@ const TRANSLATIONS = {
     pricingHeading: "Activate your journey's Oracle",
     pricingDesc: "Immediate access to speak with your chart's artificial intelligence inside Reddit.",
     plan1: {
-      name: "ESSENTIAL ORACLE",
-      badge: "ONE PAYMENT",
+      name: "10 ORACLE QUESTIONS",
+      badge: "10 CREDITS",
       price: "$9",
-      period: "/month for 1 month",
+      period: "one-time",
       userNote: (user: string) => `Access for u/${user || "you"}`,
       perks: [
-        "1 Map included",
-        "Daily personalized analyses",
-        "50 personalized consultations with the Oracle",
+        "10 full questions with the DestinyVox Oracle",
+        "Direct Pythagorean & astrological cross-referencing",
         "Deep inquiries on love, finances, and vocation",
-        "12-Month Personal Year strategic forecast",
-        "Complete 360° Archetypal Dossier included",
+        "Immediate unlock in the Reddit app",
+        "Credits never expire — consult anytime",
       ],
-      button: "ACTIVATE ESSENTIAL ORACLE ⟶",
+      button: "GET 10 QUESTIONS ⟶",
       buttonLoading: "CONNECTING TO STRIPE...",
     },
     plan2: {
-      popularTag: "MOST POPULAR • UNLIMITED CHARTS",
-      name: "VIP UNLIMITED ORACLE",
-      badge: "LIFESTYLE",
+      popularTag: "BEST VALUE • 30 CREDITS",
+      name: "30 ORACLE QUESTIONS",
+      badge: "SAVE 30%",
       price: "$19",
-      period: "lifestyle",
-      subText: "Unlimited questions forever",
+      period: "one-time",
+      subText: "Most popular for deep guidance",
       perks: [
-        "Unlimited Maps",
-        "Daily personalized analyses",
-        "100% Unlimited consultations with AI Oracle",
-        "In-depth expanded reasoning & tailored answers",
+        "30 in-depth consultations with the AI Oracle",
+        "Priority Hermetic reasoning & extended answers",
+        "Complete 360° Archetypal Dossier & timing analysis",
         "Golden VIP Initiate badge on r/DestinyVox",
+        "Credits never expire — consult whenever you need",
       ],
-      button: "GET UNLIMITED ORACLE ⟶",
+      button: "GET 30 QUESTIONS ⟶",
       buttonLoading: "CONNECTING TO STRIPE...",
     },
     footerStripe: "Stripe Encrypted Payment",
@@ -127,37 +126,36 @@ const TRANSLATIONS = {
     pricingHeading: "Ative o Oráculo da sua jornada",
     pricingDesc: "Acesso imediato para conversar com a inteligência artificial do seu mapa dentro do Reddit.",
     plan1: {
-      name: "ORÁCULO ESSENCIAL",
-      badge: "ONE PAYMENT",
+      name: "10 PERGUNTAS NO ORÁCULO",
+      badge: "10 CRÉDITOS",
       price: "$9",
-      period: "/month for 1 month",
+      period: "pagamento único",
       userNote: (user: string) => `Acesso para u/${user || "você"}`,
       perks: [
-        "1 Mapa incluído",
-        "Análises diárias personalizadas",
-        "50 Consultas personalizadas com o Oráculo",
-        "Análise de perguntas sobre amor, dinheiro e carreira",
-        "Previsão dos 12 meses do seu Ano Pessoal",
-        "Dossiê Arquetípico 360° completo incluído",
+        "10 consultas completas com o Oráculo DestinyVox",
+        "Cruzamento direto com seu mapa numerológico",
+        "Análises cirúrgicas sobre amor, carreira e timing",
+        "Desbloqueio imediato no app do Reddit",
+        "Créditos não expiram — use quando desejar",
       ],
-      button: "ATIVAR ORÁCULO ESSENCIAL ⟶",
+      button: "OBTER 10 PERGUNTAS ⟶",
       buttonLoading: "CONECTANDO AO STRIPE...",
     },
     plan2: {
-      popularTag: "MAIS PROCURADO • MAPAS ILIMITADOS",
-      name: "ORÁCULO ILIMITADO VIP",
-      badge: "LIFESTYLE",
+      popularTag: "MAIS ESCOLHIDO • 30 CRÉDITOS",
+      name: "30 PERGUNTAS NO ORÁCULO",
+      badge: "ECONOMIZE 30%",
       price: "$19",
-      period: "lifestyle",
-      subText: "Perguntas sem limites para sempre",
+      period: "pagamento único",
+      subText: "Melhor custo-benefício para respostas profundas",
       perks: [
-        "Mapas Ilimitados",
-        "Análises diárias personalizadas",
-        "Consultas 100% Ilimitadas com o Oráculo IA",
-        "Respostas longas e detalhadas com raciocínio expandido",
+        "30 consultas aprofundadas com o Oráculo IA",
+        "Raciocínio hermético prioritário e respostas estendidas",
+        "Dossiê Arquetípico 360° e previsão de Ano Pessoal",
         "Selo Dourado de Iniciado VIP no r/DestinyVox",
+        "Créditos não expiram — consulte sempre que precisar",
       ],
-      button: "OBTER ORÁCULO ILIMITADO ⟶",
+      button: "OBTER 30 PERGUNTAS ⟶",
       buttonLoading: "CONECTANDO AO STRIPE...",
     },
     footerStripe: "Pagamento Criptografado Stripe",
@@ -209,37 +207,36 @@ const TRANSLATIONS = {
     pricingHeading: "Activa el Oráculo de tu camino",
     pricingDesc: "Acceso inmediato para conversar con la inteligencia artificial de tu carta dentro de Reddit.",
     plan1: {
-      name: "ORÁCULO ESENCIAL",
-      badge: "ONE PAYMENT",
+      name: "10 PREGUNTAS AL ORÁCULO",
+      badge: "10 CRÉDITOS",
       price: "$9",
-      period: "/month for 1 month",
+      period: "pago único",
       userNote: (user: string) => `Acceso para u/${user || "ti"}`,
       perks: [
-        "1 Carta incluida",
-        "Análisis diarios personalizados",
-        "50 Consultas personalizadas con el Oráculo",
-        "Análisis de preguntas sobre amor, finanzas y vocación",
-        "Pronóstico de los 12 meses de tu Año Personal",
-        "Dossier Arquetípico 360° completo incluido",
+        "10 consultas completas con el Oráculo DestinyVox",
+        "Cruce directo con tus coordenadas pitagóricas",
+        "Análisis profundo de amor, dinero y vocación",
+        "Desbloqueo inmediato en la app de Reddit",
+        "Créditos sin vencimiento — consulta cuando quieras",
       ],
-      button: "ACTIVAR ORÁCULO ESENCIAL ⟶",
+      button: "OBTENER 10 PREGUNTAS ⟶",
       buttonLoading: "CONECTANDO CON STRIPE...",
     },
     plan2: {
-      popularTag: "MÁS POPULAR • CARTAS ILIMITADAS",
-      name: "ORÁCULO ILIMITADO VIP",
-      badge: "LIFESTYLE",
+      popularTag: "MÁS ELEGIDO • 30 CRÉDITOS",
+      name: "30 PREGUNTAS AL ORÁCULO",
+      badge: "AHORRA 30%",
       price: "$19",
-      period: "lifestyle",
-      subText: "Preguntas sin límites para siempre",
+      period: "pago único",
+      subText: "El paquete preferido para orientación profunda",
       perks: [
-        "Cartas Ilimitadas",
-        "Análisis diarios personalizados",
-        "Consultas 100% Ilimitadas con el Oráculo IA",
-        "Respuestas extensas con razonamiento profundo",
+        "30 consultas profundas con el Oráculo IA",
+        "Razonamiento hermético prioritario y respuestas ampliadas",
+        "Dossier Arquetípico 360° y pronóstico de ciclos",
         "Insignia Dorada de Iniciado VIP en r/DestinyVox",
+        "Créditos sin vencimiento — consulta siempre que lo necesites",
       ],
-      button: "OBTENER ORÁCULO ILIMITADO ⟶",
+      button: "OBTENER 30 PREGUNTAS ⟶",
       buttonLoading: "CONECTANDO CON STRIPE...",
     },
     footerStripe: "Pago Encriptado Stripe",
@@ -294,9 +291,13 @@ export function App() {
     return "";
   });
 
+  type PlanKey = "10_questions" | "30_questions";
+
   const [isRedirecting, setIsRedirecting] = useState<boolean>(false);
+  const [loadingPlan, setLoadingPlan] = useState<PlanKey | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [pendingPlan, setPendingPlan] = useState<"essential" | "vip" | null>(null);
+  const [pendingPlan, setPendingPlan] = useState<PlanKey | null>(null);
   const [modalInput, setModalInput] = useState<string>("");
 
   useEffect(() => {
@@ -313,38 +314,47 @@ export function App() {
 
   const t = TRANSLATIONS[lang];
 
-  const proceedToStripe = (plan: "essential" | "vip", identifier: string) => {
+  const proceedToStripe = async (plan: PlanKey, username: string) => {
     setIsRedirecting(true);
+    setLoadingPlan(plan);
+    setErrorMessage(null);
 
-    const essentialBase =
-      process.env.NEXT_PUBLIC_STRIPE_LINK_ESSENTIAL ||
-      "https://buy.stripe.com/test_destinyvox_essential";
-    const vipBase =
-      process.env.NEXT_PUBLIC_STRIPE_LINK_VIP ||
-      "https://buy.stripe.com/test_destinyvox_vip";
-
-    const baseUrl = plan === "vip" ? vipBase : essentialBase;
+    const clean = username.replace(/^u[\/_]/i, "").trim();
 
     try {
-      const url = new URL(baseUrl);
-      if (identifier) {
-        url.searchParams.set("client_reference_id", identifier);
+      const response = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          plan,
+          redditUsername: clean,
+          locale: lang,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.url) {
+        throw new Error(data.error || "Failed to initialize checkout session");
       }
-      url.searchParams.set("locale", lang);
-      window.location.href = url.toString();
-    } catch {
-      const separator = baseUrl.includes("?") ? "&" : "?";
-      const target = `${baseUrl}${separator}client_reference_id=${encodeURIComponent(
-        identifier
-      )}&locale=${lang}`;
-      window.location.href = target;
+
+      window.location.href = data.url;
+    } catch (err) {
+      console.error("[checkout] Error redirecting to Stripe:", err);
+      setIsRedirecting(false);
+      setLoadingPlan(null);
+      setErrorMessage(
+        err instanceof Error ? err.message : "An error occurred while connecting to Stripe"
+      );
     }
   };
 
-  const handleCheckout = (plan: "essential" | "vip") => {
-    const activeIdentifier = userToken || (redditUser ? `u_${redditUser}` : "");
-    if (activeIdentifier) {
-      proceedToStripe(plan, activeIdentifier);
+  const handleCheckout = (plan: PlanKey) => {
+    const activeUsername = redditUser || userToken;
+    if (activeUsername) {
+      proceedToStripe(plan, activeUsername);
       return;
     }
 
@@ -354,14 +364,14 @@ export function App() {
   };
 
   const handleConfirmModalUser = () => {
-    const clean = modalInput.replace(/^u\//i, "").trim();
+    const clean = modalInput.replace(/^u[\/_]/i, "").trim();
     if (!clean) return;
 
     setRedditUser(clean);
     setIsModalOpen(false);
 
     if (pendingPlan) {
-      proceedToStripe(pendingPlan, `u_${clean}`);
+      proceedToStripe(pendingPlan, clean);
     }
   };
 
@@ -559,15 +569,19 @@ export function App() {
             </div>
 
             <button
-              onClick={() => handleCheckout("essential")}
+              onClick={() => handleCheckout("10_questions")}
               disabled={isRedirecting}
-              className="w-full h-11 sm:h-12 bg-white text-black hover:bg-neutral-200 font-mono text-[11px] sm:text-xs font-bold tracking-widest uppercase transition-colors cursor-pointer flex items-center justify-center gap-2"
+              className="w-full h-11 sm:h-12 bg-white text-black hover:bg-neutral-200 font-mono text-[11px] sm:text-xs font-bold tracking-widest uppercase transition-colors cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
             >
-              <span>{isRedirecting ? t.plan1.buttonLoading : t.plan1.button}</span>
+              <span>
+                {loadingPlan === "10_questions"
+                  ? t.plan1.buttonLoading
+                  : t.plan1.button}
+              </span>
             </button>
           </div>
 
-          {/* Plano 2: Oráculo Ilimitado VIP */}
+          {/* Plano 2: 30 Perguntas */}
           <div className="border-2 border-white bg-[#0a0a0a] p-5 sm:p-8 space-y-6 flex flex-col justify-between relative">
             <div className="absolute -top-3 right-4 sm:right-6 bg-white text-black font-mono text-[8px] sm:text-[9px] font-bold tracking-[0.15em] sm:tracking-[0.2em] uppercase px-2.5 sm:px-3 py-0.5">
               {t.plan2.popularTag}
@@ -603,14 +617,24 @@ export function App() {
             </div>
 
             <button
-              onClick={() => handleCheckout("vip")}
+              onClick={() => handleCheckout("30_questions")}
               disabled={isRedirecting}
-              className="w-full h-11 sm:h-12 bg-white text-black hover:bg-neutral-200 active:bg-neutral-300 font-mono text-[11px] sm:text-xs font-bold tracking-widest uppercase transition-colors cursor-pointer flex items-center justify-center gap-2"
+              className="w-full h-11 sm:h-12 bg-white text-black hover:bg-neutral-200 active:bg-neutral-300 font-mono text-[11px] sm:text-xs font-bold tracking-widest uppercase transition-colors cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
             >
-              <span>{isRedirecting ? t.plan2.buttonLoading : t.plan2.button}</span>
+              <span>
+                {loadingPlan === "30_questions"
+                  ? t.plan2.buttonLoading
+                  : t.plan2.button}
+              </span>
             </button>
           </div>
         </div>
+
+        {errorMessage && (
+          <div className="max-w-md mx-auto p-3 bg-red-950/50 border border-red-800 text-red-300 font-mono text-xs text-center">
+            {errorMessage}
+          </div>
+        )}
       </section>
 
       {/* Security & Guarantee */}

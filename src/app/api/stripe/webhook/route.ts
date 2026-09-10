@@ -7,7 +7,7 @@ import Stripe from "stripe";
  * POST /api/stripe/webhook
  *
  * Receives Stripe webhook events and keeps the Supabase `vip_users` table
- * in sync with subscription state.
+ * in sync with credit balance and subscription state.
  *
  * Required env vars (server-side, no NEXT_PUBLIC_ prefix):
  *   STRIPE_SECRET_KEY          — Stripe secret key
@@ -16,39 +16,35 @@ import Stripe from "stripe";
  *   SUPABASE_SERVICE_ROLE_KEY  — Supabase service role key (admin writes)
  */
 
-// Next.js App Router: disable body parsing so we can read the raw buffer
-// needed for Stripe webhook signature verification.
 export const dynamic = "force-dynamic";
 
-type VipStatus = "active" | "canceled" | "past_due" | "trialing";
+/** Maps a Stripe subscription status to a boolean active state. */
+function toActiveStatus(stripeStatus: Stripe.Subscription.Status): boolean {
+  return stripeStatus === "active" || stripeStatus === "trialing";
+}
 
-/** Maps a Stripe subscription status to our internal VIP status. */
-function toVipStatus(stripeStatus: Stripe.Subscription.Status): VipStatus {
-  switch (stripeStatus) {
-    case "active":
-      return "active";
-    case "trialing":
-      return "trialing";
-    case "past_due":
-    case "unpaid":
-      return "past_due";
-    default:
-      return "canceled";
+/** Extracts the Reddit username from client_reference_id or session metadata. */
+function parseUsername(
+  raw: string | null | undefined,
+  metadata?: Stripe.Metadata | null
+): string | null {
+  if (metadata?.redditUsername) {
+    return metadata.redditUsername.replace(/^u[\/_]/i, "").trim();
   }
-}
-
-/** Extracts the Reddit username from the client_reference_id (format: `u_USERNAME`). */
-function parseUsername(raw: string | null | undefined): string | null {
+  if (metadata?.reddit_username) {
+    return metadata.reddit_username.replace(/^u[\/_]/i, "").trim();
+  }
   if (!raw) return null;
-  const match = raw.match(/^u_(.+)$/);
-  return match ? match[1] : null;
+  const match = raw.match(/^(?:u[\/_])?(.+)$/i);
+  return match ? match[1].trim() : raw.trim();
 }
 
-/** Upserts VIP data into Supabase. */
+/** Upserts VIP data directly into Supabase if RPC is unavailable. */
 async function upsertVipUser(data: {
   redditUsername: string;
-  status: VipStatus;
+  status: boolean;
   plan: string;
+  credits: number;
   stripeCustomerId: string;
   stripeSubscriptionId?: string;
 }) {
@@ -57,6 +53,7 @@ async function upsertVipUser(data: {
       reddit_username: data.redditUsername,
       status: data.status,
       plan: data.plan,
+      credits: data.credits,
       stripe_customer_id: data.stripeCustomerId,
       stripe_subscription_id: data.stripeSubscriptionId ?? null,
       updated_at: new Date().toISOString(),
@@ -70,11 +67,11 @@ async function upsertVipUser(data: {
   }
 }
 
-/** Updates only the status of an existing VIP user (by subscription ID or username). */
+/** Updates the boolean status of an existing VIP user (by subscription ID or customer ID). */
 async function updateVipStatus(params: {
   stripeSubscriptionId?: string;
   stripeCustomerId?: string;
-  status: VipStatus;
+  status: boolean;
 }) {
   let query = getSupabaseAdmin().from("vip_users").update({
     status: params.status,
@@ -112,7 +109,10 @@ export async function POST(req: NextRequest) {
   const signature = req.headers.get("stripe-signature");
 
   if (!signature) {
-    return NextResponse.json({ error: "Missing stripe-signature header" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Missing stripe-signature header" },
+      { status: 400 }
+    );
   }
 
   let event: Stripe.Event;
@@ -134,19 +134,49 @@ export async function POST(req: NextRequest) {
       // ── Payment completed via Payment Link or Checkout ──────────────────
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
-        const username = parseUsername(session.client_reference_id);
 
-        if (!username) {
-          console.warn("[webhook] checkout.session.completed: no Reddit username in client_reference_id", {
-            client_reference_id: session.client_reference_id,
-          });
+        // Skip unpaid sessions (e.g. delayed payments that haven't cleared yet)
+        if (
+          session.payment_status !== "paid" &&
+          session.payment_status !== "no_payment_required"
+        ) {
+          console.warn(
+            `[webhook] checkout.session.completed skipped: payment_status is '${session.payment_status}'`
+          );
           break;
         }
 
-        // Determine plan from metadata or amount
-        const plan = session.metadata?.plan ?? (
-          session.amount_total && session.amount_total >= 1900 ? "vip" : "essential"
+        const username = parseUsername(
+          session.client_reference_id,
+          session.metadata
         );
+
+        if (!username) {
+          console.warn(
+            "[webhook] checkout.session.completed: no Reddit username found",
+            {
+              client_reference_id: session.client_reference_id,
+              metadata: session.metadata,
+            }
+          );
+          break;
+        }
+
+        // Determine plan and credits
+        let credits = 10;
+        if (session.metadata?.credits) {
+          credits = parseInt(session.metadata.credits, 10) || 10;
+        } else if (
+          session.metadata?.plan === "30_questions" ||
+          session.metadata?.plan === "vip" ||
+          (session.amount_total && session.amount_total >= 1900)
+        ) {
+          credits = 30;
+        }
+
+        const plan =
+          session.metadata?.plan ??
+          (credits === 30 ? "30_questions" : "10_questions");
 
         const customerId =
           typeof session.customer === "string"
@@ -158,39 +188,60 @@ export async function POST(req: NextRequest) {
             ? session.subscription
             : session.subscription?.id ?? undefined;
 
-        await upsertVipUser({
-          redditUsername: username,
-          status: "active",
-          plan,
-          stripeCustomerId: customerId,
-          stripeSubscriptionId: subscriptionId,
-        });
+        // Use PostgreSQL stored function for atomic credit addition
+        const { error: rpcError } = await getSupabaseAdmin().rpc(
+          "add_user_credits",
+          {
+            p_reddit_username: username,
+            p_credits: credits,
+            p_plan: plan,
+            p_stripe_customer_id: customerId || null,
+            p_stripe_subscription_id: subscriptionId || null,
+          }
+        );
 
-        console.log(`[webhook] VIP activated: u/${username} (${plan})`);
+        if (rpcError) {
+          console.warn(
+            "[webhook] RPC add_user_credits failed, falling back to upsert:",
+            rpcError
+          );
+          await upsertVipUser({
+            redditUsername: username,
+            status: true,
+            plan,
+            credits,
+            stripeCustomerId: customerId,
+            stripeSubscriptionId: subscriptionId,
+          });
+        }
+
+        console.log(
+          `[webhook] User u/${username} credited +${credits} questions (${plan}, status=true)`
+        );
         break;
       }
 
-      // ── Subscription created (may arrive after checkout.session.completed) ──
+      // ── Subscription created ─────────────────────────────────────────────
       case "customer.subscription.created": {
         const sub = event.data.object as Stripe.Subscription;
-        const status = toVipStatus(sub.status);
+        const status = toActiveStatus(sub.status);
         await updateVipStatus({
           stripeSubscriptionId: sub.id,
           status,
         });
-        console.log(`[webhook] Subscription created: ${sub.id} → ${status}`);
+        console.log(`[webhook] Subscription created: ${sub.id} → status=${status}`);
         break;
       }
 
-      // ── Subscription updated (renewal, plan change, etc.) ────────────────
+      // ── Subscription updated ─────────────────────────────────────────────
       case "customer.subscription.updated": {
         const sub = event.data.object as Stripe.Subscription;
-        const status = toVipStatus(sub.status);
+        const status = toActiveStatus(sub.status);
         await updateVipStatus({
           stripeSubscriptionId: sub.id,
           status,
         });
-        console.log(`[webhook] Subscription updated: ${sub.id} → ${status}`);
+        console.log(`[webhook] Subscription updated: ${sub.id} → status=${status}`);
         break;
       }
 
@@ -199,9 +250,9 @@ export async function POST(req: NextRequest) {
         const sub = event.data.object as Stripe.Subscription;
         await updateVipStatus({
           stripeSubscriptionId: sub.id,
-          status: "canceled",
+          status: false,
         });
-        console.log(`[webhook] Subscription cancelled: ${sub.id}`);
+        console.log(`[webhook] Subscription cancelled: ${sub.id} → status=false`);
         break;
       }
 
@@ -214,9 +265,9 @@ export async function POST(req: NextRequest) {
         if (subscriptionId) {
           await updateVipStatus({
             stripeSubscriptionId: subscriptionId,
-            status: "active",
+            status: true,
           });
-          console.log(`[webhook] Invoice paid, subscription active: ${subscriptionId}`);
+          console.log(`[webhook] Invoice paid: ${subscriptionId} → status=true`);
         }
         break;
       }
@@ -230,9 +281,9 @@ export async function POST(req: NextRequest) {
         if (subscriptionId) {
           await updateVipStatus({
             stripeSubscriptionId: subscriptionId,
-            status: "past_due",
+            status: false,
           });
-          console.log(`[webhook] Invoice payment failed: ${subscriptionId}`);
+          console.log(`[webhook] Invoice payment failed: ${subscriptionId} → status=false`);
         }
         break;
       }
