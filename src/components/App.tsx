@@ -374,7 +374,7 @@ export function App() {
               <h3 className="font-mono text-sm sm:text-base tracking-widest text-white uppercase">{t.modalTitle}</h3>
               <button onClick={() => setIsModalOpen(false)} className="text-neutral-500 hover:text-white cursor-pointer"><X className="w-5 h-5"/></button>
             </div>
-            <p className="font-editorial text-neutral-400 text-sm sm:text-base">{t.modalDesc}</p>
+            <p className="font-mono font-light text-neutral-400 text-xs sm:text-sm leading-relaxed">{t.modalDesc}</p>
             <input
               type="text"
               autoFocus
@@ -464,7 +464,7 @@ export function App() {
           <span className="italic text-neutral-400">{t.heroTitleLine2}</span>
         </h1>
 
-        <p className="font-editorial text-[15px] sm:text-xl md:text-2xl text-neutral-300 max-w-2xl sm:max-w-3xl md:max-w-4xl mx-auto font-normal leading-relaxed">
+        <p className="font-mono font-light text-xs sm:text-sm md:text-base text-neutral-300 max-w-2xl sm:max-w-3xl md:max-w-4xl mx-auto leading-relaxed">
           {t.heroDescription}
         </p>
 
@@ -498,7 +498,7 @@ export function App() {
             <h2 className="font-editorial text-2xl sm:text-3xl md:text-4xl text-white font-normal leading-tight">
               {t.howItWorksHeading}
             </h2>
-            <p className="font-editorial text-sm sm:text-lg md:text-xl text-neutral-300 leading-relaxed pt-1">
+            <p className="font-mono font-light text-xs sm:text-sm md:text-base text-neutral-300 leading-relaxed pt-1">
               {t.howItWorksDesc(redditUser)}
             </p>
 
@@ -525,7 +525,7 @@ export function App() {
           <h2 className="font-editorial text-3xl sm:text-5xl md:text-6xl text-white font-normal">
             {t.pricingHeading}
           </h2>
-          <p className="font-editorial text-sm sm:text-base md:text-lg text-neutral-300 max-w-lg mx-auto">
+          <p className="font-mono font-light text-xs sm:text-sm md:text-base text-neutral-300 max-w-lg mx-auto leading-relaxed">
             {t.pricingDesc}
           </p>
         </div>
@@ -633,7 +633,7 @@ export function App() {
       </section>
 
       {/* Security & Guarantee */}
-      <footer className="border-t border-neutral-900 py-12 sm:py-16 px-6 sm:px-12 text-center space-y-4 font-mono text-xs sm:text-sm text-neutral-400">
+      <footer className="border-t border-neutral-900 py-12 sm:py-16 px-6 sm:px-12 text-center space-y-4 font-mono font-light text-xs sm:text-sm text-neutral-400">
         <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
           <span className="flex items-center gap-1.5">
             <Shield className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> {t.footerStripe}
@@ -643,7 +643,7 @@ export function App() {
           <span>•</span>
           <span>{t.footerSync}</span>
         </div>
-        <div className="text-[11px] sm:text-xs md:text-sm text-neutral-500">
+        <div className="text-[11px] sm:text-xs md:text-sm text-neutral-500 font-light">
           {t.footerCopyright}
         </div>
       </footer>
