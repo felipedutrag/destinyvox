@@ -457,7 +457,7 @@ export function App() {
           <span className="italic text-neutral-400">{t.heroTitleLine2}</span>
         </h1>
 
-        <p className="font-editorial text-base sm:text-xl md:text-2xl text-neutral-300 max-w-2xl sm:max-w-3xl md:max-w-4xl mx-auto font-light leading-relaxed">
+        <p className="font-editorial text-[15px] sm:text-xl md:text-2xl text-neutral-300 max-w-2xl sm:max-w-3xl md:max-w-4xl mx-auto font-normal leading-relaxed">
           {t.heroDescription}
         </p>
 
@@ -570,7 +570,7 @@ export function App() {
           </div>
 
           {/* Plano 2: 30 Perguntas */}
-          <div className="border-2 border-white bg-[#0a0a0a] p-5 sm:p-8 space-y-6 flex flex-col justify-between relative">
+          <div className="border border-white/70 sm:border-2 sm:border-white bg-[#0a0a0a] p-5 sm:p-8 space-y-6 flex flex-col justify-between relative">
             <div className="absolute -top-3 right-4 sm:right-6 bg-white text-black font-mono text-[9px] sm:text-[11px] font-bold tracking-[0.15em] sm:tracking-[0.2em] uppercase px-2.5 sm:px-3.5 py-0.5">
               {t.plan2.popularTag}
             </div>
@@ -580,7 +580,7 @@ export function App() {
                 <span className="font-mono text-xs sm:text-sm tracking-widest text-amber-300 uppercase font-semibold">
                   {t.plan2.name}
                 </span>
-                <span className="font-mono text-[10px] sm:text-xs tracking-widest border border-white px-2.5 py-0.5 text-white">
+                <span className="font-mono text-[10px] sm:text-xs tracking-widest border border-white/60 sm:border-white px-2.5 py-0.5 text-white">
                   {t.plan2.badge}
                 </span>
               </div>
