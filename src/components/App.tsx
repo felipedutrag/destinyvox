@@ -30,8 +30,8 @@ const TRANSLATIONS = {
         desc: "Know exactly whether the current period favors bold career shifts, new partnerships, or strategic patience.",
       },
       {
-        title: "✦ UNLIMITED DIALOGUE",
-        desc: "Ask deep questions, clear doubts about relationships, and dissect dilemmas without conversational limits.",
+        title: "✦ TARGETED SACRED INQUIRIES",
+        desc: "Ask deep, meaningful questions about love, career, and dilemmas. Each credit unlocks an in-depth Hermetic reading that never expires.",
       },
       {
         title: "✦ DAILY COSMIC ANALYSES",
@@ -111,8 +111,8 @@ const TRANSLATIONS = {
         desc: "Saiba exatamente se o momento atual favorece mudanças de carreira, novos negócios ou paciência estratégica.",
       },
       {
-        title: "✦ DIÁLOGOS ILIMITADOS",
-        desc: "Faça perguntas profundas, tire dúvidas sobre relacionamentos e explore dilemas sem limite de interação.",
+        title: "✦ CONSULTAS CIRÚRGICAS & DIRECIONADAS",
+        desc: "Faça perguntas profundas sobre amor, vocação e dilemas reais. Cada crédito ativa uma resposta hermética densa e personalizada que nunca expira.",
       },
       {
         title: "✦ ANÁLISES DIÁRIAS",
@@ -192,8 +192,8 @@ const TRANSLATIONS = {
         desc: "Descubre exactamente si el ciclo actual favorece cambios de carrera, nuevos proyectos o paciencia estratégica.",
       },
       {
-        title: "✦ DIÁLOGOS ILIMITADOS",
-        desc: "Haz preguntas profundas, resuelve dudas sentimentales y analiza dilemas sin restricciones de consulta.",
+        title: "✦ CONSULTAS QUIRÚRGICAS & DIRIGIDAS",
+        desc: "Haz preguntas profundas sobre amor, vocación y dilemas personales. Cada crédito activa una respuesta hermética densa y personalizada que nunca caduca.",
       },
       {
         title: "✦ ANÁLISIS DIARIOS",
