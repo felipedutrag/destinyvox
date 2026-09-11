@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import { Sparkles, Shield, ArrowRight, CheckCircle2, Lock, X } from "lucide-react";
 
 type Language = "en" | "pt" | "es";
@@ -407,8 +408,15 @@ export function App() {
 
       {/* Navigation Header */}
       <header className="border-b border-neutral-900 px-4 sm:px-12 py-3.5 sm:py-5 flex items-center justify-between max-w-7xl mx-auto">
-        <div className="flex items-center gap-2 sm:gap-3">
-          <span className="text-white text-xs sm:text-lg">✦</span>
+        <div className="flex items-center gap-2.5 sm:gap-3">
+          <Image
+            src="/favicon.svg"
+            alt="DestinyVox Icon"
+            width={24}
+            height={24}
+            className="w-5 h-5 sm:w-6 sm:h-6 shrink-0 rounded-[5px] shadow-[0_0_12px_rgba(245,158,11,0.25)]"
+            priority
+          />
           <span className="font-mono text-xs sm:text-base tracking-[0.2em] sm:tracking-[0.3em] font-medium sm:font-semibold text-white uppercase">
             DESTINYVOX
           </span>
