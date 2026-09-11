@@ -365,8 +365,49 @@ export function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#040404] text-[#f5f5f5] selection:bg-white selection:text-black">
-      {/* Modal Username */}
+    <div className="min-h-screen bg-[#040404] text-[#f5f5f5] selection:bg-white selection:text-black relative overflow-x-hidden">
+      {/* Subtle Atmospheric Cosmic Background */}
+      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+        {/* Top Hero Ambient Radial Glow */}
+        <div
+          className="absolute -top-[120px] left-1/2 -translate-x-1/2 w-[900px] sm:w-[1200px] h-[550px] opacity-75 blur-[90px]"
+          style={{
+            background:
+              "radial-gradient(ellipse 70% 60% at 50% 30%, rgba(217, 119, 6, 0.12), rgba(180, 83, 9, 0.05), transparent 75%)",
+          }}
+        />
+
+        {/* Delicate Constellation Grid */}
+        <div
+          className="absolute inset-0 opacity-[0.14]"
+          style={{
+            backgroundImage:
+              "radial-gradient(rgba(255, 255, 255, 0.65) 1px, transparent 1px)",
+            backgroundSize: "36px 36px",
+            maskImage:
+              "radial-gradient(ellipse 85% 70% at 50% 35%, black 20%, transparent 85%)",
+            WebkitMaskImage:
+              "radial-gradient(ellipse 85% 70% at 50% 35%, black 20%, transparent 85%)",
+          }}
+        />
+
+        {/* Faint Sacred Geometry Planetary Orbit Rings */}
+        <div className="absolute top-[160px] left-1/2 -translate-x-1/2 w-[700px] sm:w-[900px] h-[700px] sm:h-[900px] rounded-full border border-amber-500/[0.035] opacity-70" />
+        <div className="absolute top-[230px] left-1/2 -translate-x-1/2 w-[560px] sm:w-[720px] h-[560px] sm:h-[720px] rounded-full border border-white/[0.02] opacity-50" />
+
+        {/* Bottom Ambient Pricing Aura */}
+        <div
+          className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[800px] sm:w-[1000px] h-[450px] opacity-40 blur-[100px]"
+          style={{
+            background:
+              "radial-gradient(ellipse 60% 50% at 50% 100%, rgba(245, 158, 11, 0.08), transparent 75%)",
+          }}
+        />
+      </div>
+
+      {/* Main Content */}
+      <div className="relative z-10">
+        {/* Modal Username */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
           <div className="bg-[#0a0a0a] border border-neutral-800 p-6 sm:p-8 w-full max-w-md space-y-6">
@@ -647,6 +688,7 @@ export function App() {
           {t.footerCopyright}
         </div>
       </footer>
+      </div>
     </div>
   );
 }
