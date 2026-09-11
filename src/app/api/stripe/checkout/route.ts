@@ -94,7 +94,7 @@ export async function POST(req: NextRequest) {
           amount: 900, // $9.00 USD
         },
         "30_questions": {
-          name: "DestinyVox Oracle — 30 Consultations (VIP)",
+          name: "DestinyVox Oracle — 30 Consultations",
           description:
             "30 in-depth consultations with priority Hermetic reasoning & VIP Initiate badge",
           amount: 1900, // $19.00 USD
