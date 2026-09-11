@@ -395,7 +395,7 @@ export function App() {
       {/* Top Banner Reddit Recognition */}
       {redditUser && (
         <div className="bg-[#111111] border-b border-neutral-800 py-2.5 px-4 text-center">
-          <div className="max-w-4xl mx-auto flex items-center justify-center gap-2 font-mono text-[11px] sm:text-xs tracking-wider text-neutral-300">
+          <div className="max-w-4xl mx-auto flex items-center justify-center gap-2 font-mono text-xs sm:text-xs tracking-wider text-neutral-300">
             <span className="text-amber-400">✦</span>
             <span className="text-white font-bold bg-neutral-900 border border-neutral-700 px-2 py-0.5">
               u/{redditUser}
@@ -406,10 +406,10 @@ export function App() {
       )}
 
       {/* Navigation Header */}
-      <header className="border-b border-neutral-900 px-6 sm:px-12 py-4 sm:py-5 flex items-center justify-between max-w-7xl mx-auto">
-        <div className="flex items-center gap-3">
-          <span className="text-white text-base sm:text-lg">✦</span>
-          <span className="font-mono text-sm sm:text-base tracking-[0.3em] font-semibold text-white uppercase">
+      <header className="border-b border-neutral-900 px-4 sm:px-12 py-3.5 sm:py-5 flex items-center justify-between max-w-7xl mx-auto">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <span className="text-white text-xs sm:text-lg">✦</span>
+          <span className="font-mono text-xs sm:text-base tracking-[0.2em] sm:tracking-[0.3em] font-medium sm:font-semibold text-white uppercase">
             DESTINYVOX
           </span>
           <span className="font-mono text-[9px] sm:text-[11px] tracking-widest text-neutral-400 uppercase border border-neutral-800 px-2.5 py-0.5 hidden sm:inline-block">
@@ -417,14 +417,14 @@ export function App() {
           </span>
         </div>
 
-        <div className="flex items-center gap-5 font-mono text-xs sm:text-sm">
+        <div className="flex items-center gap-3 sm:gap-5 font-mono text-xs sm:text-sm">
           {/* Language Switcher */}
-          <div className="flex items-center gap-1.5 border border-neutral-800 px-2.5 py-1 bg-neutral-950">
+          <div className="flex items-center gap-1 sm:gap-1.5 border border-neutral-800 px-2 sm:px-2.5 py-1 bg-neutral-950">
             {(["en", "pt", "es"] as const).map((l) => (
               <button
                 key={l}
                 onClick={() => setLang(l)}
-                className={`px-1.5 py-0.5 text-[10px] sm:text-xs tracking-wider uppercase transition-colors cursor-pointer ${
+                className={`px-1.5 py-0.5 text-[11px] sm:text-xs tracking-wider uppercase transition-colors cursor-pointer ${
                   lang === l
                     ? "text-white font-bold border-b border-white"
                     : "text-neutral-500 hover:text-neutral-300"
@@ -446,18 +446,18 @@ export function App() {
 
       {/* Hero Section Editorial */}
       <section className="px-5 sm:px-12 pt-12 sm:pt-20 pb-12 sm:pb-16 max-w-5xl mx-auto text-center space-y-6 sm:space-y-8">
-        <div className="inline-flex items-center gap-2 border border-neutral-800 bg-neutral-950/80 px-3.5 py-1.5 font-mono text-[9px] sm:text-xs tracking-[0.2em] sm:tracking-[0.25em] text-neutral-300 uppercase">
+        <div className="inline-flex items-center gap-2 border border-neutral-800 bg-neutral-950/80 px-3.5 py-1.5 font-mono text-[11px] sm:text-xs tracking-[0.2em] sm:tracking-[0.25em] text-neutral-300 uppercase">
           <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" />
           <span className="sm:hidden">{t.badge}</span>
           <span className="hidden sm:inline">{t.badgeDesktop}</span>
         </div>
 
-        <h1 className="font-editorial text-3xl sm:text-6xl md:text-7xl font-normal leading-[1.12] sm:leading-[1.08] tracking-tight text-white">
+        <h1 className="font-editorial text-4xl sm:text-6xl md:text-7xl font-normal leading-[1.12] sm:leading-[1.08] tracking-tight text-white">
           {t.heroTitleLine1} <br />
           <span className="italic text-neutral-400">{t.heroTitleLine2}</span>
         </h1>
 
-        <p className="font-editorial text-sm sm:text-xl md:text-2xl text-neutral-300 max-w-2xl mx-auto font-light leading-relaxed">
+        <p className="font-editorial text-base sm:text-xl md:text-2xl text-neutral-300 max-w-2xl mx-auto font-light leading-relaxed">
           {t.heroDescription}
         </p>
 
@@ -465,12 +465,12 @@ export function App() {
         <div className="pt-2 sm:pt-4 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
           <a
             href="#pricing"
-            className="w-full sm:w-auto h-12 sm:h-14 px-6 sm:px-9 bg-white text-black hover:bg-neutral-200 font-mono text-[11px] sm:text-sm font-bold tracking-[0.2em] sm:tracking-[0.25em] uppercase transition-all flex items-center justify-center gap-3 shadow-2xl cursor-pointer"
+            className="w-full sm:w-auto h-12 sm:h-14 px-6 sm:px-9 bg-white text-black hover:bg-neutral-200 font-mono text-xs sm:text-sm font-bold tracking-[0.2em] sm:tracking-[0.25em] uppercase transition-all flex items-center justify-center gap-3 shadow-2xl cursor-pointer"
           >
             <span>{t.ctaMain}</span>
             <ArrowRight className="w-4 h-4" />
           </a>
-          <span className="font-mono text-[10px] sm:text-xs text-neutral-400">
+          <span className="font-mono text-xs sm:text-xs text-neutral-400">
             {t.ctaSub}
           </span>
         </div>
@@ -479,27 +479,27 @@ export function App() {
       {/* Feature Section */}
       <section className="px-4 sm:px-12 py-8 sm:py-12 max-w-5xl mx-auto">
         <div className="border border-neutral-800 bg-[#080808] p-5 sm:p-10 relative overflow-hidden">
-          <div className="absolute top-0 right-0 bg-amber-500/10 border-b border-l border-amber-500/30 px-3 sm:px-4 py-1 sm:py-1.5 font-mono text-[9px] sm:text-xs text-amber-300 tracking-wider sm:tracking-widest uppercase flex items-center gap-1.5">
+          <div className="absolute top-0 right-0 bg-amber-500/10 border-b border-l border-amber-500/30 px-3 sm:px-4 py-1 sm:py-1.5 font-mono text-[11px] sm:text-xs text-amber-300 tracking-wider sm:tracking-widest uppercase flex items-center gap-1.5">
             <Lock className="w-3.5 h-3.5 text-amber-400" />
             {t.featureTag}
           </div>
 
           <div className="space-y-2.5 sm:space-y-4 w-full pt-7 sm:pt-3">
-            <span className="font-mono text-[10px] sm:text-xs md:text-sm tracking-[0.2em] text-neutral-400 uppercase block">
+            <span className="font-mono text-xs sm:text-xs md:text-sm tracking-[0.2em] text-neutral-400 uppercase block">
               {t.howItWorksTitle}
             </span>
-            <h2 className="font-editorial text-xl sm:text-3xl md:text-4xl text-white font-normal leading-tight">
+            <h2 className="font-editorial text-2xl sm:text-3xl md:text-4xl text-white font-normal leading-tight">
               {t.howItWorksHeading}
             </h2>
-            <p className="font-editorial text-xs sm:text-lg md:text-xl text-neutral-300 leading-relaxed pt-1">
+            <p className="font-editorial text-sm sm:text-lg md:text-xl text-neutral-300 leading-relaxed pt-1">
               {t.howItWorksDesc(redditUser)}
             </p>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-5 font-mono text-xs pt-3 sm:pt-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-5 font-mono pt-3 sm:pt-4">
               {t.features.map((f, i) => (
-                <div key={i} className="border border-neutral-800 p-3.5 sm:p-5 bg-neutral-950 space-y-1.5 sm:space-y-2">
-                  <span className="text-white text-[11px] sm:text-sm md:text-[15px] font-semibold block">{f.title}</span>
-                  <p className="text-neutral-300 text-[10px] sm:text-xs md:text-sm font-light leading-relaxed">
+                <div key={i} className="border border-neutral-800 p-4 sm:p-5 bg-neutral-950 space-y-1.5 sm:space-y-2">
+                  <span className="text-white text-xs sm:text-sm md:text-[15px] font-semibold block">{f.title}</span>
+                  <p className="text-neutral-300 text-xs sm:text-xs md:text-sm font-light leading-relaxed">
                     {f.desc}
                   </p>
                 </div>
@@ -512,13 +512,13 @@ export function App() {
       {/* Pricing Section */}
       <section id="pricing" className="px-4 sm:px-12 py-12 sm:py-20 max-w-5xl mx-auto space-y-8 sm:space-y-12 text-center">
         <div className="space-y-2 sm:space-y-3">
-          <span className="font-mono text-[11px] sm:text-xs md:text-sm tracking-[0.25em] text-neutral-400 uppercase">
+          <span className="font-mono text-xs sm:text-xs md:text-sm tracking-[0.25em] text-neutral-400 uppercase">
             {t.pricingTag}
           </span>
-          <h2 className="font-editorial text-2xl sm:text-5xl md:text-6xl text-white font-normal">
+          <h2 className="font-editorial text-3xl sm:text-5xl md:text-6xl text-white font-normal">
             {t.pricingHeading}
           </h2>
-          <p className="font-editorial text-xs sm:text-base md:text-lg text-neutral-300 max-w-lg mx-auto">
+          <p className="font-editorial text-sm sm:text-base md:text-lg text-neutral-300 max-w-lg mx-auto">
             {t.pricingDesc}
           </p>
         </div>
@@ -529,10 +529,10 @@ export function App() {
           <div className="border border-neutral-800 bg-[#080808] p-5 sm:p-8 space-y-6 flex flex-col justify-between">
             <div className="space-y-4 sm:space-y-5">
               <div className="flex justify-between items-center">
-                <span className="font-mono text-[11px] sm:text-sm tracking-widest text-neutral-300 uppercase font-medium">
+                <span className="font-mono text-xs sm:text-sm tracking-widest text-neutral-300 uppercase font-medium">
                   {t.plan1.name}
                 </span>
-                <span className="font-mono text-[9px] sm:text-xs tracking-widest border border-neutral-800 px-2.5 py-0.5 text-neutral-300">
+                <span className="font-mono text-[10px] sm:text-xs tracking-widest border border-neutral-800 px-2.5 py-0.5 text-neutral-300">
                   {t.plan1.badge}
                 </span>
               </div>
@@ -541,15 +541,15 @@ export function App() {
                   <span>{t.plan1.price}</span>
                   <span className="text-sm sm:text-base md:text-lg font-mono text-neutral-400 font-light">{t.plan1.period}</span>
                 </div>
-                <span className="font-mono text-[10px] sm:text-xs md:text-sm text-neutral-400 tracking-wider">
+                <span className="font-mono text-xs sm:text-xs md:text-sm text-neutral-400 tracking-wider">
                   {t.plan1.userNote(redditUser)}
                 </span>
               </div>
 
-              <div className="border-t border-neutral-800 pt-4 sm:pt-5 space-y-2.5 sm:space-y-3.5 font-mono text-[11px] sm:text-sm md:text-[15px] text-neutral-200">
+              <div className="border-t border-neutral-800 pt-4 sm:pt-5 space-y-2.5 sm:space-y-3.5 font-mono text-xs sm:text-sm md:text-[15px] text-neutral-200">
                 {t.plan1.perks.map((perk, i) => (
                   <div key={i} className="flex items-center gap-2.5">
-                    <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 text-white shrink-0" />
                     <span>{perk}</span>
                   </div>
                 ))}
@@ -559,7 +559,7 @@ export function App() {
             <button
               onClick={() => handleCheckout("10_questions")}
               disabled={isRedirecting}
-              className="w-full h-11 sm:h-13 bg-white text-black hover:bg-neutral-200 font-mono text-[11px] sm:text-sm font-bold tracking-widest uppercase transition-colors cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50 mt-4"
+              className="w-full h-12 sm:h-13 bg-white text-black hover:bg-neutral-200 font-mono text-xs sm:text-sm font-bold tracking-widest uppercase transition-colors cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50 mt-4"
             >
               <span>
                 {loadingPlan === "10_questions"
@@ -571,16 +571,16 @@ export function App() {
 
           {/* Plano 2: 30 Perguntas */}
           <div className="border-2 border-white bg-[#0a0a0a] p-5 sm:p-8 space-y-6 flex flex-col justify-between relative">
-            <div className="absolute -top-3 right-4 sm:right-6 bg-white text-black font-mono text-[8px] sm:text-[11px] font-bold tracking-[0.15em] sm:tracking-[0.2em] uppercase px-2.5 sm:px-3.5 py-0.5">
+            <div className="absolute -top-3 right-4 sm:right-6 bg-white text-black font-mono text-[9px] sm:text-[11px] font-bold tracking-[0.15em] sm:tracking-[0.2em] uppercase px-2.5 sm:px-3.5 py-0.5">
               {t.plan2.popularTag}
             </div>
 
             <div className="space-y-4 sm:space-y-5">
               <div className="flex justify-between items-center">
-                <span className="font-mono text-[11px] sm:text-sm tracking-widest text-amber-300 uppercase font-semibold">
+                <span className="font-mono text-xs sm:text-sm tracking-widest text-amber-300 uppercase font-semibold">
                   {t.plan2.name}
                 </span>
-                <span className="font-mono text-[9px] sm:text-xs tracking-widest border border-white px-2.5 py-0.5 text-white">
+                <span className="font-mono text-[10px] sm:text-xs tracking-widest border border-white px-2.5 py-0.5 text-white">
                   {t.plan2.badge}
                 </span>
               </div>
@@ -589,15 +589,15 @@ export function App() {
                   <span>{t.plan2.price}</span>
                   <span className="text-sm sm:text-base md:text-lg font-mono text-neutral-300 capitalize font-light">{t.plan2.period}</span>
                 </div>
-                <span className="font-mono text-[10px] sm:text-xs md:text-sm text-neutral-300 tracking-wider">
+                <span className="font-mono text-xs sm:text-xs md:text-sm text-neutral-300 tracking-wider">
                   {t.plan2.subText}
                 </span>
               </div>
 
-              <div className="border-t border-neutral-800 pt-4 sm:pt-5 space-y-2.5 sm:space-y-3.5 font-mono text-[11px] sm:text-sm md:text-[15px] text-neutral-100">
+              <div className="border-t border-neutral-800 pt-4 sm:pt-5 space-y-2.5 sm:space-y-3.5 font-mono text-xs sm:text-sm md:text-[15px] text-neutral-100">
                 {t.plan2.perks.map((perk, i) => (
                   <div key={i} className="flex items-center gap-2.5">
-                    <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400 shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 text-amber-400 shrink-0" />
                     <span className={i === 0 ? "font-semibold text-white" : ""}>{perk}</span>
                   </div>
                 ))}
@@ -607,7 +607,7 @@ export function App() {
             <button
               onClick={() => handleCheckout("30_questions")}
               disabled={isRedirecting}
-              className="w-full h-11 sm:h-13 bg-white text-black hover:bg-neutral-200 active:bg-neutral-300 font-mono text-[11px] sm:text-sm font-bold tracking-widest uppercase transition-colors cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50 mt-4"
+              className="w-full h-12 sm:h-13 bg-white text-black hover:bg-neutral-200 active:bg-neutral-300 font-mono text-xs sm:text-sm font-bold tracking-widest uppercase transition-colors cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50 mt-4"
             >
               <span>
                 {loadingPlan === "30_questions"
@@ -636,7 +636,7 @@ export function App() {
           <span>•</span>
           <span>{t.footerSync}</span>
         </div>
-        <div className="text-[10px] sm:text-xs md:text-sm text-neutral-500">
+        <div className="text-[11px] sm:text-xs md:text-sm text-neutral-500">
           {t.footerCopyright}
         </div>
       </footer>
