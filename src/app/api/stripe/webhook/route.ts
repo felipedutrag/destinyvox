@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getStripe } from "@/lib/stripe";
 import { getSupabaseAdmin } from "@/lib/supabase";
+import { sendTelegramPaymentAlert } from "@/lib/telegram";
 import Stripe from "stripe";
 
 /**
@@ -245,6 +246,20 @@ export async function POST(req: NextRequest) {
           plan,
           customerId,
           subscriptionId,
+        });
+
+        const amountTotal = (session.amount_total ?? 0) / 100;
+        const currency = (session.currency ?? "usd").toUpperCase();
+        const customerEmail = session.customer_details?.email ?? null;
+
+        await sendTelegramPaymentAlert({
+          redditUsername: username,
+          plan,
+          credits,
+          amount: amountTotal,
+          currency,
+          paymentId,
+          customerEmail,
         });
         break;
       }
