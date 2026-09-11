@@ -63,6 +63,13 @@ async function fulfillPayment(params: {
   customerId?: string;
   subscriptionId?: string;
 }) {
+  console.log("[webhook] 🚀 Executando fulfillPayment no Supabase:", {
+    paymentId: params.paymentId,
+    redditUsername: params.redditUsername,
+    credits: params.credits,
+    plan: params.plan,
+  });
+
   const { data, error } = await getSupabaseAdmin().rpc("process_stripe_payment", {
     p_payment_id: params.paymentId,
     p_reddit_username: params.redditUsername,
@@ -73,20 +80,27 @@ async function fulfillPayment(params: {
   });
 
   if (error) {
-    console.warn(
-      "[webhook] RPC process_stripe_payment failed, calling add_user_credits directly:",
+    console.error(
+      "[webhook] ⚠️ RPC process_stripe_payment retornou erro:",
       error
     );
-    await getSupabaseAdmin().rpc("add_user_credits", {
+    console.log("[webhook] Tentando fallback com add_user_credits direto...");
+    const { error: directError } = await getSupabaseAdmin().rpc("add_user_credits", {
       p_reddit_username: params.redditUsername,
       p_credits: params.credits,
       p_plan: params.plan,
       p_stripe_customer_id: params.customerId || null,
       p_stripe_subscription_id: params.subscriptionId || null,
     });
+    if (directError) {
+      console.error("[webhook] ❌ Fallback direto também falhou:", directError);
+      throw directError;
+    } else {
+      console.log("[webhook]  Fallback direto funcionou com sucesso!");
+    }
   } else {
     console.log(
-      `[webhook] Processed payment ${params.paymentId} for u/${params.redditUsername}:`,
+      `[webhook]  Sucesso! Pagamento ${params.paymentId} processado para u/${params.redditUsername}:`,
       data
     );
   }
@@ -98,6 +112,7 @@ async function updateVipStatus(params: {
   stripeCustomerId?: string;
   status: boolean;
 }) {
+  console.log("[webhook] Atualizando status de assinatura:", params);
   let query = getSupabaseAdmin().from("vip_users").update({
     status: params.status,
     updated_at: new Date().toISOString(),
@@ -108,32 +123,38 @@ async function updateVipStatus(params: {
   } else if (params.stripeCustomerId) {
     query = query.eq("stripe_customer_id", params.stripeCustomerId);
   } else {
-    console.warn("[webhook] updateVipStatus called without an identifier");
+    console.warn("[webhook] ⚠️ updateVipStatus chamado sem identificador");
     return;
   }
 
   const { error } = await query;
   if (error) {
-    console.error("[webhook] Supabase update error:", error);
+    console.error("[webhook] ❌ Erro ao atualizar status no Supabase:", error);
     throw error;
   }
 }
 
 export async function POST(req: NextRequest) {
+  console.log("\n[webhook] ==================== NOVO EVENTO RECEBIDO ====================");
+
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
   if (!webhookSecret) {
-    console.error("[webhook] STRIPE_WEBHOOK_SECRET not configured");
+    console.error("[webhook] ❌ STRIPE_WEBHOOK_SECRET NÃO CONFIGURADO nas variáveis de ambiente da Vercel!");
     return NextResponse.json(
       { error: "Webhook secret not configured" },
       { status: 500 }
     );
   }
 
+  const maskedSecret = webhookSecret.slice(0, 8) + "..." + webhookSecret.slice(-4);
+  console.log(`[webhook] Usando STRIPE_WEBHOOK_SECRET: ${maskedSecret}`);
+
   // Read the raw body buffer — required for signature verification
   const body = await req.text();
   const signature = req.headers.get("stripe-signature");
 
   if (!signature) {
+    console.error("[webhook] ❌ Header 'stripe-signature' ausente na requisição!");
     return NextResponse.json(
       { error: "Missing stripe-signature header" },
       { status: 400 }
@@ -145,27 +166,34 @@ export async function POST(req: NextRequest) {
     event = getStripe().webhooks.constructEvent(body, signature, webhookSecret);
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
-    console.error("[webhook] Signature verification failed:", message);
+    console.error("[webhook] ❌ FALHA NA VERIFICAÇÃO DA ASSINATURA STRIPE:", message);
+    console.error("[webhook] DICA: Verifique se o Signing Secret no Stripe Dashboard começa com whsec_ e bate com a Vercel.");
     return NextResponse.json(
       { error: `Webhook signature verification failed: ${message}` },
       { status: 400 }
     );
   }
 
-  console.log(`[webhook] Received event: ${event.type} (${event.id})`);
+  console.log(`[webhook]  Assinatura verificada! Tipo de evento: ${event.type} (ID: ${event.id})`);
 
   try {
     switch (event.type) {
       // ── Checkout Session Completed ───────────────────────────────────────
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
+        console.log("[webhook] Analisando checkout.session.completed:", {
+          id: session.id,
+          payment_status: session.payment_status,
+          client_reference_id: session.client_reference_id,
+          metadata: session.metadata,
+        });
 
         if (
           session.payment_status !== "paid" &&
           session.payment_status !== "no_payment_required"
         ) {
           console.warn(
-            `[webhook] checkout.session.completed skipped: payment_status is '${session.payment_status}'`
+            `[webhook] ⚠️ checkout.session.completed ignorado: payment_status é '${session.payment_status}' (não pago)`
           );
           break;
         }
@@ -177,7 +205,7 @@ export async function POST(req: NextRequest) {
 
         if (!username) {
           console.warn(
-            "[webhook] checkout.session.completed: no Reddit username found",
+            "[webhook] ⚠️ checkout.session.completed: nenhum usuário do Reddit encontrado!",
             { client_reference_id: session.client_reference_id, metadata: session.metadata }
           );
           break;
@@ -216,10 +244,15 @@ export async function POST(req: NextRequest) {
       // ── Payment Intent Succeeded ─────────────────────────────────────────
       case "payment_intent.succeeded": {
         const pi = event.data.object as Stripe.PaymentIntent;
-        const username = parseUsername(null, pi.metadata);
+        console.log("[webhook] Analisando payment_intent.succeeded:", {
+          id: pi.id,
+          amount: pi.amount,
+          metadata: pi.metadata,
+        });
 
+        const username = parseUsername(null, pi.metadata);
         if (!username) {
-          console.log("[webhook] payment_intent.succeeded: no username in metadata, skipping");
+          console.log("[webhook] ℹ️ payment_intent.succeeded sem redditUsername nos metadados, ignorando.");
           break;
         }
 
@@ -244,15 +277,23 @@ export async function POST(req: NextRequest) {
       case "charge.succeeded":
       case "charge.updated": {
         const charge = event.data.object as Stripe.Charge;
+        console.log(`[webhook] Analisando ${event.type}:`, {
+          id: charge.id,
+          paid: charge.paid,
+          status: charge.status,
+          amount: charge.amount,
+          payment_intent: charge.payment_intent,
+          metadata: charge.metadata,
+        });
 
         if (!charge.paid || charge.status !== "succeeded") {
-          console.log(`[webhook] ${event.type} ignored: paid=${charge.paid}, status=${charge.status}`);
+          console.log(`[webhook] ℹ️ ${event.type} ignorado porque não foi pago com sucesso: paid=${charge.paid}, status=${charge.status}`);
           break;
         }
 
         const username = parseUsername(null, charge.metadata);
         if (!username) {
-          console.log(`[webhook] ${event.type}: no username in metadata, skipping`);
+          console.log(`[webhook] ⚠️ ${event.type} ignorado: 'redditUsername' não está presente em metadata:`, charge.metadata);
           break;
         }
 
@@ -287,7 +328,7 @@ export async function POST(req: NextRequest) {
           stripeSubscriptionId: sub.id,
           status,
         });
-        console.log(`[webhook] Subscription ${sub.id} → status=${status}`);
+        console.log(`[webhook] Assinatura ${sub.id} → status=${status}`);
         break;
       }
 
@@ -297,7 +338,7 @@ export async function POST(req: NextRequest) {
           stripeSubscriptionId: sub.id,
           status: false,
         });
-        console.log(`[webhook] Subscription cancelled: ${sub.id} → status=false`);
+        console.log(`[webhook] Assinatura cancelada: ${sub.id} → status=false`);
         break;
       }
 
@@ -311,7 +352,7 @@ export async function POST(req: NextRequest) {
             stripeSubscriptionId: subscriptionId,
             status: true,
           });
-          console.log(`[webhook] Invoice paid: ${subscriptionId} → status=true`);
+          console.log(`[webhook] Fatura paga: ${subscriptionId} → status=true`);
         }
         break;
       }
@@ -326,19 +367,20 @@ export async function POST(req: NextRequest) {
             stripeSubscriptionId: subscriptionId,
             status: false,
           });
-          console.log(`[webhook] Invoice payment failed: ${subscriptionId} → status=false`);
+          console.log(`[webhook] Falha no pagamento da fatura: ${subscriptionId} → status=false`);
         }
         break;
       }
 
       default:
-        console.log(`[webhook] Unhandled event type: ${event.type}`);
+        console.log(`[webhook] ℹ️ Evento não monitorado ignorado: ${event.type}`);
     }
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
-    console.error("[webhook] Handler error:", message);
+    console.error("[webhook] ❌ Erro interno no handler do evento:", message);
     return NextResponse.json({ error: "Internal handler error" }, { status: 500 });
   }
 
+  console.log("[webhook] ==================== EVENTO FINALIZADO COM SUCESSO ====================\n");
   return NextResponse.json({ received: true });
 }
