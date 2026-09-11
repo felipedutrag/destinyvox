@@ -107,7 +107,7 @@ export async function POST(req: NextRequest) {
             currency: "usd",
             product_data: {
               name: planDetails.name,
-              description: planDetails.description,
+              description: `${planDetails.description} (for u/${cleanUsername})`,
               images: imageUrl,
             },
             unit_amount: planDetails.amount,
@@ -124,6 +124,13 @@ export async function POST(req: NextRequest) {
       platform: "destinyvox_landing",
     };
 
+    const submitMessage =
+      locale === "pt"
+        ? `Conta a receber créditos: u/${cleanUsername}. Seus ${credits} créditos do Oráculo serão vinculados automaticamente a esta conta do Reddit após o pagamento.`
+        : locale === "es"
+        ? `Cuenta a recibir créditos: u/${cleanUsername}. Tus ${credits} créditos del Oráculo se vincularán automáticamente a esta cuenta de Reddit tras el pago.`
+        : `Account to be credited: u/${cleanUsername}. Your ${credits} Oracle credits will be automatically linked to this Reddit account upon payment.`;
+
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
       payment_method_types: ["card"],
       line_items: lineItems,
@@ -132,6 +139,11 @@ export async function POST(req: NextRequest) {
       metadata,
       payment_intent_data: {
         metadata,
+      },
+      custom_text: {
+        submit: {
+          message: submitMessage,
+        },
       },
       locale: stripeLocale,
       success_url: successUrl,
