@@ -9,10 +9,11 @@ let _supabaseAdmin: SupabaseClient | null = null;
  */
 export function getSupabaseAdmin(): SupabaseClient {
   if (!_supabaseAdmin) {
-    const url = process.env.SUPABASE_URL;
+    const rawUrl = process.env.SUPABASE_URL;
     const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    if (!url) throw new Error("SUPABASE_URL environment variable is not set");
+    if (!rawUrl) throw new Error("SUPABASE_URL environment variable is not set");
     if (!key) throw new Error("SUPABASE_SERVICE_ROLE_KEY environment variable is not set");
+    const url = rawUrl.trim().replace(/\/+$/, "");
     _supabaseAdmin = createClient(url, key, {
       auth: {
         autoRefreshToken: false,
