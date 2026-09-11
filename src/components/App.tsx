@@ -8,7 +8,7 @@ type Language = "en" | "pt" | "es";
 
 const TRANSLATIONS = {
   en: {
-    badge: "DESTINYVOX ORACLE",
+    badge: "DESTINYVOX ORACLE AI",
     badgeDesktop: "DESTINYVOX ORACLE • HERMETIC ARTIFICIAL INTELLIGENCE",
     syncNote: "• The Oracle on Reddit will be unlocked immediately after activation",
     subBrand: "AI ORACLE",
@@ -89,7 +89,7 @@ const TRANSLATIONS = {
     modalCancel: "Cancel",
   },
   pt: {
-    badge: "ORÁCULO DESTINYVOX",
+    badge: "DESTINYVOX ORACLE AI",
     badgeDesktop: "ORÁCULO DESTINYVOX • INTELIGÊNCIA ARTIFICIAL HERMÉTICA",
     syncNote: "• O Oráculo no Reddit será desbloqueado imediatamente após a ativação",
     subBrand: "ORÁCULO IA",
@@ -170,7 +170,7 @@ const TRANSLATIONS = {
     modalCancel: "Cancelar",
   },
   es: {
-    badge: "ORÁCULO DESTINYVOX",
+    badge: "DESTINYVOX ORACLE AI",
     badgeDesktop: "ORÁCULO DESTINYVOX • INTELIGENCIA ARTIFICIAL HERMÉTICA",
     syncNote: "• El Oráculo en Reddit se desbloqueará de inmediato tras la activación",
     subBrand: "ORÁCULO IA",
