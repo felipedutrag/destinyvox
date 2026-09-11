@@ -506,14 +506,16 @@ export function App() {
           <span className="hidden sm:inline">{t.badgeDesktop}</span>
         </div>
 
-        <h1 className="font-editorial text-4xl sm:text-6xl md:text-7xl font-normal leading-[1.12] sm:leading-[1.08] tracking-tight text-white sm:max-w-lg md:max-w-xl lg:max-w-2xl mx-auto">
-          {t.heroTitleLine1}{" "}
-          <span className="italic text-neutral-400">{t.heroTitleLine2}</span>
-        </h1>
+        <div className="space-y-6 sm:space-y-3 md:space-y-3.5">
+          <h1 className="font-editorial text-4xl sm:text-6xl md:text-7xl font-normal leading-[1.12] sm:leading-[1.08] tracking-tight text-white sm:max-w-lg md:max-w-xl lg:max-w-2xl mx-auto">
+            {t.heroTitleLine1}{" "}
+            <span className="italic text-neutral-400">{t.heroTitleLine2}</span>
+          </h1>
 
-        <p className="font-mono font-light text-xs sm:text-base md:text-lg lg:text-xl text-neutral-300 max-w-2xl sm:max-w-3xl md:max-w-4xl mx-auto leading-relaxed">
-          {t.heroDescription}
-        </p>
+          <p className="font-mono font-light text-xs sm:text-base md:text-lg lg:text-xl text-neutral-300 max-w-2xl sm:max-w-3xl md:max-w-4xl mx-auto leading-relaxed">
+            {t.heroDescription}
+          </p>
+        </div>
 
         {/* Dynamic CTA */}
         <div className="pt-2 sm:pt-4 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
