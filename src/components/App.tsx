@@ -319,7 +319,7 @@ export function App() {
         body: JSON.stringify({
           plan,
           redditUsername: clean,
-          locale: lang,
+          locale: "en",
         }),
       });
 

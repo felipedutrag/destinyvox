@@ -61,9 +61,13 @@ export async function POST(req: NextRequest) {
     const successUrl =
       "https://www.reddit.com/r/DestinyVox/?session_id={CHECKOUT_SESSION_ID}&status=success";
 
-    // Map UI locale to Stripe supported locale
-    const stripeLocale: Stripe.Checkout.SessionCreateParams.Locale =
-      locale === "pt" ? "pt-BR" : locale === "es" ? "es" : "en";
+    // Checkout strictly in English
+    const stripeLocale: Stripe.Checkout.SessionCreateParams.Locale = "en";
+
+    // Determine product image URL for Stripe checkout (must be valid HTTPS URL)
+    const imageUrl = origin.startsWith("https://")
+      ? [`${origin}/icon.png`]
+      : ["https://destinyvox.vercel.app/icon.png"];
 
     // Check if custom Price IDs are configured in environment variables
     const priceId =
@@ -81,18 +85,18 @@ export async function POST(req: NextRequest) {
         },
       ];
     } else {
-      // Dynamic price details: $9 for 10 questions, $19 for 30 questions
+      // Dynamic price details: $9 for 10 questions, $19 for 30 questions (100% English)
       const planDetails = {
         "10_questions": {
-          name: "DestinyVox Oracle — 10 Perguntas / Questions",
+          name: "DestinyVox Oracle — 10 Consultations",
           description:
-            "Pacote com 10 consultas completas com o Oráculo DestinyVox no Reddit",
+            "10 inquiries with the DestinyVox AI Oracle unlocked on Reddit",
           amount: 900, // $9.00 USD
         },
         "30_questions": {
-          name: "DestinyVox Oracle — 30 Perguntas / Questions",
+          name: "DestinyVox Oracle — 30 Consultations (VIP)",
           description:
-            "Pacote com 30 consultas completas com o Oráculo DestinyVox no Reddit",
+            "30 in-depth consultations with priority Hermetic reasoning & VIP Initiate badge",
           amount: 1900, // $19.00 USD
         },
       }[normalizedPlan];
@@ -104,6 +108,7 @@ export async function POST(req: NextRequest) {
             product_data: {
               name: planDetails.name,
               description: planDetails.description,
+              images: imageUrl,
             },
             unit_amount: planDetails.amount,
           },
