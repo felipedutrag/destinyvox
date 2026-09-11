@@ -111,6 +111,10 @@ async function main() {
   console.log('🚀 Executando git commit...');
   execSync(`git commit -m "${commitMessage.replace(/"/g, '\\"')}"`, { stdio: 'inherit' });
   console.log('✅ Commit realizado com sucesso!');
+
+  console.log('📡 Enviando alterações para o repositório remoto (git push)...');
+  execSync('git push', { stdio: 'inherit' });
+  console.log('🎉 Push concluído com sucesso!');
 }
 
 main().catch((err) => {
