@@ -460,11 +460,11 @@ export function App() {
         </div>
 
         <h1 className="font-editorial text-4xl sm:text-6xl md:text-7xl font-normal leading-[1.12] sm:leading-[1.08] tracking-tight text-white">
-          {t.heroTitleLine1} <br />
+          {t.heroTitleLine1}{" "}
           <span className="italic text-neutral-400">{t.heroTitleLine2}</span>
         </h1>
 
-        <p className="font-mono font-light text-sm sm:text-base md:text-lg lg:text-xl text-neutral-300 max-w-2xl sm:max-w-3xl md:max-w-4xl mx-auto leading-relaxed">
+        <p className="font-mono font-light text-xs sm:text-base md:text-lg lg:text-xl text-neutral-300 max-w-2xl sm:max-w-3xl md:max-w-4xl mx-auto leading-relaxed">
           {t.heroDescription}
         </p>
 
