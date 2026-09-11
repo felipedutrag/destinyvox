@@ -99,10 +99,17 @@ async function fulfillPayment(params: {
       console.log("[webhook]  Fallback direto funcionou com sucesso!");
     }
   } else {
-    console.log(
-      `[webhook]  Sucesso! Pagamento ${params.paymentId} processado para u/${params.redditUsername}:`,
-      data
-    );
+    const result = data as { already_processed?: boolean; message?: string } | null;
+    if (result?.already_processed) {
+      console.log(
+        `[webhook] ℹ️ Pagamento ${params.paymentId} já havia sido processado anteriormente. Ignorando para evitar duplicidade.`
+      );
+    } else {
+      console.log(
+        `[webhook] ✅ Sucesso! Pagamento ${params.paymentId} processado (+${params.credits} créditos) para u/${params.redditUsername}:`,
+        data
+      );
+    }
   }
 }
 
@@ -215,6 +222,7 @@ export async function POST(req: NextRequest) {
         const plan =
           session.metadata?.plan ?? (credits === 30 ? "30_questions" : "10_questions");
 
+        // Preferir o payment_intent se existir, senão usa session.id
         const paymentId =
           (typeof session.payment_intent === "string"
             ? session.payment_intent
@@ -243,79 +251,18 @@ export async function POST(req: NextRequest) {
 
       // ── Payment Intent Succeeded ─────────────────────────────────────────
       case "payment_intent.succeeded": {
-        const pi = event.data.object as Stripe.PaymentIntent;
-        console.log("[webhook] Analisando payment_intent.succeeded:", {
-          id: pi.id,
-          amount: pi.amount,
-          metadata: pi.metadata,
-        });
-
-        const username = parseUsername(null, pi.metadata);
-        if (!username) {
-          console.log("[webhook] ℹ️ payment_intent.succeeded sem redditUsername nos metadados, ignorando.");
-          break;
-        }
-
-        const credits = parseCredits(pi.metadata, pi.amount);
-        const plan =
-          pi.metadata?.plan ?? (credits === 30 ? "30_questions" : "10_questions");
-
-        const customerId =
-          typeof pi.customer === "string" ? pi.customer : pi.customer?.id ?? "";
-
-        await fulfillPayment({
-          paymentId: pi.id,
-          redditUsername: username,
-          credits,
-          plan,
-          customerId,
-        });
+        // checkout.session.completed é o evento canônico para compras via checkout.
+        // O payment_intent.succeeded é disparado simultaneamente para a mesma transação.
+        // Se o checkout já processou (ou vai processar), ignoramos aqui para evitar duplicidade.
+        console.log("[webhook] ℹ️ payment_intent.succeeded recebido (gerenciado via checkout.session.completed)");
         break;
       }
 
       // ── Charge Succeeded / Updated ───────────────────────────────────────
       case "charge.succeeded":
       case "charge.updated": {
-        const charge = event.data.object as Stripe.Charge;
-        console.log(`[webhook] Analisando ${event.type}:`, {
-          id: charge.id,
-          paid: charge.paid,
-          status: charge.status,
-          amount: charge.amount,
-          payment_intent: charge.payment_intent,
-          metadata: charge.metadata,
-        });
-
-        if (!charge.paid || charge.status !== "succeeded") {
-          console.log(`[webhook] ℹ️ ${event.type} ignorado porque não foi pago com sucesso: paid=${charge.paid}, status=${charge.status}`);
-          break;
-        }
-
-        const username = parseUsername(null, charge.metadata);
-        if (!username) {
-          console.log(`[webhook] ⚠️ ${event.type} ignorado: 'redditUsername' não está presente em metadata:`, charge.metadata);
-          break;
-        }
-
-        const credits = parseCredits(charge.metadata, charge.amount);
-        const plan =
-          charge.metadata?.plan ?? (credits === 30 ? "30_questions" : "10_questions");
-
-        const paymentId =
-          (typeof charge.payment_intent === "string"
-            ? charge.payment_intent
-            : charge.payment_intent?.id) || charge.id;
-
-        const customerId =
-          typeof charge.customer === "string" ? charge.customer : charge.customer?.id ?? "";
-
-        await fulfillPayment({
-          paymentId,
-          redditUsername: username,
-          credits,
-          plan,
-          customerId,
-        });
+        // Charge events são filhos de PaymentIntent/Checkout. Ignorados para prevenir duplicidade de créditos.
+        console.log(`[webhook] ℹ️ ${event.type} recebido (gerenciado via checkout.session.completed)`);
         break;
       }
 
