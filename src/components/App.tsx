@@ -459,7 +459,7 @@ export function App() {
           <span className="hidden sm:inline">{t.badgeDesktop}</span>
         </div>
 
-        <h1 className="font-editorial text-4xl sm:text-6xl md:text-7xl font-normal leading-[1.12] sm:leading-[1.08] tracking-tight text-white sm:max-w-xl md:max-w-2xl lg:max-w-3xl mx-auto">
+        <h1 className="font-editorial text-4xl sm:text-6xl md:text-7xl font-normal leading-[1.12] sm:leading-[1.08] tracking-tight text-white sm:max-w-lg md:max-w-xl lg:max-w-2xl mx-auto">
           {t.heroTitleLine1}{" "}
           <span className="italic text-neutral-400">{t.heroTitleLine2}</span>
         </h1>
