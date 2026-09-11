@@ -457,7 +457,7 @@ export function App() {
           <span className="italic text-neutral-400">{t.heroTitleLine2}</span>
         </h1>
 
-        <p className="font-editorial text-base sm:text-xl md:text-2xl text-neutral-300 max-w-2xl mx-auto font-light leading-relaxed">
+        <p className="font-editorial text-base sm:text-xl md:text-2xl text-neutral-300 max-w-2xl sm:max-w-3xl md:max-w-4xl mx-auto font-light leading-relaxed">
           {t.heroDescription}
         </p>
 
