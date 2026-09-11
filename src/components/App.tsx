@@ -252,44 +252,10 @@ const TRANSLATIONS = {
 };
 
 export function App() {
-  const [lang, setLang] = useState<Language>(() => {
-    if (typeof window !== "undefined") {
-      try {
-        const params = new URLSearchParams(window.location.search);
-        const l = params.get("lang")?.toLowerCase() || sessionStorage.getItem("destinyvox_landing_lang");
-        if (l === "pt" || l === "es" || l === "en") return l as Language;
-      } catch {
-        // ignore
-      }
-    }
-    return "en";
-  });
-
-  const [redditUser, setRedditUser] = useState<string>(() => {
-    if (typeof window !== "undefined") {
-      try {
-        const params = new URLSearchParams(window.location.search);
-        const u = params.get("u") || params.get("user") || params.get("reddit_user") || sessionStorage.getItem("destinyvox_landing_user") || "";
-        if (u) return u.replace(/^u\//i, "").trim();
-      } catch {
-        // ignore
-      }
-    }
-    return "";
-  });
-
-  const [userToken] = useState<string>(() => {
-    if (typeof window !== "undefined") {
-      try {
-        const params = new URLSearchParams(window.location.search);
-        const tok = params.get("ref") || params.get("token") || sessionStorage.getItem("destinyvox_landing_ref") || "";
-        if (tok) return tok.trim();
-      } catch {
-        // ignore
-      }
-    }
-    return "";
-  });
+  const [lang, setLang] = useState<Language>("en");
+  const [redditUser, setRedditUser] = useState<string>("");
+  const [userToken, setUserToken] = useState<string>("");
+  const [isMounted, setIsMounted] = useState<boolean>(false);
 
   type PlanKey = "10_questions" | "30_questions";
 
@@ -301,6 +267,28 @@ export function App() {
   const [modalInput, setModalInput] = useState<string>("");
 
   useEffect(() => {
+    setIsMounted(true);
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const l = params.get("lang")?.toLowerCase() || sessionStorage.getItem("destinyvox_landing_lang");
+      if (l === "pt" || l === "es" || l === "en") {
+        setLang(l as Language);
+      }
+      const u = params.get("u") || params.get("user") || params.get("reddit_user") || sessionStorage.getItem("destinyvox_landing_user") || "";
+      if (u) {
+        setRedditUser(u.replace(/^u\//i, "").trim());
+      }
+      const tok = params.get("ref") || params.get("token") || sessionStorage.getItem("destinyvox_landing_ref") || "";
+      if (tok) {
+        setUserToken(tok.trim());
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isMounted) return;
     if (redditUser) {
       sessionStorage.setItem("destinyvox_landing_user", redditUser);
     }
@@ -310,7 +298,7 @@ export function App() {
     if (lang) {
       sessionStorage.setItem("destinyvox_landing_lang", lang);
     }
-  }, [redditUser, userToken, lang]);
+  }, [redditUser, userToken, lang, isMounted]);
 
   const t = TRANSLATIONS[lang];
 
@@ -380,23 +368,23 @@ export function App() {
       {/* Modal Username */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
-          <div className="bg-[#0a0a0a] border border-neutral-800 p-6 sm:p-8 w-full max-w-sm space-y-6">
+          <div className="bg-[#0a0a0a] border border-neutral-800 p-6 sm:p-8 w-full max-w-md space-y-6">
             <div className="flex justify-between items-center">
-              <h3 className="font-mono text-sm tracking-widest text-white uppercase">{t.modalTitle}</h3>
-              <button onClick={() => setIsModalOpen(false)} className="text-neutral-500 hover:text-white"><X className="w-5 h-5"/></button>
+              <h3 className="font-mono text-sm sm:text-base tracking-widest text-white uppercase">{t.modalTitle}</h3>
+              <button onClick={() => setIsModalOpen(false)} className="text-neutral-500 hover:text-white cursor-pointer"><X className="w-5 h-5"/></button>
             </div>
-            <p className="font-editorial text-neutral-400 text-sm">{t.modalDesc}</p>
+            <p className="font-editorial text-neutral-400 text-sm sm:text-base">{t.modalDesc}</p>
             <input
               type="text"
               autoFocus
               placeholder={t.modalPlaceholder}
               value={modalInput}
               onChange={(e) => setModalInput(e.target.value)}
-              className="w-full bg-neutral-950 border border-neutral-800 p-3 text-white font-mono text-sm focus:outline-none focus:border-white"
+              className="w-full bg-neutral-950 border border-neutral-800 p-3 text-white font-mono text-sm sm:text-base focus:outline-none focus:border-white"
             />
             <button
               onClick={handleConfirmModalUser}
-              className="w-full bg-white text-black py-3 font-mono text-xs font-bold tracking-widest uppercase hover:bg-neutral-200"
+              className="w-full bg-white text-black py-3 font-mono text-xs sm:text-sm font-bold tracking-widest uppercase hover:bg-neutral-200 cursor-pointer"
             >
               {t.modalButton}
             </button>
@@ -407,36 +395,36 @@ export function App() {
       {/* Top Banner Reddit Recognition */}
       {redditUser && (
         <div className="bg-[#111111] border-b border-neutral-800 py-2.5 px-4 text-center">
-          <div className="max-w-4xl mx-auto flex items-center justify-center gap-2 font-mono text-[11px] tracking-wider text-neutral-300">
+          <div className="max-w-4xl mx-auto flex items-center justify-center gap-2 font-mono text-[11px] sm:text-xs tracking-wider text-neutral-300">
             <span className="text-amber-400">✦</span>
             <span className="text-white font-bold bg-neutral-900 border border-neutral-700 px-2 py-0.5">
               u/{redditUser}
             </span>
-            <span className="hidden sm:inline text-neutral-500">{t.syncNote}</span>
+            <span className="hidden sm:inline text-neutral-400">{t.syncNote}</span>
           </div>
         </div>
       )}
 
       {/* Navigation Header */}
-      <header className="border-b border-neutral-900 px-6 sm:px-12 py-4 flex items-center justify-between max-w-7xl mx-auto">
+      <header className="border-b border-neutral-900 px-6 sm:px-12 py-4 sm:py-5 flex items-center justify-between max-w-7xl mx-auto">
         <div className="flex items-center gap-3">
-          <span className="text-white text-base">✦</span>
-          <span className="font-mono text-sm tracking-[0.3em] font-semibold text-white uppercase">
+          <span className="text-white text-base sm:text-lg">✦</span>
+          <span className="font-mono text-sm sm:text-base tracking-[0.3em] font-semibold text-white uppercase">
             DESTINYVOX
           </span>
-          <span className="font-mono text-[9px] tracking-widest text-neutral-500 uppercase border border-neutral-800 px-2 py-0.5 hidden sm:inline-block">
+          <span className="font-mono text-[9px] sm:text-[11px] tracking-widest text-neutral-400 uppercase border border-neutral-800 px-2.5 py-0.5 hidden sm:inline-block">
             {t.subBrand}
           </span>
         </div>
 
-        <div className="flex items-center gap-5 font-mono text-xs">
+        <div className="flex items-center gap-5 font-mono text-xs sm:text-sm">
           {/* Language Switcher */}
-          <div className="flex items-center gap-1.5 border border-neutral-800 px-2 py-1 bg-neutral-950">
+          <div className="flex items-center gap-1.5 border border-neutral-800 px-2.5 py-1 bg-neutral-950">
             {(["en", "pt", "es"] as const).map((l) => (
               <button
                 key={l}
                 onClick={() => setLang(l)}
-                className={`px-1.5 py-0.5 text-[10px] tracking-wider uppercase transition-colors cursor-pointer ${
+                className={`px-1.5 py-0.5 text-[10px] sm:text-xs tracking-wider uppercase transition-colors cursor-pointer ${
                   lang === l
                     ? "text-white font-bold border-b border-white"
                     : "text-neutral-500 hover:text-neutral-300"
@@ -449,7 +437,7 @@ export function App() {
 
           <a
             href="#pricing"
-            className="hidden sm:inline-block bg-white text-black hover:bg-neutral-200 px-4 py-2 font-semibold tracking-widest uppercase transition-colors"
+            className="hidden sm:inline-block bg-white text-black hover:bg-neutral-200 px-5 py-2.5 font-semibold tracking-widest uppercase transition-colors text-xs sm:text-sm"
           >
             {t.navCta}
           </a>
@@ -458,8 +446,8 @@ export function App() {
 
       {/* Hero Section Editorial */}
       <section className="px-5 sm:px-12 pt-12 sm:pt-20 pb-12 sm:pb-16 max-w-5xl mx-auto text-center space-y-6 sm:space-y-8">
-        <div className="inline-flex items-center gap-2 border border-neutral-800 bg-neutral-950/80 px-3 py-1 font-mono text-[9px] sm:text-[10px] tracking-[0.2em] sm:tracking-[0.25em] text-neutral-400 uppercase">
-          <Sparkles className="w-3 h-3 text-amber-400 shrink-0" />
+        <div className="inline-flex items-center gap-2 border border-neutral-800 bg-neutral-950/80 px-3.5 py-1.5 font-mono text-[9px] sm:text-xs tracking-[0.2em] sm:tracking-[0.25em] text-neutral-300 uppercase">
+          <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" />
           <span className="sm:hidden">{t.badge}</span>
           <span className="hidden sm:inline">{t.badgeDesktop}</span>
         </div>
@@ -469,7 +457,7 @@ export function App() {
           <span className="italic text-neutral-400">{t.heroTitleLine2}</span>
         </h1>
 
-        <p className="font-editorial text-sm sm:text-xl text-neutral-400 max-w-2xl mx-auto font-light leading-relaxed">
+        <p className="font-editorial text-sm sm:text-xl md:text-2xl text-neutral-300 max-w-2xl mx-auto font-light leading-relaxed">
           {t.heroDescription}
         </p>
 
@@ -477,12 +465,12 @@ export function App() {
         <div className="pt-2 sm:pt-4 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
           <a
             href="#pricing"
-            className="w-full sm:w-auto h-12 sm:h-14 px-6 sm:px-8 bg-white text-black hover:bg-neutral-200 font-mono text-[11px] sm:text-xs font-bold tracking-[0.2em] sm:tracking-[0.25em] uppercase transition-all flex items-center justify-center gap-3 shadow-2xl"
+            className="w-full sm:w-auto h-12 sm:h-14 px-6 sm:px-9 bg-white text-black hover:bg-neutral-200 font-mono text-[11px] sm:text-sm font-bold tracking-[0.2em] sm:tracking-[0.25em] uppercase transition-all flex items-center justify-center gap-3 shadow-2xl cursor-pointer"
           >
             <span>{t.ctaMain}</span>
             <ArrowRight className="w-4 h-4" />
           </a>
-          <span className="font-mono text-[10px] sm:text-[11px] text-neutral-500">
+          <span className="font-mono text-[10px] sm:text-xs text-neutral-400">
             {t.ctaSub}
           </span>
         </div>
@@ -491,27 +479,27 @@ export function App() {
       {/* Feature Section */}
       <section className="px-4 sm:px-12 py-8 sm:py-12 max-w-5xl mx-auto">
         <div className="border border-neutral-800 bg-[#080808] p-5 sm:p-10 relative overflow-hidden">
-          <div className="absolute top-0 right-0 bg-amber-500/10 border-b border-l border-amber-500/30 px-3 sm:px-4 py-1 sm:py-1.5 font-mono text-[9px] sm:text-[10px] text-amber-300 tracking-wider sm:tracking-widest uppercase flex items-center gap-1.5">
-            <Lock className="w-3 h-3 text-amber-400" />
+          <div className="absolute top-0 right-0 bg-amber-500/10 border-b border-l border-amber-500/30 px-3 sm:px-4 py-1 sm:py-1.5 font-mono text-[9px] sm:text-xs text-amber-300 tracking-wider sm:tracking-widest uppercase flex items-center gap-1.5">
+            <Lock className="w-3.5 h-3.5 text-amber-400" />
             {t.featureTag}
           </div>
 
-          <div className="space-y-2.5 sm:space-y-3 w-full pt-7 sm:pt-3">
-            <span className="font-mono text-[10px] sm:text-xs tracking-[0.2em] text-neutral-500 uppercase block">
+          <div className="space-y-2.5 sm:space-y-4 w-full pt-7 sm:pt-3">
+            <span className="font-mono text-[10px] sm:text-xs md:text-sm tracking-[0.2em] text-neutral-400 uppercase block">
               {t.howItWorksTitle}
             </span>
-            <h2 className="font-editorial text-xl sm:text-3xl text-white font-normal leading-tight">
+            <h2 className="font-editorial text-xl sm:text-3xl md:text-4xl text-white font-normal leading-tight">
               {t.howItWorksHeading}
             </h2>
-            <p className="font-editorial text-xs sm:text-base text-neutral-400 leading-relaxed pt-1">
+            <p className="font-editorial text-xs sm:text-lg md:text-xl text-neutral-300 leading-relaxed pt-1">
               {t.howItWorksDesc(redditUser)}
             </p>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 font-mono text-xs pt-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-5 font-mono text-xs pt-3 sm:pt-4">
               {t.features.map((f, i) => (
-                <div key={i} className="border border-neutral-800 p-3.5 sm:p-4 bg-neutral-950 space-y-1.5">
-                  <span className="text-white text-[11px] sm:text-xs font-semibold block">{f.title}</span>
-                  <p className="text-neutral-400 text-[10px] sm:text-[11px] font-light leading-relaxed">
+                <div key={i} className="border border-neutral-800 p-3.5 sm:p-5 bg-neutral-950 space-y-1.5 sm:space-y-2">
+                  <span className="text-white text-[11px] sm:text-sm md:text-[15px] font-semibold block">{f.title}</span>
+                  <p className="text-neutral-300 text-[10px] sm:text-xs md:text-sm font-light leading-relaxed">
                     {f.desc}
                   </p>
                 </div>
@@ -524,13 +512,13 @@ export function App() {
       {/* Pricing Section */}
       <section id="pricing" className="px-4 sm:px-12 py-12 sm:py-20 max-w-5xl mx-auto space-y-8 sm:space-y-12 text-center">
         <div className="space-y-2 sm:space-y-3">
-          <span className="font-mono text-[11px] sm:text-xs tracking-[0.25em] text-neutral-500 uppercase">
+          <span className="font-mono text-[11px] sm:text-xs md:text-sm tracking-[0.25em] text-neutral-400 uppercase">
             {t.pricingTag}
           </span>
-          <h2 className="font-editorial text-2xl sm:text-5xl text-white font-normal">
+          <h2 className="font-editorial text-2xl sm:text-5xl md:text-6xl text-white font-normal">
             {t.pricingHeading}
           </h2>
-          <p className="font-editorial text-xs sm:text-base text-neutral-400 max-w-md mx-auto">
+          <p className="font-editorial text-xs sm:text-base md:text-lg text-neutral-300 max-w-lg mx-auto">
             {t.pricingDesc}
           </p>
         </div>
@@ -539,28 +527,28 @@ export function App() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 max-w-4xl mx-auto text-left">
           {/* Plano 1: Oráculo Essencial */}
           <div className="border border-neutral-800 bg-[#080808] p-5 sm:p-8 space-y-6 flex flex-col justify-between">
-            <div className="space-y-4">
+            <div className="space-y-4 sm:space-y-5">
               <div className="flex justify-between items-center">
-                <span className="font-mono text-[11px] sm:text-xs tracking-widest text-neutral-400 uppercase">
+                <span className="font-mono text-[11px] sm:text-sm tracking-widest text-neutral-300 uppercase font-medium">
                   {t.plan1.name}
                 </span>
-                <span className="font-mono text-[9px] tracking-widest border border-neutral-800 px-2 py-0.5 text-neutral-400">
+                <span className="font-mono text-[9px] sm:text-xs tracking-widest border border-neutral-800 px-2.5 py-0.5 text-neutral-300">
                   {t.plan1.badge}
                 </span>
               </div>
               <div>
                 <div className="font-editorial text-4xl sm:text-5xl md:text-6xl text-white font-normal flex items-baseline gap-2">
                   <span>{t.plan1.price}</span>
-                  <span className="text-sm sm:text-base font-mono text-neutral-500 font-light">{t.plan1.period}</span>
+                  <span className="text-sm sm:text-base md:text-lg font-mono text-neutral-400 font-light">{t.plan1.period}</span>
                 </div>
-                <span className="font-mono text-[10px] text-neutral-500 tracking-wider">
+                <span className="font-mono text-[10px] sm:text-xs md:text-sm text-neutral-400 tracking-wider">
                   {t.plan1.userNote(redditUser)}
                 </span>
               </div>
 
-              <div className="border-t border-neutral-800 pt-4 space-y-2.5 sm:space-y-3 font-mono text-[11px] sm:text-xs text-neutral-300">
+              <div className="border-t border-neutral-800 pt-4 sm:pt-5 space-y-2.5 sm:space-y-3.5 font-mono text-[11px] sm:text-sm md:text-[15px] text-neutral-200">
                 {t.plan1.perks.map((perk, i) => (
-                  <div key={i} className="flex items-center gap-2">
+                  <div key={i} className="flex items-center gap-2.5">
                     <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white shrink-0" />
                     <span>{perk}</span>
                   </div>
@@ -571,7 +559,7 @@ export function App() {
             <button
               onClick={() => handleCheckout("10_questions")}
               disabled={isRedirecting}
-              className="w-full h-11 sm:h-12 bg-white text-black hover:bg-neutral-200 font-mono text-[11px] sm:text-xs font-bold tracking-widest uppercase transition-colors cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
+              className="w-full h-11 sm:h-13 bg-white text-black hover:bg-neutral-200 font-mono text-[11px] sm:text-sm font-bold tracking-widest uppercase transition-colors cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50 mt-4"
             >
               <span>
                 {loadingPlan === "10_questions"
@@ -583,32 +571,32 @@ export function App() {
 
           {/* Plano 2: 30 Perguntas */}
           <div className="border-2 border-white bg-[#0a0a0a] p-5 sm:p-8 space-y-6 flex flex-col justify-between relative">
-            <div className="absolute -top-3 right-4 sm:right-6 bg-white text-black font-mono text-[8px] sm:text-[9px] font-bold tracking-[0.15em] sm:tracking-[0.2em] uppercase px-2.5 sm:px-3 py-0.5">
+            <div className="absolute -top-3 right-4 sm:right-6 bg-white text-black font-mono text-[8px] sm:text-[11px] font-bold tracking-[0.15em] sm:tracking-[0.2em] uppercase px-2.5 sm:px-3.5 py-0.5">
               {t.plan2.popularTag}
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-4 sm:space-y-5">
               <div className="flex justify-between items-center">
-                <span className="font-mono text-[11px] sm:text-xs tracking-widest text-amber-300 uppercase font-semibold">
+                <span className="font-mono text-[11px] sm:text-sm tracking-widest text-amber-300 uppercase font-semibold">
                   {t.plan2.name}
                 </span>
-                <span className="font-mono text-[9px] tracking-widest border border-white px-2 py-0.5 text-white">
+                <span className="font-mono text-[9px] sm:text-xs tracking-widest border border-white px-2.5 py-0.5 text-white">
                   {t.plan2.badge}
                 </span>
               </div>
               <div>
                 <div className="font-editorial text-4xl sm:text-5xl md:text-6xl text-white font-normal flex items-baseline gap-2">
                   <span>{t.plan2.price}</span>
-                  <span className="text-sm sm:text-base font-mono text-neutral-400 capitalize font-light">{t.plan2.period}</span>
+                  <span className="text-sm sm:text-base md:text-lg font-mono text-neutral-300 capitalize font-light">{t.plan2.period}</span>
                 </div>
-                <span className="font-mono text-[10px] text-neutral-400 tracking-wider">
+                <span className="font-mono text-[10px] sm:text-xs md:text-sm text-neutral-300 tracking-wider">
                   {t.plan2.subText}
                 </span>
               </div>
 
-              <div className="border-t border-neutral-800 pt-4 space-y-2.5 sm:space-y-3 font-mono text-[11px] sm:text-xs text-neutral-200">
+              <div className="border-t border-neutral-800 pt-4 sm:pt-5 space-y-2.5 sm:space-y-3.5 font-mono text-[11px] sm:text-sm md:text-[15px] text-neutral-100">
                 {t.plan2.perks.map((perk, i) => (
-                  <div key={i} className="flex items-center gap-2">
+                  <div key={i} className="flex items-center gap-2.5">
                     <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400 shrink-0" />
                     <span className={i === 0 ? "font-semibold text-white" : ""}>{perk}</span>
                   </div>
@@ -619,7 +607,7 @@ export function App() {
             <button
               onClick={() => handleCheckout("30_questions")}
               disabled={isRedirecting}
-              className="w-full h-11 sm:h-12 bg-white text-black hover:bg-neutral-200 active:bg-neutral-300 font-mono text-[11px] sm:text-xs font-bold tracking-widest uppercase transition-colors cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
+              className="w-full h-11 sm:h-13 bg-white text-black hover:bg-neutral-200 active:bg-neutral-300 font-mono text-[11px] sm:text-sm font-bold tracking-widest uppercase transition-colors cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50 mt-4"
             >
               <span>
                 {loadingPlan === "30_questions"
@@ -631,24 +619,24 @@ export function App() {
         </div>
 
         {errorMessage && (
-          <div className="max-w-md mx-auto p-3 bg-red-950/50 border border-red-800 text-red-300 font-mono text-xs text-center">
+          <div className="max-w-md mx-auto p-3 bg-red-950/50 border border-red-800 text-red-300 font-mono text-xs sm:text-sm text-center">
             {errorMessage}
           </div>
         )}
       </section>
 
       {/* Security & Guarantee */}
-      <footer className="border-t border-neutral-900 py-12 px-6 sm:px-12 text-center space-y-4 font-mono text-xs text-neutral-500">
+      <footer className="border-t border-neutral-900 py-12 sm:py-16 px-6 sm:px-12 text-center space-y-4 font-mono text-xs sm:text-sm text-neutral-400">
         <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
           <span className="flex items-center gap-1.5">
-            <Shield className="w-3.5 h-3.5" /> {t.footerStripe}
+            <Shield className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> {t.footerStripe}
           </span>
           <span>•</span>
           <span>{t.footerGuarantee}</span>
           <span>•</span>
           <span>{t.footerSync}</span>
         </div>
-        <div className="text-[10px] text-neutral-600">
+        <div className="text-[10px] sm:text-xs md:text-sm text-neutral-500">
           {t.footerCopyright}
         </div>
       </footer>
