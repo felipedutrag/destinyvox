@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { Sparkles, Shield, ArrowRight, CheckCircle2, Lock, X } from "lucide-react";
+import { Shield, ArrowRight, CheckCircle2, Lock, X } from "lucide-react";
 
 type Language = "en" | "pt" | "es";
 
@@ -454,8 +454,7 @@ export function App() {
 
       {/* Hero Section Editorial */}
       <section className="px-5 sm:px-12 pt-12 sm:pt-20 pb-12 sm:pb-16 max-w-5xl mx-auto text-center space-y-6 sm:space-y-8">
-        <div className="inline-flex items-center gap-2 border border-neutral-800 bg-neutral-950/80 px-3.5 py-1.5 font-mono text-[11px] sm:text-xs tracking-[0.2em] sm:tracking-[0.25em] text-neutral-300 uppercase">
-          <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+        <div className="inline-flex items-center border border-neutral-800 bg-neutral-950/80 px-3.5 py-1.5 font-mono text-[11px] sm:text-xs tracking-[0.2em] sm:tracking-[0.25em] text-neutral-300 uppercase">
           <span className="sm:hidden">{t.badge}</span>
           <span className="hidden sm:inline">{t.badgeDesktop}</span>
         </div>
