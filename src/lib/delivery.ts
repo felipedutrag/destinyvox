@@ -350,14 +350,11 @@ export async function deliverNumerologyMap(params: DeliverMapParams) {
   `;
 
   const fileNameStr = `Mapa_DestinyVox_${customerName.replace(/\s+/g, "_")}.pdf`;
-  const fromEmail =
-    process.env.NODE_ENV === "production"
-      ? "DestinyVox <contato@destinyvox.online>"
-      : "DestinyVox <onboarding@resend.dev>";
+  const fromEmail = process.env.RESEND_FROM_EMAIL || "DestinyVox <contato@destinyvox.online>";
 
   try {
     const resend = getResend();
-    await resend.emails.send({
+    const { data: emailData, error: emailError } = await resend.emails.send({
       from: fromEmail,
       to: customerEmail,
       subject: "Seu Mapa Pitagórico do Destino ✨ — DestinyVox",
@@ -369,7 +366,12 @@ export async function deliverNumerologyMap(params: DeliverMapParams) {
         },
       ],
     });
-    console.log(`[Deliver] ✅ E-mail enviado com sucesso para ${customerEmail}`);
+
+    if (emailError) {
+      console.error("[Deliver] ❌ Erro retornado pela API Resend:", emailError);
+    } else {
+      console.log(`[Deliver] ✅ E-mail enviado com sucesso (ID: ${emailData?.id}) para ${customerEmail}`);
+    }
   } catch (emailErr) {
     console.error("[Deliver] ❌ Erro ao enviar e-mail via Resend:", emailErr);
   }
