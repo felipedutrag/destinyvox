@@ -15,7 +15,7 @@ interface CheckoutRequestBody {
 export async function POST(req: NextRequest) {
   try {
     const body = (await req.json()) as CheckoutRequestBody;
-    const { plan, redditUsername, locale = "en" } = body;
+    const { plan, redditUsername, locale = "pt" } = body;
 
     // Normalize legacy plans if any
     let normalizedPlan: "10_questions" | "30_questions";
@@ -61,8 +61,9 @@ export async function POST(req: NextRequest) {
     const successUrl =
       "https://www.reddit.com/r/DestinyVox/?session_id={CHECKOUT_SESSION_ID}&status=success";
 
-    // Checkout strictly in English
-    const stripeLocale: Stripe.Checkout.SessionCreateParams.Locale = "en";
+    // Checkout locale according to user's selection (defaults to pt-BR)
+    const stripeLocale: Stripe.Checkout.SessionCreateParams.Locale =
+      locale === "pt" ? "pt-BR" : locale === "es" ? "es" : "en";
 
     // Determine product image URL for Stripe checkout (must be valid HTTPS URL)
     const imageUrl = origin.startsWith("https://")
@@ -85,21 +86,46 @@ export async function POST(req: NextRequest) {
         },
       ];
     } else {
-      // Dynamic price details: $9 for 10 questions, $19 for 30 questions (100% English)
+      // Dynamic price details: $9 for 10 questions, $19 for 30 questions
       const planDetails = {
         "10_questions": {
-          name: "DestinyVox Oracle — 10 Consultations",
+          name:
+            locale === "pt"
+              ? "Oráculo DestinyVox — 10 Consultas"
+              : locale === "es"
+              ? "Oráculo DestinyVox — 10 Consultas"
+              : "DestinyVox Oracle — 10 Consultations",
           description:
-            "10 inquiries with the DestinyVox AI Oracle unlocked on Reddit",
+            locale === "pt"
+              ? "10 perguntas com o Oráculo IA DestinyVox desbloqueadas no Reddit"
+              : locale === "es"
+              ? "10 consultas con el Oráculo IA DestinyVox desbloqueadas en Reddit"
+              : "10 inquiries with the DestinyVox AI Oracle unlocked on Reddit",
           amount: 900, // $9.00 USD
         },
         "30_questions": {
-          name: "DestinyVox Oracle — 30 Consultations",
+          name:
+            locale === "pt"
+              ? "Oráculo DestinyVox — 30 Consultas"
+              : locale === "es"
+              ? "Oráculo DestinyVox — 30 Consultas"
+              : "DestinyVox Oracle — 30 Consultations",
           description:
-            "30 in-depth consultations with priority Hermetic reasoning & VIP Initiate badge",
+            locale === "pt"
+              ? "30 consultas profundas com raciocínio hermético prioritário"
+              : locale === "es"
+              ? "30 consultas profundas con razonamiento hermético prioritario"
+              : "30 in-depth consultations with priority Hermetic reasoning & VIP Initiate badge",
           amount: 1900, // $19.00 USD
         },
       }[normalizedPlan];
+
+      const forUserLabel =
+        locale === "pt"
+          ? `para u/${cleanUsername}`
+          : locale === "es"
+          ? `para u/${cleanUsername}`
+          : `for u/${cleanUsername}`;
 
       lineItems = [
         {
@@ -107,7 +133,7 @@ export async function POST(req: NextRequest) {
             currency: "usd",
             product_data: {
               name: planDetails.name,
-              description: `${planDetails.description} (for u/${cleanUsername})`,
+              description: `${planDetails.description} (${forUserLabel})`,
               images: imageUrl,
             },
             unit_amount: planDetails.amount,

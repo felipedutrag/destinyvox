@@ -1,8 +1,19 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
-import { Shield, ArrowRight, CheckCircle2, Lock, X } from "lucide-react";
+import {
+  Shield,
+  ArrowRight,
+  CheckCircle2,
+  Lock,
+  X,
+  Copy,
+  Check,
+  Loader2,
+  QrCode,
+  Sparkles,
+} from "lucide-react";
 
 type Language = "en" | "pt" | "es";
 
@@ -131,9 +142,9 @@ const TRANSLATIONS = {
     plan1: {
       name: "10 PERGUNTAS NO ORÁCULO",
       badge: "10 CRÉDITOS",
-      price: "$9",
-      period: "pagamento único",
-      userNote: (user: string) => `Acesso para u/${user || "você"}`,
+      price: "R$ 19,90",
+      period: "pagamento único via PIX",
+      userNote: (user: string) => `Acesso para ${user ? `u/${user}` : "você"}`,
       perks: [
         "10 consultas completas com o Oráculo IA",
         "Cruzamento direto com seu mapa numerológico",
@@ -142,15 +153,15 @@ const TRANSLATIONS = {
         "Desbloqueio imediato no app do Reddit",
         "Créditos não expiram — use quando desejar",
       ],
-      button: "OBTER 10 PERGUNTAS ⟶",
-      buttonLoading: "CONECTANDO AO STRIPE...",
+      button: "GERAR PIX (R$ 19,90) ⟶",
+      buttonLoading: "GERANDO PIX...",
     },
     plan2: {
       popularTag: "MAIS ESCOLHIDO • 30 CRÉDITOS",
       name: "30 PERGUNTAS NO ORÁCULO",
       badge: "ECONOMIZE 30%",
-      price: "$19",
-      period: "pagamento único",
+      price: "R$ 39,90",
+      period: "pagamento único via PIX",
       subText: "Melhor custo-benefício para respostas profundas",
       perks: [
         "30 consultas completas com o Oráculo IA",
@@ -160,12 +171,12 @@ const TRANSLATIONS = {
         "Desbloqueio imediato no app do Reddit",
         "Créditos não expiram — use quando desejar",
       ],
-      button: "OBTER 30 PERGUNTAS ⟶",
-      buttonLoading: "CONECTANDO AO STRIPE...",
+      button: "GERAR PIX (R$ 39,90) ⟶",
+      buttonLoading: "GERANDO PIX...",
     },
-    footerStripe: "Pagamento Criptografado Stripe",
+    footerStripe: "Pagamento Instantâneo via PIX (GGPIX)",
     footerGuarantee: "Garantia Incondicional de 7 Dias",
-    footerSync: "Sincronização Instantânea com o Reddit",
+    footerSync: "Sincronização Instantânea com o Reddit & Supabase",
     footerCopyright: `DESTINYVOX ORACLE © ${new Date().getFullYear()} — INTELIGÊNCIA CÓSMICA HERMÉTICA.`,
     modalTitle: "CONFIRME SEU USUÁRIO DO REDDIT",
     modalDesc: "Para vincular e desbloquear seu Oráculo imediatamente no aplicativo do Reddit, informe seu usuário:",
@@ -259,7 +270,7 @@ const TRANSLATIONS = {
 };
 
 export function App() {
-  const [lang, setLang] = useState<Language>("en");
+  const [lang, setLang] = useState<Language>("pt");
   const [redditUser, setRedditUser] = useState<string>("");
   const [userToken, setUserToken] = useState<string>("");
   const [isMounted, setIsMounted] = useState<boolean>(false);
@@ -272,6 +283,32 @@ export function App() {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [pendingPlan, setPendingPlan] = useState<PlanKey | null>(null);
   const [modalInput, setModalInput] = useState<string>("");
+
+  // PIX Checkout State (GGPIX)
+  const [isPixModalOpen, setIsPixModalOpen] = useState<boolean>(false);
+  const [pixStep, setPixStep] = useState<"FORM" | "QR_CODE" | "PAID" | "DELIVERED">("FORM");
+  const [pixPlan, setPixPlan] = useState<PlanKey>("10_questions");
+  const [pixForm, setPixForm] = useState({
+    name: "",
+    email: "",
+    birthDate: "",
+  });
+  const [pixLoading, setPixLoading] = useState<boolean>(false);
+  const [pixError, setPixError] = useState<string | null>(null);
+  const [pixData, setPixData] = useState<{
+    transaction_id: string;
+    qr_code_base64: string;
+    pix_copy_paste: string;
+    external_id: string;
+  } | null>(null);
+  const [isCopied, setIsCopied] = useState<boolean>(false);
+  const pollingRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (pollingRef.current) clearInterval(pollingRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     setIsMounted(true);
@@ -325,7 +362,7 @@ export function App() {
         body: JSON.stringify({
           plan,
           redditUsername: clean,
-          locale: "en",
+          locale: lang,
         }),
       });
 
@@ -347,6 +384,14 @@ export function App() {
   };
 
   const handleCheckout = (plan: PlanKey) => {
+    if (lang === "pt") {
+      setPixPlan(plan);
+      setPixStep("FORM");
+      setPixError(null);
+      setIsPixModalOpen(true);
+      return;
+    }
+
     const activeUsername = redditUser || userToken;
     if (activeUsername) {
       proceedToStripe(plan, activeUsername);
@@ -356,6 +401,93 @@ export function App() {
     setPendingPlan(plan);
     setModalInput("");
     setIsModalOpen(true);
+  };
+
+  const startPixPolling = (transactionId: string, externalId: string) => {
+    if (pollingRef.current) clearInterval(pollingRef.current);
+
+    pollingRef.current = setInterval(async () => {
+      try {
+        const res = await fetch(`/api/status?id=${transactionId}`);
+        const data = await res.json();
+
+        if (data.status === "PAID") {
+          if (pollingRef.current) clearInterval(pollingRef.current);
+          setPixStep("PAID");
+
+          // Disparar entrega do mapa e gravação no Supabase
+          try {
+            await fetch("/api/deliver", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                name: pixForm.name.trim(),
+                email: pixForm.email.trim(),
+                birthDate: pixForm.birthDate,
+                transaction_id: transactionId,
+                external_id: externalId,
+              }),
+            });
+            setPixStep("DELIVERED");
+          } catch (deliverErr) {
+            console.error("[PIX] Erro na entrega:", deliverErr);
+            setPixStep("DELIVERED");
+          }
+        }
+      } catch (pollErr) {
+        console.warn("[PIX] Polling status check:", pollErr);
+      }
+    }, 3000);
+  };
+
+  const handleGeneratePix = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!pixForm.name.trim() || !pixForm.email.trim() || !pixForm.birthDate) {
+      setPixError("Por favor, preencha todos os campos obrigatórios.");
+      return;
+    }
+
+    setPixLoading(true);
+    setPixError(null);
+
+    try {
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: pixForm.name.trim(),
+          email: pixForm.email.trim(),
+          birthDate: pixForm.birthDate,
+          plan: pixPlan,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Falha ao gerar cobrança PIX");
+      }
+
+      setPixData({
+        transaction_id: String(data.transaction_id),
+        qr_code_base64: data.qr_code_base64 || "",
+        pix_copy_paste: data.pix_copy_paste || data.qr_code || "",
+        external_id: data.external_id || "",
+      });
+      setPixStep("QR_CODE");
+      startPixPolling(String(data.transaction_id), data.external_id || "");
+    } catch (err) {
+      console.error("[PIX] Erro ao gerar checkout:", err);
+      setPixError(err instanceof Error ? err.message : "Erro ao gerar PIX");
+    } finally {
+      setPixLoading(false);
+    }
+  };
+
+  const copyPixCode = () => {
+    if (!pixData?.pix_copy_paste) return;
+    navigator.clipboard.writeText(pixData.pix_copy_paste);
+    setIsCopied(true);
+    setTimeout(() => setIsCopied(false), 2500);
   };
 
   const handleConfirmModalUser = () => {
@@ -410,6 +542,208 @@ export function App() {
           }}
         />
       </div>
+
+      {/* Modal PIX Checkout (GGPIX - Brasil) */}
+      {isPixModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 overflow-y-auto">
+          <div className="bg-[#0a0a0a] border border-amber-500/30 p-6 sm:p-8 w-full max-w-lg space-y-6 shadow-[0_0_50px_rgba(245,158,11,0.15)] relative">
+            <button
+              onClick={() => {
+                if (pollingRef.current) clearInterval(pollingRef.current);
+                setIsPixModalOpen(false);
+              }}
+              className="absolute top-5 right-5 text-neutral-400 hover:text-white cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {/* Header com Badge */}
+            <div className="space-y-1.5">
+              <div className="inline-flex items-center gap-1.5 border border-amber-500/30 bg-amber-500/10 px-2.5 py-0.5 font-mono text-[10px] text-amber-300 uppercase tracking-widest">
+                <Sparkles className="w-3 h-3 text-amber-400" />
+                DESTINYVOX • PAGAMENTO VIA PIX
+              </div>
+              <h3 className="font-editorial text-2xl sm:text-3xl text-white font-normal">
+                {pixPlan === "30_questions" ? "30 Consultas & Mapa Completo" : "10 Consultas & Mapa Completo"}
+              </h3>
+              <p className="font-mono text-xs text-neutral-400">
+                Valor: <span className="text-white font-bold">{pixPlan === "30_questions" ? "R$ 39,90" : "R$ 19,90"}</span> • Liberação Imediata
+              </p>
+            </div>
+
+            {/* ETAPA 1: FORMULÁRIO DE DADOS */}
+            {pixStep === "FORM" && (
+              <form onSubmit={handleGeneratePix} className="space-y-4">
+                <div className="space-y-1">
+                  <label className="block font-mono text-xs text-neutral-300 uppercase tracking-wider">
+                    Nome Completo (Certidão)
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="ex: João da Silva"
+                    value={pixForm.name}
+                    onChange={(e) => setPixForm({ ...pixForm, name: e.target.value })}
+                    className="w-full bg-neutral-950 border border-neutral-800 p-3 text-white font-mono text-sm focus:outline-none focus:border-amber-400"
+                  />
+                  <span className="font-mono text-[10px] text-neutral-500">Usado para o cálculo exato da sua Gematria e Expressão.</span>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="block font-mono text-xs text-neutral-300 uppercase tracking-wider">
+                    Seu Melhor E-mail
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    placeholder="ex: seuemail@gmail.com"
+                    value={pixForm.email}
+                    onChange={(e) => setPixForm({ ...pixForm, email: e.target.value })}
+                    className="w-full bg-neutral-950 border border-neutral-800 p-3 text-white font-mono text-sm focus:outline-none focus:border-amber-400"
+                  />
+                  <span className="font-mono text-[10px] text-neutral-500">Onde você receberá o dossiê PDF e o acesso ao Oráculo.</span>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="block font-mono text-xs text-neutral-300 uppercase tracking-wider">
+                    Data de Nascimento
+                  </label>
+                  <input
+                    type="date"
+                    required
+                    value={pixForm.birthDate}
+                    onChange={(e) => setPixForm({ ...pixForm, birthDate: e.target.value })}
+                    className="w-full bg-neutral-950 border border-neutral-800 p-3 text-white font-mono text-sm focus:outline-none focus:border-amber-400"
+                  />
+                  <span className="font-mono text-[10px] text-neutral-500">Fundamental para calcular o Caminho de Vida e Ano Pessoal.</span>
+                </div>
+
+                {pixError && (
+                  <div className="p-2.5 bg-red-950/60 border border-red-800 text-red-300 font-mono text-xs">
+                    {pixError}
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={pixLoading}
+                  className="w-full bg-white text-black hover:bg-neutral-200 py-3.5 font-mono text-xs sm:text-sm font-bold tracking-widest uppercase transition-all cursor-pointer flex items-center justify-center gap-2 mt-2 disabled:opacity-50"
+                >
+                  {pixLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      GERANDO PIX...
+                    </>
+                  ) : (
+                    <>
+                      GERAR PAGAMENTO PIX ⟶
+                    </>
+                  )}
+                </button>
+              </form>
+            )}
+
+            {/* ETAPA 2: QR CODE E CÓDIGO COPIA E COLA */}
+            {pixStep === "QR_CODE" && pixData && (
+              <div className="space-y-5 text-center">
+                {/* QR Code Container */}
+                <div className="flex justify-center py-2">
+                  <div className="p-3 bg-white border border-neutral-200 rounded-lg shadow-xl inline-block">
+                    {pixData.qr_code_base64 ? (
+                      <img
+                        src={`data:image/png;base64,${pixData.qr_code_base64}`}
+                        alt="QR Code PIX"
+                        className="w-48 h-48 sm:w-56 sm:h-56 mx-auto object-contain"
+                      />
+                    ) : (
+                      <div className="w-48 h-48 flex items-center justify-center font-mono text-xs text-black">
+                        QR Code Indisponível
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Copia e Cola */}
+                <div className="space-y-2 text-left">
+                  <span className="font-mono text-[11px] text-neutral-400 uppercase tracking-wider block">
+                    Código PIX Copia e Cola:
+                  </span>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      readOnly
+                      value={pixData.pix_copy_paste}
+                      className="flex-1 bg-neutral-950 border border-neutral-800 px-3 py-2 text-xs font-mono text-neutral-300 truncate focus:outline-none"
+                    />
+                    <button
+                      type="button"
+                      onClick={copyPixCode}
+                      className="px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-white font-mono text-xs tracking-wider flex items-center gap-1.5 transition-colors cursor-pointer shrink-0"
+                    >
+                      {isCopied ? (
+                        <>
+                          <Check className="w-3.5 h-3.5 text-green-400" />
+                          <span className="text-green-400 font-bold">COPIADO!</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3.5 h-3.5" />
+                          COPIAR
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Status em tempo real */}
+                <div className="border border-neutral-800 bg-neutral-950/70 p-3.5 flex items-center justify-center gap-3 font-mono text-xs text-neutral-300">
+                  <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse" />
+                  <span>Aguardando confirmação do banco...</span>
+                </div>
+                <p className="font-mono text-[11px] text-neutral-500">
+                  Assim que o pagamento for feito no seu app, seu mapa será ativado automaticamente aqui.
+                </p>
+              </div>
+            )}
+
+            {/* ETAPA 3: PAGAMENTO CONFIRMADO / PROCESSANDO */}
+            {pixStep === "PAID" && (
+              <div className="py-8 text-center space-y-4">
+                <div className="w-14 h-14 bg-green-500/10 border border-green-500/40 rounded-full flex items-center justify-center mx-auto">
+                  <CheckCircle2 className="w-8 h-8 text-green-400" />
+                </div>
+                <h4 className="font-editorial text-2xl text-white">Pagamento Confirmado!</h4>
+                <div className="flex items-center justify-center gap-2 font-mono text-xs text-amber-300">
+                  <Loader2 className="w-4 h-4 animate-spin text-amber-400" />
+                  <span>Calculando suas coordenadas e gerando dossiê cósmico...</span>
+                </div>
+              </div>
+            )}
+
+            {/* ETAPA 4: ENTREGUE COM SUCESSO */}
+            {pixStep === "DELIVERED" && (
+              <div className="py-6 text-center space-y-5">
+                <div className="w-14 h-14 bg-amber-500/10 border border-amber-500/40 rounded-full flex items-center justify-center mx-auto">
+                  <Sparkles className="w-8 h-8 text-amber-400" />
+                </div>
+                <div className="space-y-1">
+                  <h4 className="font-editorial text-2xl text-white">Seu Mapa foi Revelado!</h4>
+                  <p className="font-mono text-xs text-neutral-300 max-w-sm mx-auto leading-relaxed">
+                    O dossiê completo foi gerado, salvo com segurança no banco de dados Supabase e enviado para o e-mail:
+                  </p>
+                  <p className="font-mono text-sm text-amber-300 font-bold">{pixForm.email}</p>
+                </div>
+                <button
+                  onClick={() => setIsPixModalOpen(false)}
+                  className="w-full bg-white text-black py-3 font-mono text-xs font-bold tracking-widest uppercase hover:bg-neutral-200 cursor-pointer"
+                >
+                  CONCLUIR
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Main Content */}
       <div className="relative z-10">
@@ -475,7 +809,7 @@ export function App() {
         <div className="flex items-center gap-3 sm:gap-5 font-mono text-xs sm:text-sm">
           {/* Language Switcher */}
           <div className="flex items-center gap-1 sm:gap-1.5 border border-neutral-800 px-2 sm:px-2.5 py-1 bg-neutral-950">
-            {(["en", "pt", "es"] as const).map((l) => (
+            {(["pt", "en", "es"] as const).map((l) => (
               <button
                 key={l}
                 onClick={() => setLang(l)}
@@ -507,7 +841,7 @@ export function App() {
         </div>
 
         <div className="space-y-6 sm:space-y-3 md:space-y-3.5">
-          <h1 className="font-editorial text-4xl sm:text-6xl md:text-7xl font-normal leading-[1.12] sm:leading-[1.08] tracking-tight text-white sm:max-w-lg md:max-w-xl lg:max-w-2xl mx-auto">
+          <h1 className="font-editorial text-4xl sm:text-6xl md:text-7xl font-normal leading-[1.12] sm:leading-[1.08] tracking-tight text-white sm:max-w-2xl md:max-w-3xl lg:max-w-4xl mx-auto">
             {t.heroTitleLine1}{" "}
             <span className="italic text-neutral-400">{t.heroTitleLine2}</span>
           </h1>
