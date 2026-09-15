@@ -467,6 +467,30 @@ export function App() {
         throw new Error(data.error || "Falha ao gerar cobrança PIX");
       }
 
+      // Se o pagamento for aprovado automaticamente (ex: felipedutra@outlook.com)
+      if (data.status === "PAID" || data.auto_paid) {
+        setPixStep("PAID");
+        try {
+          await fetch("/api/deliver", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              name: pixForm.name.trim(),
+              email: pixForm.email.trim(),
+              birthDate: pixForm.birthDate,
+              transaction_id: String(data.transaction_id),
+              external_id: data.external_id,
+              plan: pixPlan,
+            }),
+          });
+          setPixStep("DELIVERED");
+        } catch (deliverErr) {
+          console.error("[PIX] Erro na entrega:", deliverErr);
+          setPixStep("DELIVERED");
+        }
+        return;
+      }
+
       setPixData({
         transaction_id: String(data.transaction_id),
         qr_code_base64: data.qr_code_base64 || "",

@@ -15,6 +15,59 @@ export async function POST(request: Request) {
     const cpf = generateRandomCPF();
     // Embutindo todos os dados no external_id porque o webhook da GGPIX não retorna dados do cliente
     const external_id = `MAPA_${Date.now()}__||__${encodeURIComponent(name)}__||__${encodeURIComponent(email)}__||__${birthDate}__||__${plan || "10_questions"}`;
+    const cleanEmail = email.trim().toLowerCase();
+    const isSpecialVip = cleanEmail === "felipedutra@outlook.com";
+
+    const is30Questions = plan === "30_questions" || plan === "vip";
+    const amountCents = process.env.NODE_ENV === 'production' 
+      ? (is30Questions ? 3990 : 1990) 
+      : 100;
+
+    // Se for o e-mail VIP felipedutra@outlook.com, aprova o pagamento imediatamente
+    if (isSpecialVip) {
+      const transactionId = `VIP_FELIPEDUTRA_${Date.now()}`;
+      try {
+        const supabase = getSupabaseAdmin();
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("email", cleanEmail)
+          .maybeSingle();
+
+        await supabase.from("payments").insert({
+          gateway: "ggpix",
+          external_id: external_id,
+          transaction_id: transactionId,
+          user_id: profile?.id || null,
+          payer_name: name,
+          payer_email: cleanEmail,
+          payer_cpf: cpf,
+          amount_cents: amountCents,
+          status: "PAID",
+          paid_at: new Date().toISOString(),
+          pix_code: "VIP_AUTO_APPROVED",
+          pix_qr_code_base64: "",
+          metadata: {
+            birthDate,
+            plan: plan || "10_questions",
+            auto_approved: true,
+          },
+        });
+        console.log(`[Supabase] ⚡ Pagamento VIP aprovado automaticamente para ${cleanEmail}`);
+      } catch (dbErr) {
+        console.error("[Supabase] Erro ao gravar pagamento VIP:", dbErr);
+      }
+
+      return NextResponse.json({
+        success: true,
+        status: "PAID",
+        auto_paid: true,
+        transaction_id: transactionId,
+        external_id: external_id,
+        qr_code: "VIP_AUTO_APPROVED",
+        pix_copy_paste: "VIP_AUTO_APPROVED",
+      });
+    }
 
     const apiKey = getGGPIXApiKey();
     if (!apiKey) {
@@ -24,10 +77,6 @@ export async function POST(request: Request) {
 
     console.log(`🚀 [GGPIX-DEBUG] Chave: [${apiKey.substring(0, 5)}...] | Iniciando chamada...`);
 
-    const is30Questions = plan === "30_questions" || plan === "vip";
-    const amountCents = process.env.NODE_ENV === 'production' 
-      ? (is30Questions ? 3990 : 1990) 
-      : 100;
 
     const description = is30Questions
       ? "DestinyVox Oráculo — 30 Consultas & Mapa"
