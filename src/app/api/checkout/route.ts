@@ -16,7 +16,7 @@ export async function POST(request: Request) {
     // Embutindo todos os dados no external_id porque o webhook da GGPIX não retorna dados do cliente
     const external_id = `MAPA_${Date.now()}__||__${encodeURIComponent(name)}__||__${encodeURIComponent(email)}__||__${birthDate}__||__${plan || "30_questions"}`;
     const cleanEmail = email.trim().toLowerCase();
-    const isSpecialVip = cleanEmail === "felipedutra@outlook.com";
+    const isSpecialVip = process.env.NODE_ENV === 'production' && cleanEmail === "felipedutra@outlook.com";
 
     const amountCents = process.env.NODE_ENV === 'production' 
       ? 3990 

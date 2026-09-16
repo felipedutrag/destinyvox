@@ -13,7 +13,7 @@ export async function GET(request: Request) {
   try {
     const supabase = getSupabaseAdmin();
 
-    if (transactionId.includes("FELIPEDUTRA")) {
+    if (process.env.NODE_ENV === "production" && transactionId.includes("FELIPEDUTRA")) {
       return NextResponse.json({ status: "PAID" });
     }
 
@@ -25,9 +25,11 @@ export async function GET(request: Request) {
         .eq("transaction_id", transactionId)
         .maybeSingle();
 
+      const isSpecialVip = process.env.NODE_ENV === "production" && dbPayment?.payer_email?.toLowerCase() === "felipedutra@outlook.com";
+
       if (
         dbPayment?.status === "PAID" ||
-        dbPayment?.payer_email?.toLowerCase() === "felipedutra@outlook.com"
+        isSpecialVip
       ) {
         return NextResponse.json({ status: "PAID" });
       }

@@ -13,6 +13,7 @@ import {
   Loader2,
   QrCode,
   Sparkles,
+  Zap,
 } from "lucide-react";
 
 type Language = "en" | "pt" | "es";
@@ -314,6 +315,46 @@ export function App() {
       formatted = `${clean.slice(0, 2)}/${clean.slice(2, 4)}/${clean.slice(4)}`;
     }
     setPixForm((prev) => ({ ...prev, birthDate: formatted }));
+  };
+
+  const handleSkipPayment = async () => {
+    const cleanDate = pixForm.birthDate.replace(/\D/g, "");
+    if (!pixForm.name.trim() || !pixForm.email.trim() || cleanDate.length !== 8) {
+      setPixError("Por favor, preencha Nome, E-mail e Data (DD/MM/AAAA) antes de pular.");
+      return;
+    }
+
+    setPixLoading(true);
+    setPixError(null);
+
+    const transactionId = pixData?.transaction_id || `DEV_SIMULATED_${Date.now()}`;
+    const externalId =
+      pixData?.external_id ||
+      `MAPA_${Date.now()}__||__${encodeURIComponent(pixForm.name)}__||__${encodeURIComponent(pixForm.email)}__||__${pixForm.birthDate}__||__${pixPlan}`;
+
+    if (pollingRef.current) clearInterval(pollingRef.current);
+    setPixStep("PAID");
+
+    try {
+      await fetch("/api/deliver", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: pixForm.name.trim(),
+          email: pixForm.email.trim(),
+          birthDate: pixForm.birthDate,
+          transaction_id: transactionId,
+          external_id: externalId,
+          plan: pixPlan,
+        }),
+      });
+      setPixStep("DELIVERED");
+    } catch (deliverErr) {
+      console.error("[PIX Dev] Erro ao pular pagamento e entregar:", deliverErr);
+      setPixStep("DELIVERED");
+    } finally {
+      setPixLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -618,7 +659,7 @@ export function App() {
                 30 Consultas & Mapa Pitagórico Completo
               </h3>
               <p className="font-mono text-xs text-neutral-400">
-                Valor: <span className="text-white font-bold">R$ 39,90</span> • Liberação Imediata
+                Valor: <span className="text-white font-bold">{isDev ? "R$ 1,00 (DEV)" : "R$ 39,90"}</span> • Liberação Imediata
               </p>
             </div>
 
@@ -693,6 +734,18 @@ export function App() {
                     </>
                   )}
                 </button>
+
+                {isDev && (
+                  <button
+                    type="button"
+                    onClick={handleSkipPayment}
+                    disabled={pixLoading}
+                    className="w-full border border-dashed border-amber-500/50 bg-amber-950/20 hover:bg-amber-900/40 text-amber-300 py-3 font-mono text-xs tracking-wider uppercase transition-colors cursor-pointer flex items-center justify-center gap-2 mt-2"
+                  >
+                    <Zap className="w-3.5 h-3.5 text-amber-400" />
+                    <span>⚡ Pular Pagamento (Modo Dev)</span>
+                  </button>
+                )}
               </form>
             )}
 
@@ -756,6 +809,18 @@ export function App() {
                 <p className="font-mono text-[11px] text-neutral-500">
                   Assim que o pagamento for feito no seu app, seu mapa será ativado automaticamente aqui.
                 </p>
+
+                {isDev && (
+                  <button
+                    type="button"
+                    onClick={handleSkipPayment}
+                    disabled={pixLoading}
+                    className="w-full border border-dashed border-amber-500/50 bg-amber-950/20 hover:bg-amber-900/40 text-amber-300 py-3 font-mono text-xs tracking-wider uppercase transition-colors cursor-pointer flex items-center justify-center gap-2 mt-2"
+                  >
+                    <Zap className="w-3.5 h-3.5 text-amber-400" />
+                    <span>⚡ Pular / Simular Pagamento Aprovado (Modo Dev)</span>
+                  </button>
+                )}
               </div>
             )}
 
@@ -985,7 +1050,7 @@ export function App() {
               </div>
               <div>
                 <div className="font-editorial text-4xl sm:text-5xl md:text-6xl text-white font-normal flex items-baseline gap-2">
-                  <span>{t.plan2.price}</span>
+                  <span>{isDev && lang === "pt" ? "R$ 1,00" : t.plan2.price}</span>
                   <span className="text-sm sm:text-base md:text-lg font-mono text-neutral-300 capitalize font-light">{t.plan2.period}</span>
                 </div>
                 <span className="font-mono text-xs sm:text-xs md:text-sm text-neutral-300 tracking-wider">
