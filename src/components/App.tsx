@@ -365,14 +365,16 @@ export function App() {
     try {
       const supabase = getSupabaseClient();
       if (realtimeRef.current) {
+        console.log("🧹 [Supabase Realtime] Removendo canal anterior...");
         supabase.removeChannel(realtimeRef.current);
         realtimeRef.current = null;
       }
 
-      console.log(`⚡ [Supabase Realtime] Conectando escuta em tempo real para ${externalId}...`);
+      console.log(`⚡ [Supabase Realtime] Iniciando conexão... Transaction ID: "${transactionId}", External ID: "${externalId}"`);
 
+      const channelName = `payment_tracker_${Date.now()}`;
       const channel = supabase
-        .channel(`payment_realtime_${Date.now()}`)
+        .channel(channelName)
         .on(
           "postgres_changes",
           {
@@ -381,9 +383,18 @@ export function App() {
             table: "payments",
           },
           async (payload) => {
-            console.log("⚡ [Supabase Realtime] Alteração detectada no banco:", payload);
+            console.log("🔔 [Supabase Realtime] Evento recebido no banco:", payload.eventType, payload);
             const newRow = payload.new as { transaction_id?: string; external_id?: string; status?: string } | null;
             const extPrefix = externalId ? externalId.split("__||__")[0] : "";
+
+            console.log("🔍 [Supabase Realtime] Checando linha atualizada:", {
+              status: newRow?.status,
+              row_external_id: newRow?.external_id,
+              target_external_id: externalId,
+              row_transaction_id: newRow?.transaction_id,
+              target_transaction_id: transactionId,
+            });
+
             const isMatch =
               newRow &&
               newRow.status === "PAID" &&
@@ -393,7 +404,7 @@ export function App() {
               );
 
             if (isMatch) {
-              console.log("✅ [Supabase Realtime] Pagamento confirmado pelo Webhook!");
+              console.log("🎉 [Supabase Realtime] MATCH CONFIRMADO! Pagamento aprovado pelo Webhook!");
               if (pollingRef.current) clearInterval(pollingRef.current);
               if (realtimeRef.current) {
                 supabase.removeChannel(realtimeRef.current);
@@ -402,6 +413,7 @@ export function App() {
 
               setPixStep("PAID");
               try {
+                console.log("🚀 [Supabase Realtime] Disparando /api/deliver...");
                 await fetch("/api/deliver", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
@@ -422,13 +434,20 @@ export function App() {
             }
           }
         )
-        .subscribe((status) => {
-          console.log(`[Supabase Realtime] Status do canal: ${status}`);
+        .subscribe((status, err) => {
+          console.log(`📡 [Supabase Realtime] Status da conexão: "${status}"`, err ? `Erro: ${JSON.stringify(err)}` : "");
+          if (status === "SUBSCRIBED") {
+            console.log("🟢 [Supabase Realtime] Canal CONECTADO com sucesso! Escutando tabela public.payments.");
+          } else if (status === "CHANNEL_ERROR") {
+            console.error("🔴 [Supabase Realtime] Erro ao conectar canal. Verifique permissões/publicação no Supabase.", err);
+          } else if (status === "TIMED_OUT") {
+            console.warn("🟡 [Supabase Realtime] Timeout na conexão WebSocket.");
+          }
         });
 
       realtimeRef.current = channel;
     } catch (err) {
-      console.warn("[Supabase Realtime] Falha ao registrar escuta:", err);
+      console.error("[Supabase Realtime] Falha crítica ao registrar escuta:", err);
     }
   };
 
@@ -555,6 +574,11 @@ export function App() {
 
   const startPixPolling = (transactionId: string, externalId: string) => {
     if (pollingRef.current) clearInterval(pollingRef.current);
+
+    if (isDev) {
+      console.log("⏸️ [PIX Polling] Polling desabilitado localmente (aguardando exclusivamente Supabase Realtime).");
+      return;
+    }
 
     console.log(`🚀 [PIX Polling] Polling iniciado para transação ${transactionId}`);
 

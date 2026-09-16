@@ -118,20 +118,45 @@ export async function POST(request: Request) {
 
       // Atualizar status do pagamento para PAID
       try {
-        const updateQuery = supabase
-          .from("payments")
-          .update({
-            status: "PAID",
-            paid_at: payload.paidAt || new Date().toISOString(),
-            amount_cents: amount || undefined,
-            transaction_id: String(transactionId || ""),
-          });
-
+        let updateResult = null;
         if (paymentRecord?.id) {
-          await updateQuery.eq("id", paymentRecord.id);
+          console.log(`[GGPIX Webhook] 📝 Atualizando pagamento por ID: ${paymentRecord.id}`);
+          updateResult = await supabase
+            .from("payments")
+            .update({
+              status: "PAID",
+              paid_at: payload.paidAt || new Date().toISOString(),
+              amount_cents: amount || undefined,
+              transaction_id: String(transactionId || ""),
+            })
+            .eq("id", paymentRecord.id)
+            .select();
         } else if (externalId) {
-          await updateQuery.eq("external_id", externalId);
+          console.log(`[GGPIX Webhook] 📝 Atualizando pagamento por external_id: ${externalId}`);
+          updateResult = await supabase
+            .from("payments")
+            .update({
+              status: "PAID",
+              paid_at: payload.paidAt || new Date().toISOString(),
+              amount_cents: amount || undefined,
+              transaction_id: String(transactionId || ""),
+            })
+            .eq("external_id", externalId)
+            .select();
+        } else if (transactionId) {
+          console.log(`[GGPIX Webhook] 📝 Atualizando pagamento por transaction_id: ${transactionId}`);
+          updateResult = await supabase
+            .from("payments")
+            .update({
+              status: "PAID",
+              paid_at: payload.paidAt || new Date().toISOString(),
+              amount_cents: amount || undefined,
+            })
+            .eq("transaction_id", String(transactionId))
+            .select();
         }
+
+        console.log("[GGPIX Webhook] 📊 Linhas atualizadas no Supabase:", JSON.stringify(updateResult));
       } catch (updErr) {
         console.warn("[GGPIX Webhook] Erro ao atualizar status do pagamento:", updErr);
       }
