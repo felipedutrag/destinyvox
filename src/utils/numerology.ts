@@ -77,17 +77,17 @@ export function parseBirthDate(birthDateStr: string): { day: number; month: numb
       month = parseInt(parts[1] ?? '1', 10);
       day = parseInt(parts[2] ?? '1', 10);
     } else {
-      // MM-DD-YYYY
-      month = parseInt(parts[0] ?? '1', 10);
-      day = parseInt(parts[1] ?? '1', 10);
+      // DD-MM-YYYY (Formato brasileiro)
+      day = parseInt(parts[0] ?? '1', 10);
+      month = parseInt(parts[1] ?? '1', 10);
       year = parseInt(parts[2] ?? '1990', 10);
     }
   } else if (birthDateStr.includes('/')) {
     const parts = birthDateStr.split('/');
     if (parts[2] && parts[2].length === 4) {
-      // MM/DD/YYYY (American standard)
-      month = parseInt(parts[0] ?? '1', 10);
-      day = parseInt(parts[1] ?? '1', 10);
+      // DD/MM/YYYY (Padrão brasileiro: dia/mês/ano)
+      day = parseInt(parts[0] ?? '1', 10);
+      month = parseInt(parts[1] ?? '1', 10);
       year = parseInt(parts[2], 10);
     } else if (parts[0] && parts[0].length === 4) {
       // YYYY/MM/DD
@@ -95,18 +95,18 @@ export function parseBirthDate(birthDateStr: string): { day: number; month: numb
       month = parseInt(parts[1] ?? '1', 10);
       day = parseInt(parts[2] ?? '1', 10);
     } else {
-      month = parseInt(parts[0] ?? '1', 10);
-      day = parseInt(parts[1] ?? '1', 10);
+      day = parseInt(parts[0] ?? '1', 10);
+      month = parseInt(parts[1] ?? '1', 10);
       year = parseInt(parts[2] ?? '1990', 10);
     }
   } else if (digits.length === 8) {
-    // Default digits to MMDDYYYY (American standard)
-    month = parseInt(digits.slice(0, 2), 10);
-    day = parseInt(digits.slice(2, 4), 10);
+    // DDMMYYYY (Padrão brasileiro)
+    day = parseInt(digits.slice(0, 2), 10);
+    month = parseInt(digits.slice(2, 4), 10);
     year = parseInt(digits.slice(4, 8), 10);
   }
 
-  // Fail-safe inteligente: se o primeiro campo for > 12 (ex: 25/07/1995), ajusta automaticamente
+  // Fallback caso alguém passe invertido (mês > 12 e dia <= 12)
   if (month > 12 && day <= 12) {
     const temp = month;
     month = day;
@@ -179,41 +179,7 @@ export function calculatePersonalYear(birthDateStr: string, currentYear = new Da
   const digits = birthDateStr.replace(/[^0-9]/g, '');
   if (!digits || digits.length < 8) return 1;
 
-  let day = 1, month = 1;
-  if (birthDateStr.includes('-')) {
-    const parts = birthDateStr.split('-');
-    if (parts[0] && parts[0].length === 4) {
-      month = parseInt(parts[1] ?? '1', 10);
-      day = parseInt(parts[2] ?? '1', 10);
-    } else {
-      month = parseInt(parts[0] ?? '1', 10);
-      day = parseInt(parts[1] ?? '1', 10);
-    }
-  } else if (birthDateStr.includes('/')) {
-    const parts = birthDateStr.split('/');
-    if (parts[2] && parts[2].length === 4) {
-      // MM/DD/YYYY
-      month = parseInt(parts[0] ?? '1', 10);
-      day = parseInt(parts[1] ?? '1', 10);
-    } else if (parts[0] && parts[0].length === 4) {
-      month = parseInt(parts[1] ?? '1', 10);
-      day = parseInt(parts[2] ?? '1', 10);
-    } else {
-      month = parseInt(parts[0] ?? '1', 10);
-      day = parseInt(parts[1] ?? '1', 10);
-    }
-  } else if (digits.length === 8) {
-    month = parseInt(digits.slice(0, 2), 10);
-    day = parseInt(digits.slice(2, 4), 10);
-  }
-
-  // Fail-safe inteligente: se o primeiro campo for > 12 (ex: 25/07), ajusta automaticamente
-  if (month > 12 && day <= 12) {
-    const temp = month;
-    month = day;
-    day = temp;
-  }
-
+  const { day, month } = parseBirthDate(birthDateStr);
   const sum = reduceStrictSingleDigit(day) + reduceStrictSingleDigit(month) + reduceStrictSingleDigit(currentYear);
   return reduceStrictSingleDigit(sum);
 }

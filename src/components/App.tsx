@@ -285,13 +285,14 @@ export function App() {
   const [modalInput, setModalInput] = useState<string>("");
 
   // PIX Checkout State (GGPIX)
+  const isDev = process.env.NODE_ENV !== "production";
   const [isPixModalOpen, setIsPixModalOpen] = useState<boolean>(false);
   const [pixStep, setPixStep] = useState<"FORM" | "QR_CODE" | "PAID" | "DELIVERED">("FORM");
   const [pixPlan, setPixPlan] = useState<PlanKey>("30_questions");
   const [pixForm, setPixForm] = useState({
-    name: "",
-    email: "",
-    birthDate: "",
+    name: isDev ? "Felipe Dutra Gonçalves" : "",
+    email: isDev ? "felipedutra@outlook.com" : "",
+    birthDate: isDev ? "04/10/1991" : "",
   });
   const [pixLoading, setPixLoading] = useState<boolean>(false);
   const [pixError, setPixError] = useState<string | null>(null);
@@ -304,6 +305,17 @@ export function App() {
   const [isCopied, setIsCopied] = useState<boolean>(false);
   const pollingRef = useRef<NodeJS.Timeout | null>(null);
 
+  const handleDateChange = (val: string) => {
+    const clean = val.replace(/\D/g, "").slice(0, 8);
+    let formatted = clean;
+    if (clean.length > 2 && clean.length <= 4) {
+      formatted = `${clean.slice(0, 2)}/${clean.slice(2)}`;
+    } else if (clean.length > 4) {
+      formatted = `${clean.slice(0, 2)}/${clean.slice(2, 4)}/${clean.slice(4)}`;
+    }
+    setPixForm((prev) => ({ ...prev, birthDate: formatted }));
+  };
+
   useEffect(() => {
     return () => {
       if (pollingRef.current) clearInterval(pollingRef.current);
@@ -312,6 +324,20 @@ export function App() {
 
   useEffect(() => {
     setIsMounted(true);
+    const isLocal =
+      process.env.NODE_ENV !== "production" ||
+      (typeof window !== "undefined" &&
+        (window.location.hostname === "localhost" ||
+          window.location.hostname === "127.0.0.1"));
+
+    if (isLocal) {
+      setPixForm((prev) => ({
+        name: prev.name || "Felipe Dutra Gonçalves",
+        email: prev.email || "felipedutra@outlook.com",
+        birthDate: prev.birthDate || "04/10/1991",
+      }));
+    }
+
     try {
       const params = new URLSearchParams(window.location.search);
       const l = params.get("lang")?.toLowerCase() || sessionStorage.getItem("destinyvox_landing_lang");
@@ -442,8 +468,9 @@ export function App() {
 
   const handleGeneratePix = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!pixForm.name.trim() || !pixForm.email.trim() || !pixForm.birthDate) {
-      setPixError("Por favor, preencha todos os campos obrigatórios.");
+    const dateDigits = pixForm.birthDate.replace(/\D/g, "");
+    if (!pixForm.name.trim() || !pixForm.email.trim() || dateDigits.length !== 8) {
+      setPixError("Por favor, preencha todos os campos (Data de nascimento no formato DD/MM/AAAA).");
       return;
     }
 
@@ -630,16 +657,18 @@ export function App() {
 
                 <div className="space-y-1">
                   <label className="block font-mono text-xs text-neutral-300 uppercase tracking-wider">
-                    Data de Nascimento
+                    Data de Nascimento (DD/MM/AAAA)
                   </label>
                   <input
-                    type="date"
+                    type="text"
                     required
+                    placeholder="ex: 04/10/1991"
+                    maxLength={10}
                     value={pixForm.birthDate}
-                    onChange={(e) => setPixForm({ ...pixForm, birthDate: e.target.value })}
+                    onChange={(e) => handleDateChange(e.target.value)}
                     className="w-full bg-neutral-950 border border-neutral-800 p-3 text-white font-mono text-sm focus:outline-none focus:border-amber-400"
                   />
-                  <span className="font-mono text-[10px] text-neutral-500">Fundamental para calcular o Caminho de Vida e Ano Pessoal.</span>
+                  <span className="font-mono text-[10px] text-neutral-500">Formato brasileiro (DD/MM/AAAA). Fundamental para o Caminho de Vida e Ano Pessoal.</span>
                 </div>
 
                 {pixError && (
