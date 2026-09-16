@@ -6,21 +6,38 @@ import { getGGPIXApiKey } from "@/lib/ggpix";
 
 export async function POST(request: Request) {
   try {
-    const { name, email, birthDate, plan } = await request.json();
+    const { name, email, birthDate, plan, orderBumps } = await request.json();
 
     if (!name || !email || !birthDate) {
       return NextResponse.json({ error: "Dados incompletos" }, { status: 400 });
     }
 
     const cpf = generateRandomCPF();
-    // Embutindo todos os dados no external_id porque o webhook da GGPIX não retorna dados do cliente
-    const external_id = `MAPA_${Date.now()}__||__${encodeURIComponent(name)}__||__${encodeURIComponent(email)}__||__${birthDate}__||__${plan || "30_questions"}`;
     const cleanEmail = email.trim().toLowerCase();
     const isSpecialVip = process.env.NODE_ENV === 'production' && cleanEmail === "felipedutra@outlook.com";
 
+    // Cálculo dinâmico com Order Bumps
+    // Base: R$ 39,90 (3990 cents) | Bump Dívida Kármica: + R$ 14,90 (1490 cents) | Bump Ano Pessoal: + R$ 14,90 (1490 cents)
+    const baseAmountCents = 3990;
+    const karmicDebtCents = orderBumps?.karmicDebt ? 1490 : 0;
+    const personalYearMonthsCents = orderBumps?.personalYearMonths ? 1490 : 0;
+    const calculatedTotalCents = baseAmountCents + karmicDebtCents + personalYearMonthsCents;
+
     const amountCents = process.env.NODE_ENV === 'production' 
-      ? 3990 
+      ? calculatedTotalCents 
       : 100;
+
+    const bumpsTag = `${orderBumps?.karmicDebt ? 'KD1' : 'KD0'}_${orderBumps?.personalYearMonths ? 'PY1' : 'PY0'}`;
+    const external_id = `MAPA_${Date.now()}__||__${encodeURIComponent(name)}__||__${encodeURIComponent(email)}__||__${birthDate}__||__${plan || "mapa_completo"}__||__${bumpsTag}`;
+
+    let description = "DestinyVox — Mapa Pitagórico do Destino (PDF 11 Páginas)";
+    if (orderBumps?.karmicDebt && orderBumps?.personalYearMonths) {
+      description += " + Dívidas Kármicas + Guia 2026 Mês a Mês";
+    } else if (orderBumps?.karmicDebt) {
+      description += " + Dossiê Dívidas Kármicas";
+    } else if (orderBumps?.personalYearMonths) {
+      description += " + Guia 2026 Mês a Mês";
+    }
 
     // Se for o e-mail VIP felipedutra@outlook.com, aprova o pagamento imediatamente
     if (isSpecialVip) {
@@ -48,7 +65,10 @@ export async function POST(request: Request) {
           pix_qr_code_base64: "",
           metadata: {
             birthDate,
-            plan: plan || "30_questions",
+            plan: plan || "mapa_completo",
+            orderBumps: orderBumps || {},
+            karmicDebt: !!orderBumps?.karmicDebt,
+            personalYearMonths: !!orderBumps?.personalYearMonths,
             auto_approved: true,
           },
         });
@@ -75,8 +95,6 @@ export async function POST(request: Request) {
     }
 
     console.log(`🚀 [GGPIX-DEBUG] Chave: [${apiKey.substring(0, 5)}...] | Iniciando chamada...`);
-
-    const description = "DestinyVox Oráculo — 30 Consultas & Mapa Pitagórico Completo";
 
     const appUrl = (process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || "https://destinyvox.online").replace(/\/$/, "");
     const webhookUrl = `${appUrl}/api/webhooks/ggpix`;

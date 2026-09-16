@@ -278,6 +278,7 @@ export async function POST(request: Request) {
       transactionId: body.transaction_id,
       externalId: body.external_id,
       plan: body.plan,
+      orderBumps: body.orderBumps,
     });
 
     return NextResponse.json({

@@ -1,5 +1,4 @@
 import { Resend } from "resend";
-import { GoogleGenAI } from "@google/genai";
 import { renderToBuffer } from "@react-pdf/renderer";
 import React from "react";
 import { NumerologyPDFDocument } from "@/app/api/deliver/PdfTemplate";
@@ -20,30 +19,231 @@ import {
   parseBirthDate,
 } from "@/utils/numerology";
 
+import {
+  LIFE_PATH_INTERPRETATIONS,
+  EXPRESSION_INTERPRETATIONS,
+  SOUL_URGE_INTERPRETATIONS,
+  PERSONALITY_INTERPRETATIONS,
+  SHADOW_INTERPRETATIONS,
+  YEARLY_FORECAST_INTERPRETATIONS,
+  BIRTHDAY_INTERPRETATIONS,
+  MATURITY_INTERPRETATIONS,
+  interpolateFirstName,
+  extractFirstName,
+} from "@/utils/interpretations";
+
+export interface GematriaLetter {
+  char: string;
+  value: number;
+  isVowel: boolean;
+}
+
+export interface GematriaWord {
+  word: string;
+  letters: GematriaLetter[];
+  sum: number;
+  additionString: string;
+  reductionString: string;
+}
+
+export interface NumerologyPillarData {
+  number: number;
+  label: string;
+  archetype: string;
+  element: string;
+  keywords: string;
+  dictum?: string;
+  paragraphs: string[];
+}
+
 export interface NumerologyContent {
-  numeros: {
-    caminho_vida: string;
-    expressao: string;
-    motivacao: string;
-    personalidade: string;
-    ano_pessoal: string;
-    gematria_detalhada: string;
+  profile: {
+    fullName: string;
+    firstName: string;
+    birthDate: string;
   };
-  analise: {
-    introducao: string;
-    tikkun_missao: string;
-    perfil_financeiro: string;
-    sefirot_diagnostico: string;
-    talento_oculto: string;
-    bloqueio_ancestral: string;
-    ciclo_prosperidade: string;
-    profissao_ideal: string;
-    sombra_dinheiro: string;
-    ancora_riqueza: string;
-    intuicao_investimento: string;
-    codigo_abundancia: string;
-    desafio_2026: string;
-    conclusao: string;
+  gematria: {
+    words: GematriaWord[];
+    vowelsSum: number;
+    consonantsSum: number;
+    totalSum: number;
+    soulUrgeNumber: number;
+    personalityNumber: number;
+    expressionNumber: number;
+    dateCalculationString: string;
+    vowelsAdditionString: string;
+    consonantsAdditionString: string;
+    totalAdditionString: string;
+    explanation: string;
+  };
+  pillars: {
+    lifePath: NumerologyPillarData;
+    expression: NumerologyPillarData;
+    soulUrge: NumerologyPillarData;
+    personality: NumerologyPillarData;
+    personalYear: NumerologyPillarData;
+    birthday: NumerologyPillarData;
+    maturity: NumerologyPillarData;
+  };
+  shadow: {
+    number: number;
+    label: string;
+    title: string;
+    paragraphs: string[];
+    transmutation: string[];
+  };
+  activation: {
+    abundanceCode: string;
+    manifestationDecree: string;
+  };
+  orderBumps?: {
+    karmicDebt?: KarmicDebtAnalysis;
+    personalYearMonths?: PersonalYearMonthsAnalysis;
+  };
+}
+
+export interface KarmicDebtItem {
+  number: number;
+  transmutedTo: number;
+  title: string;
+  theme: string;
+  diagnosis: string;
+  symptoms: string;
+  protocol: string;
+}
+
+export interface KarmicDebtAnalysis {
+  active: boolean;
+  identifiedDebts: number[];
+  statusText: string;
+  items: KarmicDebtItem[];
+  manifestationDecree: string;
+}
+
+export interface PersonalMonthItem {
+  monthIndex: number;
+  monthName: string;
+  personalMonthNumber: number;
+  archetype: string;
+  theme: string;
+  guidance: string;
+}
+
+export interface PersonalYearMonthsAnalysis {
+  active: boolean;
+  personalYear: number;
+  yearArchetype: string;
+  months: PersonalMonthItem[];
+  executiveAdvice: string;
+}
+
+
+const PYTHAGOREAN_MAP: Record<string, number> = {
+  a: 1, j: 1, s: 1,
+  b: 2, k: 2, t: 2,
+  c: 3, l: 3, u: 3,
+  d: 4, m: 4, v: 4,
+  e: 5, n: 5, w: 5,
+  f: 6, o: 6, x: 6,
+  g: 7, p: 7, y: 7,
+  h: 8, q: 8, z: 8,
+  i: 9, r: 9,
+};
+const VOWELS_SET = new Set(["a", "e", "i", "o", "u"]);
+
+function calculateGematriaBreakdown(name: string, birthDate: string, soulUrgeNum: number, persNum: number, expNum: number) {
+  const normalizedWords = name.trim().split(/\s+/).filter(Boolean);
+  let vowelsSum = 0;
+  let consonantsSum = 0;
+  let totalSum = 0;
+  const allVowels: GematriaLetter[] = [];
+  const allConsonants: GematriaLetter[] = [];
+
+  const words: GematriaWord[] = normalizedWords.map((word) => {
+    let wordSum = 0;
+    const letters: GematriaLetter[] = [];
+    const normWord = word
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase();
+
+    for (let i = 0; i < normWord.length; i++) {
+      const char = normWord[i];
+      const val = PYTHAGOREAN_MAP[char];
+      if (val !== undefined) {
+        const isVowel = VOWELS_SET.has(char);
+        const letterObj: GematriaLetter = {
+          char: word[i] ? word[i].toUpperCase() : char.toUpperCase(),
+          value: val,
+          isVowel,
+        };
+        letters.push(letterObj);
+        wordSum += val;
+        totalSum += val;
+        if (isVowel) {
+          vowelsSum += val;
+          allVowels.push(letterObj);
+        } else {
+          consonantsSum += val;
+          allConsonants.push(letterObj);
+        }
+      }
+    }
+
+    const additionString = letters.map((l) => `${l.char}(${l.value})`).join(" + ") + (letters.length > 0 ? ` = ${wordSum}` : "");
+    let redWord = wordSum;
+    let reductionString = `${wordSum}`;
+    while (redWord > 9 && redWord !== 11 && redWord !== 22 && redWord !== 33) {
+      const parts = redWord.toString().split("");
+      const next = parts.reduce((acc, d) => acc + parseInt(d, 10), 0);
+      reductionString += ` ➔ ${parts.join(" + ")} = ${next}`;
+      redWord = next;
+    }
+
+    return {
+      word: word.toUpperCase(),
+      letters,
+      sum: wordSum,
+      additionString,
+      reductionString,
+    };
+  });
+
+  // Cálculo da data com +
+  const digits = birthDate.replace(/[^0-9]/g, "");
+  let dateCalculationString = "";
+  if (digits.length >= 8) {
+    const digitSumString = digits.split("").join(" + ");
+    const sumDigits = digits.split("").reduce((acc, d) => acc + parseInt(d, 10), 0);
+    dateCalculationString = `${digitSumString} = ${sumDigits}`;
+    let cur = sumDigits;
+    while (cur > 9 && cur !== 11 && cur !== 22 && cur !== 33) {
+      const parts = cur.toString().split("");
+      const next = parts.reduce((acc, d) => acc + parseInt(d, 10), 0);
+      dateCalculationString += ` ➔ ${parts.join(" + ")} = ${next}`;
+      cur = next;
+    }
+  }
+
+  const vowelsAdditionString = allVowels.length > 0
+    ? allVowels.map((l) => `${l.char}(${l.value})`).join(" + ") + ` = ${vowelsSum} ➔ ${soulUrgeNum}`
+    : `Total: ${vowelsSum} ➔ ${soulUrgeNum}`;
+
+  const consonantsAdditionString = allConsonants.length > 0
+    ? allConsonants.map((l) => `${l.char}(${l.value})`).join(" + ") + ` = ${consonantsSum} ➔ ${persNum}`
+    : `Total: ${consonantsSum} ➔ ${persNum}`;
+
+  const totalAdditionString = `Vogais (${soulUrgeNum}) + Consoantes (${persNum}) = ${soulUrgeNum + persNum} ➔ ${expNum}`;
+
+  return {
+    words,
+    vowelsSum,
+    consonantsSum,
+    totalSum,
+    dateCalculationString,
+    vowelsAdditionString,
+    consonantsAdditionString,
+    totalAdditionString,
   };
 }
 
@@ -53,112 +253,256 @@ const getResend = () => {
   return new Resend(key);
 };
 
-const getGemini = () => {
-  const key = process.env.GEMINI_API_KEY;
-  if (!key) throw new Error("GEMINI_API_KEY não configurada");
-  return new GoogleGenAI({ apiKey: key });
-};
-
-export async function generateNumerologyContent(name: string, birthDate: string): Promise<NumerologyContent> {
+export async function generateNumerologyContent(
+  name: string,
+  birthDate: string,
+  orderBumpsOption?: { karmicDebt?: boolean; personalYearMonths?: boolean }
+): Promise<NumerologyContent> {
+  const firstName = extractFirstName(name);
   const lifePath = calculateLifePath(birthDate);
   const expression = calculateExpression(name);
   const soulUrge = calculateSoulUrge(name);
   const personality = calculatePersonality(name);
+  const birthday = calculateBirthday(birthDate);
+  const maturity = calculateMaturity(lifePath, expression);
   const personalYear = calculatePersonalYear(birthDate, 2026);
 
-  const prompt = `
-    Você é o ARCHITECTUS SUPREMO da Numerologia Pitagórica e Análise Numérica Hermética.
-    Sua missão é gerar um RELATÓRIO TÉCNICO DE ENGENHARIA ESPIRITUAL (Mapa Pitagórico do Destino) para:
-    Nome: ${name}
-    Data de Nascimento: ${birthDate}
+  const lpArchetype = getArchetype(lifePath, "pt");
+  const expArchetype = getArchetype(expression, "pt");
+  const suArchetype = getArchetype(soulUrge, "pt");
+  const persArchetype = getArchetype(personality, "pt");
+  const yearArchetype = getArchetype(personalYear, "pt");
+  const bdayArchetype = getArchetype(birthday, "pt");
+  const matArchetype = getArchetype(maturity, "pt");
 
-    ESTE NÃO É UM HORÓSCOPO. É UM DOSSIÊ DE DADOS VIBRACIONAIS.
-    OS CÁLCULOS MATEMÁTICOS JÁ FORAM FEITOS COM PRECISÃO ABSOLUTA. USE ESTES NÚMEROS:
-    - Caminho de Vida (Destino): ${lifePath}
-    - Expressão (Nome Completo): ${expression}
-    - Motivação (Alma): ${soulUrge}
-    - Personalidade (Imagem): ${personality}
-    - Ano Pessoal (2026): ${personalYear}
+  const gematria = calculateGematriaBreakdown(name, birthDate, soulUrge, personality, expression);
 
-    INSTRUÇÕES DE CONTEÚDO (CRÍTICAS):
-    1. EXTENSÃO EXTREMA: Cada seção da "analise" DEVE ser um ensaio profundo (800-1200 palavras por item).
-    2. ESTÉTICA TÉCNICA: Use termos como "Matriz Vibracional", "Algoritmo Kármico", "Frequência de Ressonância", "Protocolo de Retificação".
-    3. TIKKUN: Explique o conceito de Tikkun (correção da alma) e missão evolutiva e como ele afeta a prosperidade de ${name}.
-    4. SEFIROT: Analise a estrutura vibracional e arquétipos baseados nos números pitagóricos fornecidos.
-    5. GEMATRIA DETALHADA: Decomponha o nome ${name} em seus valores numéricos e mostre a soma absoluta.
-    6. TOM: Sombrio, autoritário, revelador e extremamente preciso.
+  const getParagraphs = (raw: string | undefined): string[] => {
+    if (!raw) return [];
+    return interpolateFirstName(raw, name)
+      .split("\n\n")
+      .map((p) => p.trim())
+      .filter(Boolean);
+  };
 
-    Retorne EXATAMENTE no seguinte formato JSON (sem markdown em volta do JSON se possível, ou dentro de bloco json):
+  const lpParagraphs = getParagraphs(LIFE_PATH_INTERPRETATIONS.pt[lifePath] || LIFE_PATH_INTERPRETATIONS.pt[1]);
+  const expParagraphs = getParagraphs(EXPRESSION_INTERPRETATIONS.pt[expression] || EXPRESSION_INTERPRETATIONS.pt[1]);
+  const suParagraphs = getParagraphs(SOUL_URGE_INTERPRETATIONS.pt[soulUrge] || SOUL_URGE_INTERPRETATIONS.pt[1]);
+  const persParagraphs = getParagraphs(PERSONALITY_INTERPRETATIONS.pt[personality] || PERSONALITY_INTERPRETATIONS.pt[1]);
+  const yearParagraphs = getParagraphs(YEARLY_FORECAST_INTERPRETATIONS.pt[personalYear] || YEARLY_FORECAST_INTERPRETATIONS.pt[1]);
+  const bdayParagraphs = getParagraphs(BIRTHDAY_INTERPRETATIONS.pt[birthday] || BIRTHDAY_INTERPRETATIONS.pt[1]);
+  const matParagraphs = getParagraphs(MATURITY_INTERPRETATIONS.pt[maturity] || MATURITY_INTERPRETATIONS.pt[1]);
+
+  const shadowRaw = SHADOW_INTERPRETATIONS.pt[lifePath] || SHADOW_INTERPRETATIONS.pt[1] || "";
+  const shadowAll = getParagraphs(shadowRaw);
+  const shadowParagraphs = shadowAll.slice(0, 4);
+  const shadowTransmutation = shadowAll.slice(4);
+
+  return {
+    profile: {
+      fullName: name,
+      firstName,
+      birthDate,
+    },
+    gematria: {
+      words: gematria.words,
+      vowelsSum: gematria.vowelsSum,
+      consonantsSum: gematria.consonantsSum,
+      totalSum: gematria.totalSum,
+      soulUrgeNumber: soulUrge,
+      personalityNumber: personality,
+      expressionNumber: expression,
+      dateCalculationString: gematria.dateCalculationString,
+      vowelsAdditionString: gematria.vowelsAdditionString,
+      consonantsAdditionString: gematria.consonantsAdditionString,
+      totalAdditionString: gematria.totalAdditionString,
+      explanation: `A assinatura vibracional de ${name} decomposta segundo a tábua de Pitágoras revela a dinâmica de ${gematria.totalSum} pontos de energia materializada.`,
+    },
+    pillars: {
+      lifePath: {
+        number: lifePath,
+        label: "Caminho de Vida (Destino Central)",
+        archetype: lpArchetype.title,
+        element: lpArchetype.element,
+        keywords: lpArchetype.keyword,
+        dictum: getSoulDictum(lifePath, "pt"),
+        paragraphs: lpParagraphs,
+      },
+      expression: {
+        number: expression,
+        label: "Expressão (Marca no Mundo)",
+        archetype: expArchetype.title,
+        element: expArchetype.element,
+        keywords: expArchetype.keyword,
+        dictum: getSoulDictum(expression, "pt"),
+        paragraphs: expParagraphs,
+      },
+      soulUrge: {
+        number: soulUrge,
+        label: "Desejo da Alma (Motivação Interior)",
+        archetype: suArchetype.title,
+        element: suArchetype.element,
+        keywords: suArchetype.keyword,
+        dictum: getSoulDictum(soulUrge, "pt"),
+        paragraphs: suParagraphs,
+      },
+      personality: {
+        number: personality,
+        label: "Personalidade Exterior (Filtro Social)",
+        archetype: persArchetype.title,
+        element: persArchetype.element,
+        keywords: persArchetype.keyword,
+        dictum: getSoulDictum(personality, "pt"),
+        paragraphs: persParagraphs,
+      },
+      personalYear: {
+        number: personalYear,
+        label: "Ano Pessoal Atual (2026)",
+        archetype: yearArchetype.title,
+        element: yearArchetype.element,
+        keywords: yearArchetype.keyword,
+        dictum: getSoulDictum(personalYear, "pt"),
+        paragraphs: yearParagraphs,
+      },
+      birthday: {
+        number: birthday,
+        label: "Dom Congênito (Dia de Nascimento)",
+        archetype: bdayArchetype.title,
+        element: bdayArchetype.element,
+        keywords: bdayArchetype.keyword,
+        paragraphs: bdayParagraphs,
+      },
+      maturity: {
+        number: maturity,
+        label: "Missão da Maturidade (35+ Anos)",
+        archetype: matArchetype.title,
+        element: matArchetype.element,
+        keywords: matArchetype.keyword,
+        paragraphs: matParagraphs,
+      },
+    },
+    shadow: {
+      number: lifePath,
+      label: "Desafio & Alquimia Kármica",
+      title: `A Sombra do ${lpArchetype.title}`,
+      paragraphs: shadowParagraphs,
+      transmutation: shadowTransmutation,
+    },
+    activation: {
+      abundanceCode: `${lifePath} • ${expression} • ${soulUrge} — 2026`,
+      manifestationDecree: "Eu reconheço a soberania da minha matriz vibracional. Alinho meus pensamentos à frequência da ordem universal e ativo o fluxo inesgotável de sabedoria, prosperidade e propósito. Os códigos do meu destino estão abertos.",
+    },
+    orderBumps: {
+      karmicDebt: orderBumpsOption?.karmicDebt
+        ? generateKarmicDebtData(name, birthDate, lifePath, expression, soulUrge)
+        : undefined,
+      personalYearMonths: orderBumpsOption?.personalYearMonths
+        ? generatePersonalYearMonthsData(personalYear)
+        : undefined,
+    },
+  };
+}
+
+function generateKarmicDebtData(name: string, birthDate: string, lifePath: number, expression: number, soulUrge: number): KarmicDebtAnalysis {
+  const { day } = parseBirthDate(birthDate);
+  const identifiedDebts: number[] = [];
+  if ([13, 14, 16, 19].includes(day)) identifiedDebts.push(day);
+
+  const items: KarmicDebtItem[] = [
     {
-      "numeros": {
-        "caminho_vida": "${lifePath}",
-        "expressao": "${expression}",
-        "motivacao": "${soulUrge}",
-        "personalidade": "${personality}",
-        "ano_pessoal": "${personalYear}",
-        "gematria_detalhada": "Decomposição exata de cada letra de ${name}..."
-      },
-      "analise": {
-        "introducao": "Texto denso de abertura...",
-        "tikkun_missao": "Ensaio sobre a correção e propósito...",
-        "perfil_financeiro": "Análise matemática do fluxo financeiro...",
-        "sefirot_diagnostico": "Equilíbrio vibracional...",
-        "talento_oculto": "Habilidade reprimida de gerar riqueza...",
-        "bloqueio_ancestral": "Padrão herdado limitante...",
-        "ciclo_prosperidade": "Mapeamento dos 9 anos...",
-        "profissao_ideal": "Vocações de altíssimo impacto...",
-        "sombra_dinheiro": "Comportamentos sabotadores...",
-        "ancora_riqueza": "Elemento prático de estabilização...",
-        "intuicao_investimento": "Critérios para tomada de risco...",
-        "codigo_abundancia": "Ex: 777-888-333 (Frequência numérica pessoal)",
-        "desafio_2026": "Ação concreta para o Ano Pessoal ${personalYear}...",
-        "conclusao": "Decreto final de ativação..."
-      }
+      number: 13,
+      transmutedTo: 4,
+      title: "Dívida Kármica 13 — O Trabalho e a Matéria",
+      theme: "Transmutação do Esforço em Realização Sólida",
+      diagnosis: "Em encarnações anteriores houve negligência de deveres essenciais, busca por atalhos fáceis, preguiça ou sobrecarga de terceiros para benefício próprio.",
+      symptoms: "Sensação persistente de ter que trabalhar o dobro para colher o mesmo que os outros; obstáculos repetitivos e sensação de recomeçar do zero.",
+      protocol: "Cultive ordem impecável, lealdade aos processos e perseverança ética. Cada esforço deliberado sem revolta dissolve o débito e ancora abundância inabalável.",
+    },
+    {
+      number: 14,
+      transmutedTo: 5,
+      title: "Dívida Kármica 14 — A Liberdade e a Temperança",
+      theme: "Autodomínio dos Sentidos e Moderação Consciente",
+      diagnosis: "Registros ancestrais de excessos sensoriais, vícios, desperdício irresponsável da força vital ou privação da liberdade de terceiros.",
+      symptoms: "Montanha-russa financeira e emocional, mudanças abruptas e perdas inesperadas sempre que o indivíduo se perde em impulsividade.",
+      protocol: "Abrace a virtude sagrada da Temperança. Mantenha compromissos firmes a longo prazo e canalize sua sede de aventura em evolução da consciência.",
+    },
+    {
+      number: 16,
+      transmutedTo: 7,
+      title: "Dívida Kármica 16 — A Queda da Torre e o Despertar",
+      theme: "Destruição do Orgulho Egóico e Iluminação da Alma",
+      diagnosis: "Memórias de soberba intelectual, quebra de pactos afetivos sagrados ou manipulação da confiança alheia em vidas passadas.",
+      symptoms: "Colapsos repentinos de projetos erguidos sobre a vaidade pessoal; desilusões amorosas dramáticas destinadas a despir o ego de suas ilusões.",
+      protocol: "Humildade incondicional e dedicação aos valores eternos do espírito. Ao aceitar que o divino governa o universo, você renasce invulnerável.",
+    },
+    {
+      number: 19,
+      transmutedTo: 1,
+      title: "Dívida Kármica 19 — O Poder e a Soberania Compassiva",
+      theme: "Liderança Justa e Superação do Isolamento",
+      diagnosis: "Uso tirânico de autoridade, enriquecimento à custa dos vulneráveis ou recusa em estender a mão aos semelhantes.",
+      symptoms: "Sensação de solidão existencial, extrema dificuldade em pedir ajuda e sensação de que ninguém o apoia nas horas difíceis.",
+      protocol: "Pratique liderança generosa e escuta empática. Use sua força e inteligência para elevar seus liderados. O perdão mútuo extingue este ciclo.",
+    },
+  ];
+
+  const hasDebt = identifiedDebts.length > 0;
+  const statusText = hasDebt
+    ? `Identificamos a incidência direta da Dívida Kármica ${identifiedDebts.join(", ")} no seu dia de nascimento (${day}). Seu protocolo de retificação prioritário deve focar nesta coordenada.`
+    : `Sua matriz primária não apresenta dívidas diretas nos pilares fundamentais. Este dossiê atua como protocolo hermético preventivo e de purificação de memórias ancestrais.`;
+
+  return {
+    active: true,
+    identifiedDebts,
+    statusText,
+    items,
+    manifestationDecree: "Eu revogo, transmuto e dissolvo todo contrato arcaico de escassez, orgulho ou negligência. Assumo a maestria da minha consciência no aqui e agora. Todas as minhas dívidas com o cosmos estão declaradas quitadas em luz, amor e verdade.",
+  };
+}
+
+const MONTH_NAMES = [
+  "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+  "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+];
+
+const MONTH_THEMES: Record<number, { theme: string; guidance: string; archetype: string }> = {
+  1: { archetype: "O Pioneiro", theme: "Início e Liderança", guidance: "Excelente para lançar novos projetos, abrir empresas, tomar decisões autônomas e assinar novos contratos." },
+  2: { archetype: "O Mediador", theme: "Parcerias e Paciência", guidance: "Momento de cultivar alianças estratégicas, negociar acordos com diplomacia e evitar confrontos precipitados." },
+  3: { archetype: "O Comunicador", theme: "Expansão e Visibilidade", guidance: "Foco total em marketing, vendas, networking e projeção social. Evite dispersão de recursos." },
+  4: { archetype: "O Construtor", theme: "Trabalho e Estruturação", guidance: "Mês de colocar ordem na casa, auditoria financeira, cortar despesas supérfluas e firmar alicerces." },
+  5: { archetype: "O Explorador", theme: "Mudança e Movimento", guidance: "Janela aberta para viagens, pivots de carreira, flexibilidade e adaptação rápida a imprevistos." },
+  6: { archetype: "O Harmonizador", theme: "Equipe e Responsabilidade", guidance: "Priorize a harmonia familiar e a lealdade da sua equipe. Bom momento para investimentos imobiliários." },
+  7: { archetype: "O Buscador", theme: "Introspecção e Análise", guidance: "Mês de recolhimento tático e estudo. Evite investimentos arriscados; privilegie a reflexão estratégica." },
+  8: { archetype: "O Soberano", theme: "Colheita e Poder Material", guidance: "Pico de manifestação financeira! Momento de cobrar dívidas, negociar aumentos e fechar grandes negócios." },
+  9: { archetype: "O Sábio", theme: "Conclusão e Desapego", guidance: "Encerre ciclos desgastados, perdoe pendências e prepare o terreno para o novo. Não inicie grandes projetos agora." },
+};
+
+function generatePersonalYearMonthsData(personalYear: number): PersonalYearMonthsAnalysis {
+  const months: PersonalMonthItem[] = MONTH_NAMES.map((monthName, idx) => {
+    const monthNum = idx + 1;
+    let sum = personalYear + monthNum;
+    while (sum > 9) {
+      sum = sum.toString().split("").reduce((acc, d) => acc + parseInt(d, 10), 0);
     }
-  `;
-
-  try {
-    const ai = getGemini();
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: prompt,
-      config: {
-        responseMimeType: "application/json",
-      },
-    });
-
-    const text = response.text || "";
-    return JSON.parse(text) as NumerologyContent;
-  } catch (error) {
-    console.error("Erro na chamada do Gemini:", error);
-    // Fallback estruturado caso a API falhe
+    const themeInfo = MONTH_THEMES[sum] || MONTH_THEMES[1];
     return {
-      numeros: {
-        caminho_vida: String(lifePath),
-        expressao: String(expression),
-        motivacao: String(soulUrge),
-        personalidade: String(personality),
-        ano_pessoal: String(personalYear),
-        gematria_detalhada: `Cálculo Pitagórico Completo para ${name}`,
-      },
-      analise: {
-        introducao: `A matriz de nascimento ${birthDate} decodifica uma assinatura quântica orientada pelo Caminho de Vida ${lifePath}. Sua estrutura reflete precisão e propósito existencial.`,
-        tikkun_missao: `Sua rota evolutiva demanda integração plena entre o ideal interior (${soulUrge}) e a realização concreta (${expression}). O desafio é transformar potenciais latentes em realizações tangíveis.`,
-        perfil_financeiro: `O fluxo de recursos responde diretamente à disciplina e à autoridade material emanada pela vibração ${expression}.`,
-        sefirot_diagnostico: `Pilar central alinhado com a estabilidade e o discernimento superior.`,
-        talento_oculto: `Capacidade ímpar de síntese intuitiva e liderança estratégica em momentos de inflexão.`,
-        bloqueio_ancestral: `Tendência à autossabotagem em momentos de grande prosperidade. Superar pelo desapego a padrões rígidos herdados.`,
-        ciclo_prosperidade: `O ciclo de 9 anos aponta o Ano Pessoal ${personalYear} como catalisador de alinhamento com seus objetivos fundamentais.`,
-        profissao_ideal: `Atuações que combinem planejamento de longo prazo, estratégia e autonomia decisória.`,
-        sombra_dinheiro: `A ilusão de controle excessivo sobre os resultados materiais gera estagnação do fluxo.`,
-        ancora_riqueza: `Compromisso com o valor real entregue à sociedade e gestão impecável de recursos.`,
-        intuicao_investimento: `Investir com base em fundamentos sólidos, evitando decisões tomadas sob urgência emocional.`,
-        codigo_abundancia: `${lifePath}89-2026-${expression}`,
-        desafio_2026: `Consolidar as estruturas profissionais e abrir espaço para a expansão do Ano ${personalYear}.`,
-        conclusao: `O mapa numérico está traçado. A ativação dos seus números de poder depende da sua clareza de intenção e ação diária.`,
-      },
+      monthIndex: monthNum,
+      monthName,
+      personalMonthNumber: sum,
+      archetype: themeInfo.archetype,
+      theme: themeInfo.theme,
+      guidance: themeInfo.guidance,
     };
-  }
+  });
+
+  return {
+    active: true,
+    personalYear,
+    yearArchetype: getArchetype(personalYear, "pt").title,
+    months,
+    executiveAdvice: `No Ano Pessoal ${personalYear}, os meses de maior colheita material e alavancagem financeira coincidem com os Meses Pessoais 1, 3 e 8. Use os Meses Pessoais 4 e 7 para organizar as bases e resguardar seu patrimônio.`,
+  };
 }
 
 export interface DeliverMapParams {
@@ -169,6 +513,10 @@ export interface DeliverMapParams {
   externalId?: string | null;
   amountCents?: number;
   plan?: string;
+  orderBumps?: {
+    karmicDebt?: boolean;
+    personalYearMonths?: boolean;
+  };
 }
 
 /**
@@ -234,8 +582,28 @@ export async function deliverNumerologyMap(params: DeliverMapParams) {
   const parsedBirth = parseBirthDate(birthDateRaw || "01/01/1990");
   const birthDate = `${String(parsedBirth.day).padStart(2, "0")}/${String(parsedBirth.month).padStart(2, "0")}/${parsedBirth.year}`;
 
-  console.log(`✨ [Deliver] Gerando conteúdo do Mapa Pitagórico para ${customerName}...`);
-  const numerologyData = await generateNumerologyContent(customerName, birthDate);
+  let orderBumps = params.orderBumps;
+  if (!orderBumps && params.externalId) {
+    const hasKD = params.externalId.includes("KD1");
+    const hasPY = params.externalId.includes("PY1");
+    if (hasKD || hasPY) {
+      orderBumps = {
+        karmicDebt: hasKD,
+        personalYearMonths: hasPY,
+      };
+    }
+  }
+
+  // Em modo de desenvolvimento ou fallback de teste, ativamos ambos para inspeção visual completa do PDF
+  if (process.env.NODE_ENV !== "production" && !orderBumps) {
+    orderBumps = {
+      karmicDebt: true,
+      personalYearMonths: true,
+    };
+  }
+
+  console.log(`✨ [Deliver] Gerando conteúdo do Mapa Pitagórico para ${customerName}... Order Bumps:`, orderBumps);
+  const numerologyData = await generateNumerologyContent(customerName, birthDate, orderBumps);
 
   // Cálculos numéricos completos
   const lifePath = calculateLifePath(birthDate);

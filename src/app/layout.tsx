@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import RedditPixel from "@/components/RedditPixel";
 
 export const metadata: Metadata = {
   title: "DestinyVox VIP — O Dossiê Numerológico Definitivo",
@@ -28,7 +29,10 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body suppressHydrationWarning>{children}</body>
+      <body suppressHydrationWarning>
+        <RedditPixel />
+        {children}
+      </body>
     </html>
   );
 }
