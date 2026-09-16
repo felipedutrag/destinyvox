@@ -17,6 +17,7 @@ import {
   calculatePersonalDay,
   getArchetype,
   getSoulDictum,
+  parseBirthDate,
 } from "@/utils/numerology";
 
 export interface NumerologyContent {
@@ -229,16 +230,9 @@ export async function deliverNumerologyMap(params: DeliverMapParams) {
     }
   }
 
-  // Formatar data para exibição (DD/MM/AAAA)
-  let birthDate = "Data não informada";
-  if (birthDateRaw) {
-    if (/^\d{4}-\d{2}-\d{2}$/.test(birthDateRaw)) {
-      const parts = birthDateRaw.split("-");
-      birthDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
-    } else if (/^\d{2}\/\d{2}\/\d{4}$/.test(birthDateRaw)) {
-      birthDate = birthDateRaw;
-    }
-  }
+  // Formatar data para exibição e cálculos estritamente no padrão brasileiro (DD/MM/AAAA)
+  const parsedBirth = parseBirthDate(birthDateRaw || "01/01/1990");
+  const birthDate = `${String(parsedBirth.day).padStart(2, "0")}/${String(parsedBirth.month).padStart(2, "0")}/${parsedBirth.year}`;
 
   console.log(`✨ [Deliver] Gerando conteúdo do Mapa Pitagórico para ${customerName}...`);
   const numerologyData = await generateNumerologyContent(customerName, birthDate);
@@ -286,14 +280,8 @@ export async function deliverNumerologyMap(params: DeliverMapParams) {
     console.warn("[Supabase Auth] Erro no provisionamento do usuário:", authError);
   }
 
-  // Data formatada para campo DATE do PostgreSQL
-  let dbBirthDate = "1990-01-01";
-  if (birthDateRaw && /^\d{4}-\d{2}-\d{2}$/.test(birthDateRaw)) {
-    dbBirthDate = birthDateRaw;
-  } else if (birthDate && /^\d{2}\/\d{2}\/\d{4}$/.test(birthDate)) {
-    const [d, m, y] = birthDate.split("/");
-    dbBirthDate = `${y}-${m}-${d}`;
-  }
+  // Data formatada para campo DATE do PostgreSQL (YYYY-MM-DD)
+  const dbBirthDate = `${parsedBirth.year}-${String(parsedBirth.month).padStart(2, "0")}-${String(parsedBirth.day).padStart(2, "0")}`;
 
   // 3. Salvar mapa no Supabase
   let mapId: string | null = null;
