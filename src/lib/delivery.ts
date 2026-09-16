@@ -191,9 +191,10 @@ export async function deliverNumerologyMap(params: DeliverMapParams) {
 
   const supabase = getSupabaseAdmin();
 
-  // 1. Verificação de Idempotência: Checar se o pagamento já possui um mapa associado
+  // 1. Verificação de Idempotência: Checar se o pagamento já possui um mapa associado ou e-mail enviado
+  let matchedPaymentId: string | null = null;
   if (params.transactionId || params.externalId) {
-    const query = supabase.from("payments").select("id, map_id, status");
+    const query = supabase.from("payments").select("id, map_id, status, metadata");
     if (params.transactionId) {
       query.eq("transaction_id", String(params.transactionId));
     } else if (params.externalId) {
@@ -201,13 +202,30 @@ export async function deliverNumerologyMap(params: DeliverMapParams) {
     }
     const { data: existingPayment } = await query.maybeSingle();
 
-    if (existingPayment?.map_id) {
-      console.log(`[Deliver] Mapa ${existingPayment.map_id} já entregue anteriormente. Ignorando re-geração.`);
-      return {
-        success: true,
-        alreadyDelivered: true,
-        mapId: existingPayment.map_id,
-      };
+    if (existingPayment) {
+      matchedPaymentId = existingPayment.id;
+      const meta = (existingPayment.metadata || {}) as Record<string, unknown>;
+
+      if (existingPayment.map_id || meta.email_sent || meta.delivering) {
+        console.log(`[Deliver] 🛑 Entrega já realizada ou em andamento para o pagamento ${existingPayment.id}. Evitando envio de e-mail duplicado.`);
+        return {
+          success: true,
+          alreadyDelivered: true,
+          mapId: existingPayment.map_id,
+        };
+      }
+
+      // Trava atômica imediata para evitar disparos simultâneos (Webhook + Frontend)
+      await supabase
+        .from("payments")
+        .update({
+          metadata: {
+            ...meta,
+            delivering: true,
+            delivery_started_at: new Date().toISOString(),
+          },
+        })
+        .eq("id", existingPayment.id);
     }
   }
 
@@ -350,14 +368,25 @@ export async function deliverNumerologyMap(params: DeliverMapParams) {
   `;
 
   const fileNameStr = `Mapa_DestinyVox_${customerName.replace(/\s+/g, "_")}.pdf`;
-  const fromEmail = process.env.RESEND_FROM_EMAIL || "DestinyVox <contato@destinyvox.online>";
+
+  // 5. Enviar e-mail via Resend
+  const isDev = process.env.NODE_ENV !== "production";
+  // Em modo DEV local, usa delivered@resend.dev para simular sucesso sem gastar quota da conta
+  const targetRecipient = isDev ? "delivered@resend.dev" : customerEmail;
+  const fromEmail = isDev
+    ? "DestinyVox Test <onboarding@resend.dev>"
+    : (process.env.RESEND_FROM_EMAIL || "DestinyVox <contato@destinyvox.online>");
+
+  console.log(`📧 [Deliver] Enviando e-mail para ${targetRecipient} (Modo: ${isDev ? 'DEV/TESTE - delivered@resend.dev (zero quota gasta)' : 'PRODUÇÃO'})...`);
 
   try {
     const resend = getResend();
     const { data: emailData, error: emailError } = await resend.emails.send({
       from: fromEmail,
-      to: customerEmail,
-      subject: "Seu Mapa Pitagórico do Destino ✨ — DestinyVox",
+      to: targetRecipient,
+      subject: isDev
+        ? `[TESTE DEV] Seu Mapa Pitagórico do Destino ✨ — ${customerName}`
+        : "Seu Mapa Pitagórico do Destino ✨ — DestinyVox",
       html: htmlContent,
       attachments: [
         {
@@ -370,7 +399,22 @@ export async function deliverNumerologyMap(params: DeliverMapParams) {
     if (emailError) {
       console.error("[Deliver] ❌ Erro retornado pela API Resend:", emailError);
     } else {
-      console.log(`[Deliver] ✅ E-mail enviado com sucesso (ID: ${emailData?.id}) para ${customerEmail}`);
+      console.log(`[Deliver] ✅ E-mail enviado com sucesso (ID: ${emailData?.id}) para ${targetRecipient}`);
+
+      // Registrar flag de e-mail enviado no pagamento para idempotência absoluta
+      if (matchedPaymentId) {
+        await supabase
+          .from("payments")
+          .update({
+            metadata: {
+              email_sent: true,
+              email_sent_at: new Date().toISOString(),
+              email_id: emailData?.id,
+              delivering: false,
+            },
+          })
+          .eq("id", matchedPaymentId);
+      }
     }
   } catch (emailErr) {
     console.error("[Deliver] ❌ Erro ao enviar e-mail via Resend:", emailErr);
