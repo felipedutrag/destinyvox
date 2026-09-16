@@ -383,11 +383,16 @@ export function App() {
           async (payload) => {
             console.log("⚡ [Supabase Realtime] Alteração detectada no banco:", payload);
             const newRow = payload.new as { transaction_id?: string; external_id?: string; status?: string } | null;
-            if (
+            const extPrefix = externalId ? externalId.split("__||__")[0] : "";
+            const isMatch =
               newRow &&
               newRow.status === "PAID" &&
-              (newRow.external_id === externalId || newRow.transaction_id === transactionId)
-            ) {
+              (
+                (newRow.external_id && (newRow.external_id === externalId || (extPrefix && newRow.external_id.startsWith(extPrefix)))) ||
+                (newRow.transaction_id && String(newRow.transaction_id) === String(transactionId))
+              );
+
+            if (isMatch) {
               console.log("✅ [Supabase Realtime] Pagamento confirmado pelo Webhook!");
               if (pollingRef.current) clearInterval(pollingRef.current);
               if (realtimeRef.current) {
@@ -551,10 +556,7 @@ export function App() {
   const startPixPolling = (transactionId: string, externalId: string) => {
     if (pollingRef.current) clearInterval(pollingRef.current);
 
-    if (isDev) {
-      console.log("[PIX] ⏸️ Polling desabilitado em modo DEV para testes de Webhook.");
-      return;
-    }
+    console.log(`🚀 [PIX Polling] Polling iniciado para transação ${transactionId}`);
 
     pollingRef.current = setInterval(async () => {
       try {
