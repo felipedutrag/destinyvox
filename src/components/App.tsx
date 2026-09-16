@@ -575,12 +575,7 @@ export function App() {
   const startPixPolling = (transactionId: string, externalId: string) => {
     if (pollingRef.current) clearInterval(pollingRef.current);
 
-    if (isDev) {
-      console.log("⏸️ [PIX Polling] Polling desabilitado localmente (aguardando exclusivamente Supabase Realtime).");
-      return;
-    }
-
-    console.log(`🚀 [PIX Polling] Polling iniciado para transação ${transactionId}`);
+    console.log(`🚀 [PIX Polling] Polling de fallback ativo para transação ${transactionId}`);
 
     pollingRef.current = setInterval(async () => {
       try {
@@ -588,10 +583,21 @@ export function App() {
         const data = await res.json();
 
         if (data.status === "PAID") {
+          console.log("✅ [PIX Polling] Pagamento identificado via polling de fallback!");
           if (pollingRef.current) clearInterval(pollingRef.current);
+          if (realtimeRef.current) {
+            try {
+              const supabase = getSupabaseClient();
+              supabase.removeChannel(realtimeRef.current);
+              realtimeRef.current = null;
+            } catch {
+              // ignore
+            }
+          }
+
           setPixStep("PAID");
 
-          // Disparar entrega do mapa e gravação no Supabase
+          // Disparar entrega do mapa e gravação no Supabase (protegido contra duplicações)
           try {
             await fetch("/api/deliver", {
               method: "POST",
@@ -602,6 +608,7 @@ export function App() {
                 birthDate: pixForm.birthDate,
                 transaction_id: transactionId,
                 external_id: externalId,
+                plan: pixPlan,
               }),
             });
             setPixStep("DELIVERED");
