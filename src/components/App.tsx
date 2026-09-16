@@ -15,6 +15,8 @@ import {
   Sparkles,
   Zap,
 } from "lucide-react";
+import { getSupabaseClient } from "@/lib/supabase";
+import type { RealtimeChannel } from "@supabase/supabase-js";
 
 type Language = "en" | "pt" | "es";
 
@@ -357,9 +359,85 @@ export function App() {
     }
   };
 
+  const realtimeRef = useRef<RealtimeChannel | null>(null);
+
+  const subscribeRealtimePayment = (transactionId: string, externalId: string) => {
+    try {
+      const supabase = getSupabaseClient();
+      if (realtimeRef.current) {
+        supabase.removeChannel(realtimeRef.current);
+        realtimeRef.current = null;
+      }
+
+      console.log(`⚡ [Supabase Realtime] Conectando escuta em tempo real para ${externalId}...`);
+
+      const channel = supabase
+        .channel(`payment_realtime_${Date.now()}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "payments",
+          },
+          async (payload) => {
+            console.log("⚡ [Supabase Realtime] Alteração detectada no banco:", payload);
+            const newRow = payload.new as { transaction_id?: string; external_id?: string; status?: string } | null;
+            if (
+              newRow &&
+              newRow.status === "PAID" &&
+              (newRow.external_id === externalId || newRow.transaction_id === transactionId)
+            ) {
+              console.log("✅ [Supabase Realtime] Pagamento confirmado pelo Webhook!");
+              if (pollingRef.current) clearInterval(pollingRef.current);
+              if (realtimeRef.current) {
+                supabase.removeChannel(realtimeRef.current);
+                realtimeRef.current = null;
+              }
+
+              setPixStep("PAID");
+              try {
+                await fetch("/api/deliver", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    name: pixForm.name.trim(),
+                    email: pixForm.email.trim(),
+                    birthDate: pixForm.birthDate,
+                    transaction_id: transactionId,
+                    external_id: externalId,
+                    plan: pixPlan,
+                  }),
+                });
+                setPixStep("DELIVERED");
+              } catch (deliverErr) {
+                console.error("[Realtime Deliver] Erro na entrega:", deliverErr);
+                setPixStep("DELIVERED");
+              }
+            }
+          }
+        )
+        .subscribe((status) => {
+          console.log(`[Supabase Realtime] Status do canal: ${status}`);
+        });
+
+      realtimeRef.current = channel;
+    } catch (err) {
+      console.warn("[Supabase Realtime] Falha ao registrar escuta:", err);
+    }
+  };
+
   useEffect(() => {
     return () => {
       if (pollingRef.current) clearInterval(pollingRef.current);
+      if (realtimeRef.current) {
+        try {
+          const supabase = getSupabaseClient();
+          supabase.removeChannel(realtimeRef.current);
+        } catch {
+          // ignore
+        }
+      }
     };
   }, []);
 
@@ -571,6 +649,7 @@ export function App() {
         external_id: data.external_id || "",
       });
       setPixStep("QR_CODE");
+      subscribeRealtimePayment(String(data.transaction_id), data.external_id || "");
       startPixPolling(String(data.transaction_id), data.external_id || "");
     } catch (err) {
       console.error("[PIX] Erro ao gerar checkout:", err);

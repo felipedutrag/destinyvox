@@ -1,4 +1,4 @@
-﻿-- ==============================================================================
+-- ==============================================================================
 -- DESTINYVOX: Schema do Banco de Dados Supabase (epxhppjhivpwljpjpznm)
 -- Tabelas: profiles (Auth), numerology_maps (Cálculos & IA), payments (GGPIX)
 -- ==============================================================================
@@ -124,3 +124,14 @@ DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
     AFTER INSERT ON auth.users
     FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
+-- ==============================================================================
+-- 4. SUPABASE REALTIME (Monitoramento instantâneo do status do PIX via Webhook)
+-- ==============================================================================
+-- Adicionar tabela de pagamentos à publicação do Realtime
+ALTER PUBLICATION supabase_realtime ADD TABLE public.payments;
+
+-- Garantir acesso de leitura pública (anon/autenticado) na tabela de pagamentos para escuta em tempo real
+DROP POLICY IF EXISTS "Allow public select payments for realtime" ON public.payments;
+CREATE POLICY "Allow public select payments for realtime" ON public.payments FOR SELECT USING (true);
+
