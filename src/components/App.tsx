@@ -287,7 +287,7 @@ export function App() {
   // PIX Checkout State (GGPIX)
   const [isPixModalOpen, setIsPixModalOpen] = useState<boolean>(false);
   const [pixStep, setPixStep] = useState<"FORM" | "QR_CODE" | "PAID" | "DELIVERED">("FORM");
-  const [pixPlan, setPixPlan] = useState<PlanKey>("10_questions");
+  const [pixPlan, setPixPlan] = useState<PlanKey>("30_questions");
   const [pixForm, setPixForm] = useState({
     name: "",
     email: "",
@@ -588,10 +588,10 @@ export function App() {
                 DESTINYVOX • PAGAMENTO VIA PIX
               </div>
               <h3 className="font-editorial text-2xl sm:text-3xl text-white font-normal">
-                {pixPlan === "30_questions" ? "30 Consultas & Mapa Completo" : "10 Consultas & Mapa Completo"}
+                30 Consultas & Mapa Pitagórico Completo
               </h3>
               <p className="font-mono text-xs text-neutral-400">
-                Valor: <span className="text-white font-bold">{pixPlan === "30_questions" ? "R$ 39,90" : "R$ 19,90"}</span> • Liberação Imediata
+                Valor: <span className="text-white font-bold">R$ 39,90</span> • Liberação Imediata
               </p>
             </div>
 
@@ -937,54 +937,10 @@ export function App() {
           </p>
         </div>
 
-        {/* Pricing Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 max-w-4xl mx-auto text-left">
-          {/* Plano 1: Oráculo Essencial */}
-          <div className="border border-neutral-800 bg-[#080808] p-5 sm:p-8 space-y-6 flex flex-col justify-between">
-            <div className="space-y-4 sm:space-y-5">
-              <div className="flex justify-between items-center">
-                <span className="font-mono text-xs sm:text-sm tracking-widest text-neutral-300 uppercase font-medium">
-                  {t.plan1.name}
-                </span>
-                <span className="font-mono text-[10px] sm:text-xs tracking-widest border border-neutral-800 px-2.5 py-0.5 text-neutral-300">
-                  {t.plan1.badge}
-                </span>
-              </div>
-              <div>
-                <div className="font-editorial text-4xl sm:text-5xl md:text-6xl text-white font-normal flex items-baseline gap-2">
-                  <span>{t.plan1.price}</span>
-                  <span className="text-sm sm:text-base md:text-lg font-mono text-neutral-400 font-light">{t.plan1.period}</span>
-                </div>
-                <span className="font-mono text-xs sm:text-xs md:text-sm text-neutral-400 tracking-wider">
-                  {t.plan1.userNote(redditUser)}
-                </span>
-              </div>
-
-              <div className="border-t border-neutral-800 pt-4 sm:pt-5 space-y-2.5 sm:space-y-3.5 font-mono text-xs sm:text-sm md:text-[15px] text-neutral-200">
-                {t.plan1.perks.map((perk, i) => (
-                  <div key={i} className="flex items-center gap-2.5">
-                    <CheckCircle2 className="w-4 h-4 text-white shrink-0" />
-                    <span>{perk}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <button
-              onClick={() => handleCheckout("10_questions")}
-              disabled={isRedirecting}
-              className="w-full h-12 sm:h-13 bg-white text-black hover:bg-neutral-200 font-mono text-xs sm:text-sm font-bold tracking-widest uppercase transition-colors cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50 mt-4"
-            >
-              <span>
-                {loadingPlan === "10_questions"
-                  ? t.plan1.buttonLoading
-                  : t.plan1.button}
-              </span>
-            </button>
-          </div>
-
+        {/* Pricing Card (Plano Único) */}
+        <div className="max-w-xl mx-auto text-left">
           {/* Plano 2: 30 Perguntas */}
-          <div className="border border-white/70 sm:border-2 sm:border-white bg-[#0a0a0a] p-5 sm:p-8 space-y-6 flex flex-col justify-between relative">
+          <div className="border border-white/70 sm:border-2 sm:border-white bg-[#0a0a0a] p-6 sm:p-10 space-y-6 flex flex-col justify-between relative shadow-[0_0_50px_rgba(245,158,11,0.12)]">
             <div className="absolute -top-3 right-4 sm:right-6 bg-white text-black font-mono text-[9px] sm:text-[11px] font-bold tracking-[0.15em] sm:tracking-[0.2em] uppercase px-2.5 sm:px-3.5 py-0.5">
               {t.plan2.popularTag}
             </div>
@@ -1021,7 +977,7 @@ export function App() {
             <button
               onClick={() => handleCheckout("30_questions")}
               disabled={isRedirecting}
-              className="w-full h-12 sm:h-13 bg-white text-black hover:bg-neutral-200 active:bg-neutral-300 font-mono text-xs sm:text-sm font-bold tracking-widest uppercase transition-colors cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50 mt-4"
+              className="w-full h-12 sm:h-14 bg-white text-black hover:bg-neutral-200 active:bg-neutral-300 font-mono text-xs sm:text-sm font-bold tracking-widest uppercase transition-colors cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50 mt-4"
             >
               <span>
                 {loadingPlan === "30_questions"

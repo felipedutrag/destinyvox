@@ -381,7 +381,7 @@ export async function deliverNumerologyMap(params: DeliverMapParams) {
     await sendTelegramPixNotification({
       payerName: customerName,
       payerEmail: customerEmail,
-      amountCents: params.amountCents || 1990,
+      amountCents: params.amountCents || 3990,
       transactionId: params.transactionId || "N/A",
       externalId: params.externalId || undefined,
       plan: params.plan,

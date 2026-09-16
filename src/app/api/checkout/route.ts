@@ -14,13 +14,12 @@ export async function POST(request: Request) {
 
     const cpf = generateRandomCPF();
     // Embutindo todos os dados no external_id porque o webhook da GGPIX não retorna dados do cliente
-    const external_id = `MAPA_${Date.now()}__||__${encodeURIComponent(name)}__||__${encodeURIComponent(email)}__||__${birthDate}__||__${plan || "10_questions"}`;
+    const external_id = `MAPA_${Date.now()}__||__${encodeURIComponent(name)}__||__${encodeURIComponent(email)}__||__${birthDate}__||__${plan || "30_questions"}`;
     const cleanEmail = email.trim().toLowerCase();
     const isSpecialVip = cleanEmail === "felipedutra@outlook.com";
 
-    const is30Questions = plan === "30_questions" || plan === "vip";
     const amountCents = process.env.NODE_ENV === 'production' 
-      ? (is30Questions ? 3990 : 1990) 
+      ? 3990 
       : 100;
 
     // Se for o e-mail VIP felipedutra@outlook.com, aprova o pagamento imediatamente
@@ -49,7 +48,7 @@ export async function POST(request: Request) {
           pix_qr_code_base64: "",
           metadata: {
             birthDate,
-            plan: plan || "10_questions",
+            plan: plan || "30_questions",
             auto_approved: true,
           },
         });
@@ -77,10 +76,7 @@ export async function POST(request: Request) {
 
     console.log(`🚀 [GGPIX-DEBUG] Chave: [${apiKey.substring(0, 5)}...] | Iniciando chamada...`);
 
-
-    const description = is30Questions
-      ? "DestinyVox Oráculo — 30 Consultas & Mapa"
-      : "DestinyVox Oráculo — 10 Consultas & Mapa";
+    const description = "DestinyVox Oráculo — 30 Consultas & Mapa Pitagórico Completo";
 
     const appUrl = (process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || "https://destinyvox.online").replace(/\/$/, "");
     const webhookUrl = `${appUrl}/api/webhooks/ggpix`;
@@ -142,6 +138,7 @@ export async function POST(request: Request) {
         pix_qr_code_base64: qrCodeBase64,
         metadata: {
           birthDate,
+          plan: plan || "30_questions",
           rawResponse: data,
         },
       });

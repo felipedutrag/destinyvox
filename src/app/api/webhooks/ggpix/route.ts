@@ -114,7 +114,7 @@ export async function POST(request: Request) {
       const plan =
         (paymentRecord?.metadata?.plan as string) ||
         parsedMeta?.plan ||
-        "10_questions";
+        "30_questions";
 
       // Atualizar status do pagamento para PAID
       try {
