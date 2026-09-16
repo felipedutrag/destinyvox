@@ -473,6 +473,11 @@ export function App() {
   const startPixPolling = (transactionId: string, externalId: string) => {
     if (pollingRef.current) clearInterval(pollingRef.current);
 
+    if (isDev) {
+      console.log("[PIX] ⏸️ Polling desabilitado em modo DEV para testes de Webhook.");
+      return;
+    }
+
     pollingRef.current = setInterval(async () => {
       try {
         const res = await fetch(`/api/status?id=${transactionId}`);
