@@ -10,11 +10,13 @@ export interface NumerologyProfile {
   personality: number; // Personalidade Exterior (Consoantes)
   birthday: number; // Número do Aniversário / Dom Inato (Dia de Nascimento)
   maturity: number; // Número da Maturidade / Realização Final (Caminho + Expressão)
+  attitude: number; // Número de Atitude (Dia + Mês)
   personalYear: number; // Ano Pessoal Atual
   isMasterLifePath: boolean;
   isMasterExpression: boolean;
   isMasterBirthday?: boolean;
   isMasterMaturity?: boolean;
+  isMasterAttitude?: boolean;
 }
 
 // Tabela Pitagórica Tradicional
@@ -196,6 +198,14 @@ export function calculatePersonalDay(personalMonth: number, currentDay = new Dat
   return reduceStrictSingleDigit(sum);
 }
 
+// Número de Atitude: Soma do Dia + Mês do Nascimento
+export function calculateAttitude(birthDateStr: string): number {
+  const digits = birthDateStr.replace(/[^0-9]/g, '');
+  if (!digits || digits.length < 8) return 1;
+  const { day, month } = parseBirthDate(birthDateStr);
+  return reduceToSingleDigitOrMaster(day + month);
+}
+
 // Gerar Perfil Numerológico Completo (7 Pilares Pitagóricos)
 export function calculateFullNumerology(fullName: string, birthDate: string): NumerologyProfile {
   const lifePath = calculateLifePath(birthDate);
@@ -205,6 +215,7 @@ export function calculateFullNumerology(fullName: string, birthDate: string): Nu
   const birthday = calculateBirthday(birthDate);
   const maturity = calculateMaturity(lifePath, expression);
   const personalYear = calculatePersonalYear(birthDate);
+  const attitude = calculateAttitude(birthDate);
 
   return {
     fullName,
@@ -215,11 +226,13 @@ export function calculateFullNumerology(fullName: string, birthDate: string): Nu
     personality,
     birthday,
     maturity,
+    attitude,
     personalYear,
     isMasterLifePath: [11, 22, 33].includes(lifePath),
     isMasterExpression: [11, 22, 33].includes(expression),
     isMasterBirthday: [11, 22, 33].includes(birthday),
     isMasterMaturity: [11, 22, 33].includes(maturity),
+    isMasterAttitude: [11, 22, 33].includes(attitude),
   };
 }
 

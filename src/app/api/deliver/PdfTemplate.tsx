@@ -298,6 +298,11 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
               <Text style={styles.summaryPillTitle}>{pillars.personality.archetype}</Text>
             </View>
             <View style={styles.summaryPill}>
+              <Text style={styles.summaryPillLabel}>Attitude</Text>
+              <Text style={styles.summaryPillNum}>{pillars.attitude.number}</Text>
+              <Text style={styles.summaryPillTitle}>{pillars.attitude.archetype}</Text>
+            </View>
+            <View style={styles.summaryPill}>
               <Text style={styles.summaryPillLabel}>Year 2026</Text>
               <Text style={styles.summaryPillNum}>{pillars.personalYear.number}</Text>
               <Text style={styles.summaryPillTitle}>{pillars.personalYear.archetype}</Text>
@@ -408,12 +413,13 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
         </View>
 
         <View style={[styles.highlightBox, { marginTop: 6 }]}>
-          <Text style={styles.highlightTitle}>The 7 Calculated Pythagorean Pillars:</Text>
+          <Text style={styles.highlightTitle}>The 8 Calculated Pythagorean Pillars:</Text>
           <Text style={styles.highlightText}>
             • Life Path: {pillars.lifePath.number} ({pillars.lifePath.archetype}) — The central course of destiny.{'\n'}
             • Expression: {pillars.expression.number} ({pillars.expression.archetype}) — Your practical tools for value generation.{'\n'}
             • Soul Urge: {pillars.soulUrge.number} ({pillars.soulUrge.archetype}) — The affective and animic fuel.{'\n'}
             • Personality: {pillars.personality.number} ({pillars.personality.archetype}) — The relational interface with the world.{'\n'}
+            • Attitude: {pillars.attitude.number} ({pillars.attitude.archetype}) — The initial reaction and approach to life.{'\n'}
             • Personal Year 2026: {pillars.personalYear.number} ({pillars.personalYear.archetype}) — The temporal climate of this annual cycle.{'\n'}
             • Congenital Gift: {pillars.birthday.number} ({pillars.birthday.archetype}) — The innate talent brought at birth.{'\n'}
             • Maturity: {pillars.maturity.number} ({pillars.maturity.archetype}) — The consecration from 35-40 years onward.

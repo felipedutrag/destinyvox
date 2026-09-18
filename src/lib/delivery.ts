@@ -12,6 +12,7 @@ import {
   calculatePersonalYear,
   calculateBirthday,
   calculateMaturity,
+  calculateAttitude,
   calculatePersonalMonth,
   calculatePersonalDay,
   getArchetype,
@@ -84,6 +85,7 @@ export interface NumerologyContent {
     personalYear: NumerologyPillarData;
     birthday: NumerologyPillarData;
     maturity: NumerologyPillarData;
+    attitude: NumerologyPillarData;
   };
   shadow: {
     number: number;
@@ -266,6 +268,7 @@ export async function generateNumerologyContent(
   const birthday = calculateBirthday(birthDate);
   const maturity = calculateMaturity(lifePath, expression);
   const personalYear = calculatePersonalYear(birthDate, 2026);
+  const attitude = calculateAttitude(birthDate);
 
   const lpArchetype = getArchetype(lifePath, "en");
   const expArchetype = getArchetype(expression, "en");
@@ -274,6 +277,7 @@ export async function generateNumerologyContent(
   const yearArchetype = getArchetype(personalYear, "en");
   const bdayArchetype = getArchetype(birthday, "en");
   const matArchetype = getArchetype(maturity, "en");
+  const attArchetype = getArchetype(attitude, "en");
 
   const gematria = calculateGematriaBreakdown(name, birthDate, soulUrge, personality, expression);
 
@@ -379,6 +383,14 @@ export async function generateNumerologyContent(
         element: matArchetype.element,
         keywords: matArchetype.keyword,
         paragraphs: matParagraphs,
+      },
+      attitude: {
+        number: attitude,
+        label: "Attitude (First Impression)",
+        archetype: attArchetype.title,
+        element: attArchetype.element,
+        keywords: attArchetype.keyword,
+        paragraphs: [],
       },
     },
     shadow: {

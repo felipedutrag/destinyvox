@@ -38,10 +38,10 @@ const TRANSLATIONS = {
     heroTitleLine1: "Decode the Hidden Algorithm",
     heroTitleLine2: "of your Own Destiny.",
     heroDescription:
-      "Your birth name and date of birth contain the exact mathematical blueprint of your soul. Access your Complete Pythagorean Dossier in PDF (11 Dedicated Pages): the ancient science of Gematria and the profound revelation of your 7 Vibrational Pillars with strategic guidance.",
+      "Your birth name and date of birth contain the exact mathematical blueprint of your soul. Access your Complete Pythagorean Dossier in PDF (11 Dedicated Pages): the ancient science of Gematria and the profound revelation of your 8 Vibrational Pillars with strategic guidance.",
     ctaMain: "GENERATE MY PYTHAGOREAN MAP",
     ctaSub: "Complete High-Resolution PDF Dossier — Immediate Delivery",
-    featureTag: "7 VIBRATIONAL PILLARS CALCULATED",
+    featureTag: "8 VIBRATIONAL PILLARS CALCULATED",
     howItWorksTitle: "THE SCIENCE OF THE PYTHAGOREAN MATRIX",
     howItWorksHeading: "Exact engineering based on your birth certificate and birth date",
     howItWorksDesc:
@@ -66,14 +66,20 @@ const TRANSLATIONS = {
         desc: "The unique skills and energetic signature you project into the world.",
       },
       {
-        icon: AlertTriangle,
+        icon: Zap,
         num: "04",
+        name: "ATTITUDE NUMBER",
+        desc: "How you naturally react to circumstances and the first impression you leave.",
+      },
+      {
+        icon: AlertTriangle,
+        num: "05",
         name: "KARMIC DEBTS",
         desc: "Unresolved cycles from past lives that block your current prosperity.",
       },
       {
         icon: Award,
-        num: "05",
+        num: "06",
         name: "PERSONAL YEAR 2026",
         desc: "The specific vibration of this year and when to act (or retreat).",
       },
@@ -87,7 +93,7 @@ const TRANSLATIONS = {
     pricingOriginalPrice: "$49.90",
     pricingFeatures: [
       "11-Page Personalized PDF Map",
-      "Analysis of your 7 Vibrational Pillars",
+      "Analysis of your 8 Vibrational Pillars",
       "Identification of Hidden Talents",
       "Calculation of your Life Path",
       "Immediate Delivery to Email"
