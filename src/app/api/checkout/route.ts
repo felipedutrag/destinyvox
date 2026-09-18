@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getStripe } from "@/lib/stripe";
 import { getSupabaseAdmin } from "@/lib/supabase";
+import { sendTelegramCheckoutInitiated } from "@/lib/telegram";
 import Stripe from "stripe";
 
 export async function POST(request: Request) {
@@ -97,6 +98,21 @@ export async function POST(request: Request) {
       console.log(`[Supabase] Pending payment registered for ${email}`);
     } catch (dbErr) {
       console.error("[Supabase] Warning: Failed to register pending payment:", dbErr);
+    }
+
+    try {
+      await sendTelegramCheckoutInitiated({
+        payerName: name,
+        payerEmail: cleanEmail,
+        amountCents: baseAmountCents + karmicDebtCents + personalYearMonthsCents,
+        plan,
+        orderBumps: {
+          karmicDebt: !!orderBumps?.karmicDebt,
+          personalYearMonths: !!orderBumps?.personalYearMonths,
+        },
+      });
+    } catch (tgErr) {
+      console.error("[Telegram] Warning: Failed to send checkout alert:", tgErr);
     }
 
     return NextResponse.json({

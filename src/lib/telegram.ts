@@ -126,3 +126,63 @@ export async function sendTelegramPixNotification(
   }
 }
 
+export type TelegramCheckoutAlertParams = {
+  payerName: string;
+  payerEmail: string;
+  amountCents: number;
+  plan?: string;
+  orderBumps: {
+    karmicDebt: boolean;
+    personalYearMonths: boolean;
+  };
+};
+
+export async function sendTelegramCheckoutInitiated(
+  params: TelegramCheckoutAlertParams
+): Promise<void> {
+  const botToken = process.env.TELEGRAM_BOT_TOKEN || DEFAULT_BOT_TOKEN;
+  const chatId = process.env.TELEGRAM_CHAT_ID || DEFAULT_CHAT_ID;
+
+  if (!botToken || !chatId) {
+    return;
+  }
+
+  const valorFormatado = (params.amountCents / 100).toLocaleString("en-US", {
+    style: "currency",
+    currency: "USD",
+  });
+
+  const bumps = [];
+  if (params.orderBumps.karmicDebt) bumps.push("Karma");
+  if (params.orderBumps.personalYearMonths) bumps.push("2026");
+  const bumpsText = bumps.length > 0 ? bumps.join(" + ") : "Nenhum";
+
+  const lines = [
+    `🛒 <b>NOVO CHECKOUT INICIADO (STRIPE)</b> ⏳`,
+    ``,
+    `👤 <b>Cliente:</b> <code>${params.payerName}</code>`,
+    `📧 <b>E-mail:</b> <code>${params.payerEmail}</code>`,
+    `💵 <b>Valor Carrinho:</b> <b>${valorFormatado}</b>`,
+    `🚀 <b>Upgrades:</b> ${bumpsText}`,
+    `⏰ <b>Horário:</b> ${new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })}`,
+  ].filter((line): line is string => line !== null);
+
+  const text = lines.join("\n");
+
+  try {
+    const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
+    await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text,
+        parse_mode: "HTML",
+        disable_web_page_preview: true,
+      }),
+    });
+  } catch (err) {
+    console.warn("[telegram] Aviso ao enviar alerta Checkout:", err);
+  }
+}
+
