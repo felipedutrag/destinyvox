@@ -144,12 +144,12 @@ export function App() {
 
   const displayTotal = `${currentTotal.toFixed(2)}`;
 
-  const triggerRedditPurchase = (transactionId: string, externalId?: string) => {
+  const triggerRedditPurchase = (transactionId: string, externalId?: string, overrideValue?: number) => {
     const key = transactionId || externalId || `PIX_PAID_${Date.now()}`;
     if (trackedPurchasesRef.current.has(key)) return;
     trackedPurchasesRef.current.add(key);
 
-    const priceValue = isDev ? 1.0 : currentTotal;
+    const priceValue = overrideValue !== undefined ? overrideValue : (isDev ? 1.0 : currentTotal);
     trackRedditPurchase({
       value: priceValue,
       currency: "USD",
@@ -419,7 +419,14 @@ export function App() {
 
       if (params.get("status") === "success") {
         const sessionId = params.get("session_id") || `STRIPE_${Date.now()}`;
-        triggerRedditPurchase(sessionId);
+        
+        let finalValue = currentTotal;
+        const totalParam = params.get("total");
+        if (totalParam) {
+          finalValue = parseInt(totalParam, 10) / 100;
+        }
+
+        triggerRedditPurchase(sessionId, undefined, finalValue);
         setPixStep("DELIVERED");
       }
     } catch {

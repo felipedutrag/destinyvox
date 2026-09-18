@@ -32,6 +32,8 @@ export async function POST(request: Request) {
     const stripe = getStripe();
     const origin = (process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || "http://localhost:3000").replace(/\/$/, "");
 
+    const totalCents = baseAmountCents + karmicDebtCents + personalYearMonthsCents;
+
     const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [
       {
         price_data: {
@@ -40,7 +42,7 @@ export async function POST(request: Request) {
             name: "Pythagorean Destiny Dossier",
             description,
           },
-          unit_amount: baseAmountCents + karmicDebtCents + personalYearMonthsCents,
+          unit_amount: totalCents,
         },
         quantity: 1,
       }
@@ -62,7 +64,7 @@ export async function POST(request: Request) {
         personalYearMonths: String(!!orderBumps?.personalYearMonths),
         external_id,
       },
-      success_url: `${origin}/?status=success&session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${origin}/?status=success&session_id={CHECKOUT_SESSION_ID}&total=${totalCents}`,
       cancel_url: `${origin}/`,
     };
 
