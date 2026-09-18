@@ -89,7 +89,7 @@ const TRANSLATIONS = {
     pricingHeading: "Secure your Pythagorean Dossier today",
     pricingDesc: "Immediate access to your 11-page personalized PDF dossier.",
     pricingCardTitle: "Pythagorean Dossier",
-    pricingPrice: "$19.90",
+    pricingPrice: "$9.00",
     pricingOriginalPrice: "$49.90",
     pricingFeatures: [
       "11-Page Personalized PDF Map",
@@ -139,9 +139,9 @@ export function App() {
   const trackedPurchasesRef = useRef<Set<string>>(new Set());
 
   // Preços
-  const basePrice = 19.90;
-  const karmicPrice = 9.90;
-  const personalYearPrice = 9.90;
+  const basePrice = 9.00;
+  const karmicPrice = 5.00;
+  const personalYearPrice = 5.00;
 
   const currentTotal =
     basePrice +
@@ -740,7 +740,7 @@ export function App() {
                             [ADD] Karmic Debts Dossier (13, 14, 16, and 19)
                           </span>
                           <span className="font-mono text-[11px] text-white bg-amber-500/20 border border-amber-500/40 px-2 py-0.2">
-                            + $9.90
+                            + $5.00
                           </span>
                         </div>
                         <p className="font-mono text-xs text-neutral-300 leading-relaxed">
@@ -773,7 +773,7 @@ export function App() {
                             [ADICIONAR] Guia Estratégico 2026 Mês a Mês
                           </span>
                           <span className="font-mono text-[11px] text-white bg-amber-500/20 border border-amber-500/40 px-2 py-0.2">
-                            + $9.90
+                            + $5.00
                           </span>
                         </div>
                         <p className="font-mono text-xs text-neutral-300 leading-relaxed">

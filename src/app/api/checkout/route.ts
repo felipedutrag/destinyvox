@@ -14,9 +14,9 @@ export async function POST(request: Request) {
 
     const cleanEmail = email.trim().toLowerCase();
 
-    const baseAmountCents = 1990; // $19.90 USD
-    const karmicDebtCents = orderBumps?.karmicDebt ? 990 : 0; // $9.90 USD
-    const personalYearMonthsCents = orderBumps?.personalYearMonths ? 990 : 0; // $9.90 USD
+    const baseAmountCents = 900; // $9.00 USD
+    const karmicDebtCents = orderBumps?.karmicDebt ? 500 : 0; // $5.00 USD
+    const personalYearMonthsCents = orderBumps?.personalYearMonths ? 500 : 0; // $5.00 USD
 
     const bumpsTag = `${orderBumps?.karmicDebt ? 'KD1' : 'KD0'}_${orderBumps?.personalYearMonths ? 'PY1' : 'PY0'}`;
     const external_id = `MAPA_${Date.now()}__||__${encodeURIComponent(name)}__||__${encodeURIComponent(email)}__||__${birthDate}__||__${plan || "mapa_completo"}__||__${bumpsTag}`;
