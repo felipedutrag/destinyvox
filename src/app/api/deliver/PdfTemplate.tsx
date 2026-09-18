@@ -822,7 +822,7 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
 
           <View style={styles.heroCard}>
             <View style={styles.heroBadge}>
-              <Text style={{ fontSize: 13, fontWeight: "bold", color: "#DAA520" }}>KARMA</Text>
+              <Text style={{ fontSize: 24, fontWeight: "bold", color: "#DAA520" }}>∞</Text>
             </View>
             <View style={{ flex: 1 }}>
               <Text style={styles.heroTitle}>Exclusive Karmic Debts Dossier</Text>

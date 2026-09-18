@@ -412,70 +412,70 @@ function generateKarmicDebtData(name: string, birthDate: string, lifePath: numbe
     {
       number: 13,
       transmutedTo: 4,
-      title: "Dívida Kármica 13 — O Trabalho e a Matéria",
-      theme: "Transmutação do Esforço em Realização Sólida",
-      diagnosis: "Em encarnações anteriores houve negligência de deveres essenciais, busca por atalhos fáceis, preguiça ou sobrecarga de terceiros para benefício próprio.",
-      symptoms: "Sensação persistente de ter que trabalhar o dobro para colher o mesmo que os outros; obstáculos repetitivos e sensação de recomeçar do zero.",
-      protocol: "Cultive ordem impecável, lealdade aos processos e perseverança ética. Cada esforço deliberado sem revolta dissolve o débito e ancora abundância inabalável.",
+      title: "Karmic Debt 13 — Work and Matter",
+      theme: "Transmutation of Effort into Solid Achievement",
+      diagnosis: "In previous incarnations there was neglect of essential duties, seeking easy shortcuts, laziness, or burdening others for personal benefit.",
+      symptoms: "Persistent feeling of having to work twice as hard to reap the same as others; repetitive obstacles and a sense of starting from scratch.",
+      protocol: "Cultivate impeccable order, loyalty to processes, and ethical perseverance. Every deliberate effort without resentment dissolves the debt and anchors unshakeable abundance.",
     },
     {
       number: 14,
       transmutedTo: 5,
-      title: "Dívida Kármica 14 — A Liberdade e a Temperança",
-      theme: "Autodomínio dos Sentidos e Moderação Consciente",
-      diagnosis: "Registros ancestrais de excessos sensoriais, vícios, desperdício irresponsável da força vital ou privação da liberdade de terceiros.",
-      symptoms: "Montanha-russa financeira e emocional, mudanças abruptas e perdas inesperadas sempre que o indivíduo se perde em impulsividade.",
-      protocol: "Abrace a virtude sagrada da Temperança. Mantenha compromissos firmes a longo prazo e canalize sua sede de aventura em evolução da consciência.",
+      title: "Karmic Debt 14 — Freedom and Temperance",
+      theme: "Self-mastery of the Senses and Conscious Moderation",
+      diagnosis: "Ancestral records of sensory excesses, addictions, irresponsible waste of vital force, or deprivation of the freedom of others.",
+      symptoms: "Financial and emotional roller coaster, abrupt changes, and unexpected losses whenever the individual gets lost in impulsivity.",
+      protocol: "Embrace the sacred virtue of Temperance. Maintain firm long-term commitments and channel your thirst for adventure into the evolution of consciousness.",
     },
     {
       number: 16,
       transmutedTo: 7,
-      title: "Dívida Kármica 16 — A Queda da Torre e o Despertar",
-      theme: "Destruição do Orgulho Egóico e Iluminação da Alma",
-      diagnosis: "Memórias de soberba intelectual, quebra de pactos afetivos sagrados ou manipulação da confiança alheia em vidas passadas.",
-      symptoms: "Colapsos repentinos de projetos erguidos sobre a vaidade pessoal; desilusões amorosas dramáticas destinadas a despir o ego de suas ilusões.",
-      protocol: "Humildade incondicional e dedicação aos valores eternos do espírito. Ao aceitar que o divino governa o universo, você renasce invulnerável.",
+      title: "Karmic Debt 16 — The Fall of the Tower and Awakening",
+      theme: "Destruction of Egoic Pride and Illumination of the Soul",
+      diagnosis: "Memories of intellectual arrogance, breaking of sacred emotional pacts, or manipulation of others' trust in past lives.",
+      symptoms: "Sudden collapses of projects built on personal vanity; dramatic romantic disillusionments intended to strip the ego of its illusions.",
+      protocol: "Unconditional humility and dedication to the eternal values of the spirit. By accepting that the divine governs the universe, you are reborn invulnerable.",
     },
     {
       number: 19,
       transmutedTo: 1,
-      title: "Dívida Kármica 19 — O Poder e a Soberania Compassiva",
-      theme: "Liderança Justa e Superação do Isolamento",
-      diagnosis: "Uso tirânico de autoridade, enriquecimento à custa dos vulneráveis ou recusa em estender a mão aos semelhantes.",
-      symptoms: "Sensação de solidão existencial, extrema dificuldade em pedir ajuda e sensação de que ninguém o apoia nas horas difíceis.",
-      protocol: "Pratique liderança generosa e escuta empática. Use sua força e inteligência para elevar seus liderados. O perdão mútuo extingue este ciclo.",
+      title: "Karmic Debt 19 — Power and Compassionate Sovereignty",
+      theme: "Fair Leadership and Overcoming Isolation",
+      diagnosis: "Tyrannical use of authority, enrichment at the expense of the vulnerable, or refusal to extend a hand to fellow beings.",
+      symptoms: "A sense of existential loneliness, extreme difficulty in asking for help, and a feeling that no one supports you in difficult times.",
+      protocol: "Practice generous leadership and empathetic listening. Use your strength and intelligence to uplift those you lead. Mutual forgiveness extinguishes this cycle.",
     },
   ];
 
   const hasDebt = identifiedDebts.length > 0;
   const statusText = hasDebt
-    ? `Identificamos a incidência direta da Dívida Kármica ${identifiedDebts.join(", ")} no seu dia de nascimento (${day}). Seu protocolo de retificação prioritário deve focar nesta coordenada.`
-    : `Sua matriz primária não apresenta dívidas diretas nos pilares fundamentais. Este dossiê atua como protocolo hermético preventivo e de purificação de memórias ancestrais.`;
+    ? `We have identified the direct incidence of Karmic Debt ${identifiedDebts.join(", ")} on your day of birth (${day}). Your priority rectification protocol should focus on this coordinate.`
+    : `Your primary matrix does not present direct debts in the fundamental pillars. This dossier acts as a preventive hermetic protocol and purification of ancestral memories.`;
 
   return {
     active: true,
     identifiedDebts,
     statusText,
     items,
-    manifestationDecree: "Eu revogo, transmuto e dissolvo todo contrato arcaico de escassez, orgulho ou negligência. Assumo a maestria da minha consciência no aqui e agora. Todas as minhas dívidas com o cosmos estão declaradas quitadas em luz, amor e verdade.",
+    manifestationDecree: "I revoke, transmute, and dissolve every archaic contract of scarcity, pride, or neglect. I assume mastery of my consciousness in the here and now. All my debts with the cosmos are declared settled in light, love, and truth.",
   };
 }
 
 const MONTH_NAMES = [
-  "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
-  "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December"
 ];
 
 const MONTH_THEMES: Record<number, { theme: string; guidance: string; archetype: string }> = {
-  1: { archetype: "O Pioneiro", theme: "Início e Liderança", guidance: "Excelente para lançar novos projetos, abrir empresas, tomar decisões autônomas e assinar novos contratos." },
-  2: { archetype: "O Mediador", theme: "Parcerias e Paciência", guidance: "Momento de cultivar alianças estratégicas, negociar acordos com diplomacia e evitar confrontos precipitados." },
-  3: { archetype: "O Comunicador", theme: "Expansão e Visibilidade", guidance: "Foco total em marketing, vendas, networking e projeção social. Evite dispersão de recursos." },
-  4: { archetype: "O Construtor", theme: "Trabalho e Estruturação", guidance: "Mês de colocar ordem na casa, auditoria financeira, cortar despesas supérfluas e firmar alicerces." },
-  5: { archetype: "O Explorador", theme: "Mudança e Movimento", guidance: "Janela aberta para viagens, pivots de carreira, flexibilidade e adaptação rápida a imprevistos." },
-  6: { archetype: "O Harmonizador", theme: "Equipe e Responsabilidade", guidance: "Priorize a harmonia familiar e a lealdade da sua equipe. Bom momento para investimentos imobiliários." },
-  7: { archetype: "O Buscador", theme: "Introspecção e Análise", guidance: "Mês de recolhimento tático e estudo. Evite investimentos arriscados; privilegie a reflexão estratégica." },
-  8: { archetype: "O Soberano", theme: "Colheita e Poder Material", guidance: "Pico de manifestação financeira! Momento de cobrar dívidas, negociar aumentos e fechar grandes negócios." },
-  9: { archetype: "O Sábio", theme: "Conclusão e Desapego", guidance: "Encerre ciclos desgastados, perdoe pendências e prepare o terreno para o novo. Não inicie grandes projetos agora." },
+  1: { archetype: "The Pioneer", theme: "Beginnings and Leadership", guidance: "Excellent for launching new projects, opening businesses, making autonomous decisions, and signing new contracts." },
+  2: { archetype: "The Mediator", theme: "Partnerships and Patience", guidance: "Time to cultivate strategic alliances, negotiate agreements with diplomacy, and avoid hasty confrontations." },
+  3: { archetype: "The Communicator", theme: "Expansion and Visibility", guidance: "Total focus on marketing, sales, networking, and social projection. Avoid resource dispersion." },
+  4: { archetype: "The Builder", theme: "Work and Structuring", guidance: "Month to put your house in order, financial auditing, cut superfluous expenses, and build solid foundations." },
+  5: { archetype: "The Explorer", theme: "Change and Movement", guidance: "Open window for travel, career pivots, flexibility, and rapid adaptation to unforeseen events." },
+  6: { archetype: "The Harmonizer", theme: "Team and Responsibility", guidance: "Prioritize family harmony and the loyalty of your team. Good time for real estate investments." },
+  7: { archetype: "The Seeker", theme: "Introspection and Analysis", guidance: "Month of tactical retreat and study. Avoid risky investments; privilege strategic reflection." },
+  8: { archetype: "The Sovereign", theme: "Harvest and Material Power", guidance: "Peak of financial manifestation! Time to collect debts, negotiate raises, and close major deals." },
+  9: { archetype: "The Sage", theme: "Conclusion and Detachment", guidance: "Close worn-out cycles, forgive pending issues, and prepare the ground for the new. Do not start major projects now." },
 };
 
 function generatePersonalYearMonthsData(personalYear: number): PersonalYearMonthsAnalysis {
@@ -499,9 +499,9 @@ function generatePersonalYearMonthsData(personalYear: number): PersonalYearMonth
   return {
     active: true,
     personalYear,
-    yearArchetype: getArchetype(personalYear, "pt").title,
+    yearArchetype: getArchetype(personalYear, "en").title,
     months,
-    executiveAdvice: `No Ano Pessoal ${personalYear}, os meses de maior colheita material e alavancagem financeira coincidem com os Meses Pessoais 1, 3 e 8. Use os Meses Pessoais 4 e 7 para organizar as bases e resguardar seu patrimônio.`,
+    executiveAdvice: `In Personal Year ${personalYear}, the months of greatest material harvest and financial leverage coincide with Personal Months 1, 3, and 8. Use Personal Months 4 and 7 to organize the foundations and protect your assets.`,
   };
 }
 
@@ -615,8 +615,8 @@ export async function deliverNumerologyMap(params: DeliverMapParams) {
   const personalYear = calculatePersonalYear(birthDate, 2026);
   const personalMonth = calculatePersonalMonth(personalYear);
   const personalDay = calculatePersonalDay(personalMonth);
-  const archetype = getArchetype(lifePath, "pt");
-  const dictum = getSoulDictum(lifePath, "pt");
+  const archetype = getArchetype(lifePath, "en");
+  const dictum = getSoulDictum(lifePath, "en");
 
   // 2. Verificar ou Criar Usuário no Supabase Auth
   let userId: string | null = null;
