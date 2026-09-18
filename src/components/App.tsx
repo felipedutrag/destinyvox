@@ -10,7 +10,6 @@ import {
   Copy,
   Check,
   Loader2,
-  Sparkles,
   Zap,
   BookOpen,
   Compass,
@@ -28,238 +27,81 @@ import {
   trackRedditPurchase,
 } from "@/lib/redditPixel";
 
-type Language = "en" | "pt" | "es";
+type Language = "en";
 
 const TRANSLATIONS = {
   en: {
-    badge: "DESTINYVOX // PYTHAGOREAN DESTINY DOSSIER",
-    badgeDesktop: "DESTINYVOX • HERMETIC NUMEROLOGY & CONSCIOUSNESS ENGINEERING",
-    subBrand: "MAPA DO DESTINO",
-    navCta: "ACESSAR MEU MAPA ⟶",
-    heroTitleLine1: "Decodifique o Algoritmo Oculto",
-    heroTitleLine2: "do seu Próprio Destino.",
+    badge: "PYTHAGOREAN DESTINY DOSSIER",
+    badgeDesktop: "HERMETIC NUMEROLOGY & CONSCIOUSNESS ENGINEERING",
+    subBrand: "DESTINY MAP",
+    navCta: "ACCESS MY MAP 🔮",
+    heroTitleLine1: "Decode the Hidden Algorithm",
+    heroTitleLine2: "of your Own Destiny.",
     heroDescription:
-      "Seu nome de certidão e sua data de nascimento contêm o blueprint matemático exato da sua alma. Acesse seu Dossiê Pitagórico Completo em PDF (11 Páginas Dedicadas): a ciência ancestral da Gematria e a revelação profunda dos seus 7 Pilares Vibracionais com orientações estratégicas.",
-    ctaMain: "GERAR MEU MAPA PITAGÓRICO",
-    ctaSub: "Dossiê Completo em PDF de Alta Resolução • Envio Imediato",
-    featureTag: "7 PILARES VIBRACIONAIS CALCULADOS",
-    howItWorksTitle: "A CIÊNCIA DA MATRIZ PITAGÓRICA",
-    howItWorksHeading: "Uma engenharia exata baseada na sua certidão e nascimento",
+      "Your birth name and date of birth contain the exact mathematical blueprint of your soul. Access your Complete Pythagorean Dossier in PDF (11 Dedicated Pages): the ancient science of Gematria and the profound revelation of your 7 Vibrational Pillars with strategic guidance.",
+    ctaMain: "GENERATE MY PYTHAGOREAN MAP",
+    ctaSub: "Complete High-Resolution PDF Dossier — Immediate Delivery",
+    featureTag: "7 VIBRATIONAL PILLARS CALCULATED",
+    howItWorksTitle: "THE SCIENCE OF THE PYTHAGOREAN MATRIX",
+    howItWorksHeading: "Exact engineering based on your birth certificate and birth date",
     howItWorksDesc:
-      "Diferente de horóscopos genéricos ou previsões rasas, o Método DestinyVox decodifica cada fonema do seu nome completo e cada dígito da sua data de nascimento segundo a Tábua Pitagórica e as Leis Herméticas de Correspondência:",
+      "Unlike generic horoscopes or shallow predictions, the DestinyVox Method decodes each phoneme of your full name and each digit of your birth date according to the Pythagorean Table and Hermetic Laws of Correspondence:",
     numbersList: [
       {
         icon: Compass,
         num: "01",
-        name: "CAMINHO DE VIDA (DESTINO CENTRAL)",
-        desc: "A soma sagrada da sua data de nascimento revela o vetor primordial da sua encarnação, sua grande lição de alma e o arquétipo mestre da sua jornada terrena.",
-      },
-      {
-        icon: Flame,
-        num: "02",
-        name: "EXPRESSÃO (TALENTO & VOCAÇÃO)",
-        desc: "A decomposição de todas as letras do seu nome completo mapeia suas ferramentas práticas para manifestar prosperidade, autoridade e riqueza no mundo físico.",
-      },
-      {
-        icon: Sparkles,
-        num: "03",
-        name: "DESEJO DA ALMA (MOTIVAÇÃO INTERIOR)",
-        desc: "A frequência secreta extraída exclusivamente das vogais do seu nome revela o motor térmico do seu espírito, seus anseios afetivos invioláveis e seu propósito mais íntimo.",
+        name: "LIFE PATH (CENTRAL DESTINY)",
+        desc: "The mission you came to fulfill and the main obstacles on your journey.",
       },
       {
         icon: User,
-        num: "04",
-        name: "PERSONALIDADE (A MÁSCARA SOCIAL)",
-        desc: "A soma das consoantes do seu nome decodifica o escudo relacional e como o mundo percebe sua presença e magnetismo antes mesmo de você falar.",
-      },
-      {
-        icon: AlertTriangle,
-        num: "05",
-        name: "DÍVIDAS KÁRMICAS & SOMBRA",
-        desc: "Diagnóstico profundo dos padrões ancestrais repetitivos de escassez, desafios nos relacionamentos e o protocolo de transmutação ('O Ouro da Sombra').",
-      },
-      {
-        icon: Calendar,
-        num: "06",
-        name: "ANO PESSOAL 2026 (CLIMA TEMPORAL)",
-        desc: "O cálculo da sua vibração para o ano de 2026, revelando as janelas cósmicas exatas para fechar contratos, investir, mudar de carreira ou resguardar patrimônio.",
-      },
-      {
-        icon: Gift,
-        num: "07",
-        name: "DOM NATALÍCIO (TALENTO NATO)",
-        desc: "A ferramenta de poder concedida no dia exato do seu nascimento — um recurso inato para destravar soluções em momentos de crise crítica.",
-      },
-      {
-        icon: Award,
-        num: "08",
-        name: "MISSÃO DA MATURIDADE (35+ ANOS)",
-        desc: "A síntese entre seu Destino e sua Expressão: a grande colheita que floresce na maturidade e consolida seu legado duradouro na Terra.",
-      },
-    ],
-    pricingTag: "DOSSIÊ COMPLETO EM PDF",
-    pricingHeading: "Receba seu Mapa Pitagórico do Destino",
-    pricingDesc:
-      "Dossiê editorial completo de 11 páginas de alta resolução diagramado em padrão de luxo Dark Tech & Gold, entregue imediatamente no seu e-mail.",
-    footerStripe: "Pagamento Instantâneo via PIX Seguro",
-    footerGuarantee: "Garantia Incondicional de 7 Dias",
-    footerSync: "Entrega Instantânea no seu E-mail",
-    footerCopyright: `DESTINYVOX © ${new Date().getFullYear()} — ENGENHARIA PITAGÓRICA DA CONSCIÊNCIA.`,
-  },
-  pt: {
-    badge: "DESTINYVOX // PROTOCOLO PITAGÓRICO DE ENGENHARIA DO DESTINO",
-    badgeDesktop: "DESTINYVOX • NUMEROLOGIA HERMÉTICA & ENGENHARIA DA CONSCIÊNCIA",
-    subBrand: "MAPA DO DESTINO",
-    navCta: "ACESSAR MEU MAPA ⟶",
-    heroTitleLine1: "Decodifique o Algoritmo Oculto",
-    heroTitleLine2: "do seu Próprio Destino.",
-    heroDescription:
-      "Seu nome de certidão e sua data de nascimento contêm o blueprint matemático exato da sua alma. Acesse seu Dossiê Pitagórico Completo em PDF (11 Páginas Dedicadas): a ciência ancestral da Gematria e a revelação profunda dos seus 7 Pilares Vibracionais com orientações estratégicas.",
-    ctaMain: "GERAR MEU MAPA PITAGÓRICO",
-    ctaSub: "Dossiê Completo em PDF de Alta Resolução • Envio Imediato",
-    featureTag: "7 PILARES VIBRACIONAIS CALCULADOS",
-    howItWorksTitle: "A CIÊNCIA DA MATRIZ PITAGÓRICA",
-    howItWorksHeading: "Uma engenharia exata baseada na sua certidão e nascimento",
-    howItWorksDesc:
-      "Diferente de horóscopos genéricos ou previsões rasas, o Método DestinyVox decodifica cada fonema do seu nome completo e cada dígito da sua data de nascimento segundo a Tábua Pitagórica e as Leis Herméticas de Correspondência:",
-    numbersList: [
-      {
-        icon: Compass,
-        num: "01",
-        name: "CAMINHO DE VIDA (DESTINO CENTRAL)",
-        desc: "A soma sagrada da sua data de nascimento revela o vetor primordial da sua encarnação, sua grande lição de alma e o arquétipo mestre da sua jornada terrena.",
+        num: "02",
+        name: "SOUL URGE (INNER DESIRE)",
+        desc: "What your spirit truly seeks behind all your worldly actions.",
       },
       {
         icon: Flame,
-        num: "02",
-        name: "EXPRESSÃO (TALENTO & VOCAÇÃO)",
-        desc: "A decomposição de todas as letras do seu nome completo mapeia suas ferramentas práticas para manifestar prosperidade, autoridade e riqueza no mundo físico.",
-      },
-      {
-        icon: Sparkles,
         num: "03",
-        name: "DESEJO DA ALMA (MOTIVAÇÃO INTERIOR)",
-        desc: "A frequência secreta extraída exclusivamente das vogais do seu nome revela o motor térmico do seu espírito, seus anseios afetivos invioláveis e seu propósito mais íntimo.",
-      },
-      {
-        icon: User,
-        num: "04",
-        name: "PERSONALIDADE (A MÁSCARA SOCIAL)",
-        desc: "A soma das consoantes do seu nome decodifica o escudo relacional e como o mundo percebe sua presença e magnetismo antes mesmo de você falar.",
+        name: "EXPRESSION (NATURAL TALENTS)",
+        desc: "The unique skills and energetic signature you project into the world.",
       },
       {
         icon: AlertTriangle,
-        num: "05",
-        name: "DÍVIDAS KÁRMICAS & SOMBRA",
-        desc: "Diagnóstico profundo dos padrões ancestrais repetitivos de escassez, desafios nos relacionamentos e o protocolo de transmutação ('O Ouro da Sombra').",
-      },
-      {
-        icon: Calendar,
-        num: "06",
-        name: "ANO PESSOAL 2026 (CLIMA TEMPORAL)",
-        desc: "O cálculo da sua vibração para o ano de 2026, revelando as janelas cósmicas exatas para fechar contratos, investir, mudar de carreira ou resguardar patrimônio.",
-      },
-      {
-        icon: Gift,
-        num: "07",
-        name: "DOM NATALÍCIO (TALENTO NATO)",
-        desc: "A ferramenta de poder concedida no dia exato do seu nascimento — um recurso inato para destravar soluções em momentos de crise crítica.",
-      },
-      {
-        icon: Award,
-        num: "08",
-        name: "MISSÃO DA MATURIDADE (35+ ANOS)",
-        desc: "A síntese entre seu Destino e sua Expressão: a grande colheita que floresce na maturidade e consolida seu legado duradouro na Terra.",
-      },
-    ],
-    pricingTag: "DOSSIÊ COMPLETO EM PDF",
-    pricingHeading: "Receba seu Mapa Pitagórico do Destino",
-    pricingDesc:
-      "Dossiê editorial completo de 11 páginas de alta resolução diagramado em padrão de luxo Dark Tech & Gold, entregue imediatamente no seu e-mail.",
-    footerStripe: "Pagamento Instantâneo via PIX Seguro",
-    footerGuarantee: "Garantia Incondicional de 7 Dias",
-    footerSync: "Entrega Instantânea no seu E-mail",
-    footerCopyright: `DESTINYVOX © ${new Date().getFullYear()} — ENGENHARIA PITAGÓRICA DA CONSCIÊNCIA.`,
-  },
-  es: {
-    badge: "DESTINYVOX // PROTOCOLO PITAGÓRICO DE INGENIERÍA DEL DESTINO",
-    badgeDesktop: "DESTINYVOX • NUMEROLOGÍA HERMÉTICA & INGENIERÍA DE LA CONCIENCIA",
-    subBrand: "MAPA DEL DESTINO",
-    navCta: "ACCEDER A MI MAPA ⟶",
-    heroTitleLine1: "Decodifica el Algoritmo Oculto",
-    heroTitleLine2: "de tu Propio Destino.",
-    heroDescription:
-      "Tu nombre de certificado y tu fecha de nacimiento contienen el blueprint matemático exacto de tu alma. Accede a tu Dossier Pitagórico Completo en PDF (11 Páginas Dedicadas): la ciencia ancestral de la Gematría y la revelación profunda de tus 7 Pilares Vibracionales.",
-    ctaMain: "GENERAR MI MAPA PITAGÓRICO",
-    ctaSub: "Dossier Completo en PDF de Alta Resolución • Envío Inmediato",
-    featureTag: "7 PILARES VIBRACIONALES CALCULADOS",
-    howItWorksTitle: "LA CIENCIA DE LA MATRIZ PITAGÓRICA",
-    howItWorksHeading: "Una ingeniería exacta basada en tu nombre y nacimiento",
-    howItWorksDesc:
-      "A diferencia de horóscopos genéricos, el Método DestinyVox decodifica cada fonema de tu nombre y cada dígito de tu fecha según la Tabla Pitagórica y las Leyes Herméticas:",
-    numbersList: [
-      {
-        icon: Compass,
-        num: "01",
-        name: "CAMINO DE VIDA (DESTINO CENTRAL)",
-        desc: "La suma sagrada de tu fecha de nacimiento revela el vector primordial de tu encarnación, tu lección de alma y el arquetipo maestro de tu vida.",
-      },
-      {
-        icon: Flame,
-        num: "02",
-        name: "EXPRESIÓN (TALENTO & VOCACIÓN)",
-        desc: "La descomposición de todas las letras de tu nombre completo mapea tus herramientas prácticas para manifestar prosperidad y riqueza material.",
-      },
-      {
-        icon: Sparkles,
-        num: "03",
-        name: "DESEO DEL ALMA (MOTIVACIÓN INTERIOR)",
-        desc: "La frecuencia secreta extraída de las vocales revela el motor de tu espíritu, tus anhelos afectivos inviolables y tu propósito más íntimo.",
-      },
-      {
-        icon: User,
         num: "04",
-        name: "PERSONALIDAD (LA MÁSCARA SOCIAL)",
-        desc: "La suma de las consonantes decodifica el escudo relacional y cómo el mundo percibe tu presencia y autoridad.",
-      },
-      {
-        icon: AlertTriangle,
-        num: "05",
-        name: "DEUDAS KÁRMICAS & SOMBRA",
-        desc: "Diagnóstico profundo de patrones ancestrales repetitivos de escasez y el protocolo de transmutación ('El Oro de la Sombra').",
-      },
-      {
-        icon: Calendar,
-        num: "06",
-        name: "AÑO PERSONAL 2026 (CLIMA TEMPORAL)",
-        desc: "El cálculo de tu vibración para 2026, revelando ventanas cósmicas exactas para cerrar acuerdos, invertir o resguardar patrimonio.",
-      },
-      {
-        icon: Gift,
-        num: "07",
-        name: "DON NATALICIO (TALENTO INNATO)",
-        desc: "La herramienta concedida en el día de tu nacimiento — un recurso innato para desbloquear soluciones en momentos de crisis.",
+        name: "KARMIC DEBTS",
+        desc: "Unresolved cycles from past lives that block your current prosperity.",
       },
       {
         icon: Award,
-        num: "08",
-        name: "MISIÓN DE LA MADUREZ (35+ AÑOS)",
-        desc: "La síntesis entre tu Destino y tu Expresión: la gran cosecha que florece en la madurez y consolida tu legado en la Tierra.",
+        num: "05",
+        name: "PERSONAL YEAR 2026",
+        desc: "The specific vibration of this year and when to act (or retreat).",
       },
     ],
-    pricingTag: "DOSSIER COMPLETO EN PDF",
-    pricingHeading: "Recibe tu Mapa Pitagórico del Destino",
-    pricingDesc:
-      "Dossier editorial completo de 11 páginas diagramado en estándar de lujo Dark Tech & Gold, enviado de inmediato a tu correo.",
-    footerStripe: "Pago Instantáneo Seguro",
-    footerGuarantee: "Garantía Incondicional de 7 Días",
-    footerSync: "Entrega Instantánea en tu Correo",
-    footerCopyright: `DESTINYVOX © ${new Date().getFullYear()} — INGENIERÍA PITAGÓRICA DE LA CONCIENCIA.`,
-  },
+    pricingTitle: "UNLOCK YOUR ALGORITHMIC BLUEPRINT",
+    pricingTag: "SPECIAL OFFER",
+    pricingHeading: "Secure your Pythagorean Dossier today",
+    pricingDesc: "Immediate access to your 11-page personalized PDF dossier.",
+    pricingCardTitle: "Pythagorean Dossier",
+    pricingPrice: "$19.90",
+    pricingOriginalPrice: "$49.90",
+    pricingFeatures: [
+      "11-Page Personalized PDF Map",
+      "Analysis of your 7 Vibrational Pillars",
+      "Identification of Hidden Talents",
+      "Calculation of your Life Path",
+      "Immediate Delivery to Email"
+    ],
+    pricingCta: "UNLOCK MY DOSSIER NOW",
+    footerStripe: "Secure Instant Payment",
+    footerGuarantee: "7-Day Unconditional Guarantee",
+    footerSync: "Instant Email Delivery",
+    footerCopyright: "DESTINYVOX © 2026 — PYTHAGOREAN CONSCIOUSNESS ENGINEERING.",
+  }
 };
 
 export function App() {
-  const [lang, setLang] = useState<Language>("pt");
+  const [lang, setLang] = useState<Language>("en");
   const [isMounted, setIsMounted] = useState<boolean>(false);
 
   // Formulário integrado no Card de Preço (SEM MODAL)
@@ -291,16 +133,16 @@ export function App() {
   const trackedPurchasesRef = useRef<Set<string>>(new Set());
 
   // Preços
-  const basePrice = 39.90;
-  const karmicPrice = 14.90;
-  const personalYearPrice = 14.90;
+  const basePrice = 19.90;
+  const karmicPrice = 9.90;
+  const personalYearPrice = 9.90;
 
   const currentTotal =
     basePrice +
     (orderBumps.karmicDebt ? karmicPrice : 0) +
     (orderBumps.personalYearMonths ? personalYearPrice : 0);
 
-  const displayTotal = isDev && lang === "pt" ? "R$ 1,00" : `R$ ${currentTotal.toFixed(2).replace(".", ",")}`;
+  const displayTotal = `${currentTotal.toFixed(2)}`;
 
   const triggerRedditPurchase = (transactionId: string, externalId?: string) => {
     const key = transactionId || externalId || `PIX_PAID_${Date.now()}`;
@@ -310,7 +152,7 @@ export function App() {
     const priceValue = isDev ? 1.0 : currentTotal;
     trackRedditPurchase({
       value: priceValue,
-      currency: "BRL",
+      currency: "USD",
       transactionId: key,
       conversionId: key,
       plan: "mapa_pitagorico_11paginas",
@@ -502,12 +344,19 @@ export function App() {
     e.preventDefault();
     const dateDigits = pixForm.birthDate.replace(/\D/g, "");
     if (!pixForm.name.trim() || !pixForm.email.trim() || dateDigits.length !== 8) {
-      setPixError("Por favor, preencha Nome Completo, E-mail e Data de Nascimento (DD/MM/AAAA).");
+      setPixError("Please fill out Full Name, E-mail, and Date of Birth (MM/DD/YYYY).");
       return;
     }
 
     setPixLoading(true);
     setPixError(null);
+
+    trackRedditInitiateCheckout({
+      value: currentTotal,
+      currency: "USD",
+      transactionId: `CHK_${Date.now()}`,
+      plan: "mapa_pitagorico_11paginas",
+    });
 
     try {
       const res = await fetch("/api/checkout", {
@@ -524,53 +373,15 @@ export function App() {
 
       const data = await res.json();
       if (!res.ok || !data.success) {
-        throw new Error(data.error || "Falha ao gerar cobrança PIX");
+        throw new Error(data.error || "Failed to generate checkout");
       }
 
-      if (data.status === "PAID" || data.auto_paid) {
-        setPixStep("PAID");
-        try {
-          await fetch("/api/deliver", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              name: pixForm.name.trim(),
-              email: pixForm.email.trim(),
-              birthDate: pixForm.birthDate,
-              transaction_id: data.transaction_id,
-              external_id: data.external_id,
-              plan: "mapa_pitagorico_11paginas",
-              orderBumps,
-            }),
-          });
-          setPixStep("DELIVERED");
-        } catch {
-          setPixStep("DELIVERED");
-        }
-        return;
+      if (data.url) {
+        window.location.href = data.url;
       }
-
-      setPixData({
-        transaction_id: data.transaction_id,
-        qr_code_base64: data.qr_code,
-        pix_copy_paste: data.pix_copy_paste,
-        external_id: data.external_id,
-      });
-
-      setPixStep("QR_CODE");
-
-      trackRedditInitiateCheckout({
-        value: isDev ? 1.0 : currentTotal,
-        currency: "BRL",
-        transactionId: data.transaction_id,
-        plan: "mapa_pitagorico_11paginas",
-      });
-
-      subscribeRealtimePayment(data.transaction_id, data.external_id);
-      startPixPolling(data.transaction_id, data.external_id);
     } catch (err) {
-      console.error("[PIX] Erro ao gerar cobrança:", err);
-      setPixError(err instanceof Error ? err.message : "Erro inesperado ao gerar o PIX.");
+      console.error("[Checkout] Error:", err);
+      setPixError(err instanceof Error ? err.message : "Unexpected error during checkout.");
     } finally {
       setPixLoading(false);
     }
@@ -603,7 +414,13 @@ export function App() {
       const params = new URLSearchParams(window.location.search);
       const l = params.get("lang")?.toLowerCase() || sessionStorage.getItem("destinyvox_landing_lang");
       if (l === "pt" || l === "es" || l === "en") {
-        setLang(l as Language);
+        ;
+      }
+
+      if (params.get("status") === "success") {
+        const sessionId = params.get("session_id") || `STRIPE_${Date.now()}`;
+        triggerRedditPurchase(sessionId);
+        setPixStep("DELIVERED");
       }
     } catch {
       // ignore
@@ -674,22 +491,6 @@ export function App() {
           </div>
 
           <div className="flex items-center gap-3 sm:gap-5 font-mono text-xs sm:text-sm">
-            <div className="flex items-center gap-1 sm:gap-1.5 border border-neutral-800 px-2 sm:px-2.5 py-1 bg-neutral-950">
-              {(["pt", "en", "es"] as const).map((l) => (
-                <button
-                  key={l}
-                  onClick={() => setLang(l)}
-                  className={`px-1.5 py-0.5 text-[11px] sm:text-xs tracking-wider uppercase transition-colors cursor-pointer ${
-                    lang === l
-                      ? "text-amber-400 font-bold border-b border-amber-400"
-                      : "text-neutral-500 hover:text-neutral-300"
-                  }`}
-                >
-                  {l}
-                </button>
-              ))}
-            </div>
-
             <a
               href="#pricing"
               className="hidden sm:inline-block bg-white text-black hover:bg-neutral-200 px-5 py-2.5 font-semibold tracking-widest uppercase transition-colors text-xs sm:text-sm"
@@ -702,13 +503,12 @@ export function App() {
         {/* Hero Section */}
         <section className="px-5 sm:px-12 pt-12 sm:pt-20 pb-12 sm:pb-16 max-w-5xl mx-auto text-center space-y-6 sm:space-y-8">
           <div className="inline-flex items-center border border-amber-500/30 bg-amber-500/10 px-3.5 py-1.5 font-mono text-[11px] sm:text-xs tracking-[0.2em] sm:tracking-[0.25em] text-amber-300 uppercase">
-            <Sparkles className="w-3.5 h-3.5 text-amber-400 mr-2" />
             <span className="sm:hidden">{t.badge}</span>
             <span className="hidden sm:inline">{t.badgeDesktop}</span>
           </div>
 
           <div className="space-y-6 sm:space-y-3 md:space-y-3.5">
-            <h1 className="font-editorial text-4xl sm:text-6xl md:text-7xl font-normal leading-[1.12] sm:leading-[1.08] tracking-tight text-white sm:max-w-2xl md:max-w-3xl lg:max-w-4xl mx-auto">
+            <h1 className="font-editorial text-3xl sm:text-6xl md:text-7xl font-normal leading-[1.15] sm:leading-[1.08] tracking-tight text-white sm:max-w-3xl md:max-w-4xl lg:max-w-5xl mx-auto">
               {t.heroTitleLine1}{" "}
               <span className="italic text-amber-400">{t.heroTitleLine2}</span>
             </h1>
@@ -744,7 +544,7 @@ export function App() {
               <span className="font-mono text-xs sm:text-xs md:text-sm tracking-[0.2em] text-neutral-400 uppercase block">
                 {t.howItWorksTitle}
               </span>
-              <h2 className="font-editorial text-2xl sm:text-3xl md:text-4xl text-white font-normal leading-tight">
+              <h2 className="font-editorial text-xl sm:text-2xl md:text-3xl text-white font-normal leading-tight">
                 {t.howItWorksHeading}
               </h2>
               <p className="font-mono font-light text-xs sm:text-sm md:text-base text-neutral-300 leading-relaxed pt-1">
@@ -752,7 +552,7 @@ export function App() {
               </p>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5 font-mono pt-4 sm:pt-6">
-                {t.numbersList.map((item, idx) => {
+                {t.numbersList.map((item: any, idx: number) => {
                   const Icon = item.icon;
                   return (
                     <div
@@ -782,22 +582,37 @@ export function App() {
         </section>
 
         {/* Pricing Section com Formulário Embutido (SEM MODAL) */}
-        <section id="pricing" className="px-4 sm:px-12 py-12 sm:py-20 max-w-4xl mx-auto space-y-8 sm:space-y-12 text-center">
-          <div className="space-y-2 sm:space-y-3">
-            <span className="font-mono text-xs sm:text-xs md:text-sm tracking-[0.25em] text-neutral-400 uppercase">
-              {t.pricingTag}
-            </span>
-            <h2 className="font-editorial text-3xl sm:text-5xl md:text-6xl text-white font-normal">
-              {t.pricingHeading}
-            </h2>
-            <p className="font-mono font-light text-xs sm:text-sm md:text-base text-neutral-300 max-w-lg mx-auto leading-relaxed">
-              {t.pricingDesc}
-            </p>
-          </div>
+        <section id="pricing" className="px-4 sm:px-12 py-12 sm:py-20 max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-start">
+            {/* Left Column: Copywriting */}
+            <div className="space-y-6 sm:space-y-8 text-left lg:sticky lg:top-24">
+              <div className="space-y-3 sm:space-y-4">
+                <span className="font-mono text-xs sm:text-sm tracking-[0.25em] text-amber-500 uppercase font-semibold">
+                  {t.pricingTag}
+                </span>
+                <h2 className="font-editorial text-4xl sm:text-5xl md:text-6xl text-white font-normal leading-tight">
+                  {t.pricingHeading}
+                </h2>
+                <p className="font-mono font-light text-sm sm:text-base text-neutral-300 leading-relaxed max-w-lg">
+                  {t.pricingDesc}
+                </p>
+              </div>
 
-          {/* Card Principal de Preço com Formulário Embutido */}
-          <div className="border-2 border-amber-500/40 bg-[#0a0a0a] p-6 sm:p-10 space-y-7 text-left shadow-[0_0_60px_rgba(245,158,11,0.14)] relative">
-            <div className="absolute -top-3.5 right-6 bg-gradient-to-r from-amber-400 to-amber-500 text-black font-mono text-[10px] sm:text-xs font-bold tracking-[0.2em] uppercase px-3 py-1 shadow-md">
+              <div className="pt-6 border-t border-neutral-800">
+                <ul className="space-y-4">
+                  {t.pricingFeatures.map((feature: string, idx: number) => (
+                    <li key={idx} className="flex items-start gap-3">
+                      <CheckCircle2 className="w-5 h-5 text-amber-500 shrink-0" />
+                      <span className="font-mono text-sm text-neutral-200">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            {/* Right Column: Checkout Card */}
+            <div className="border border-amber-500/30 rounded-2xl bg-[#0a0a0a] p-6 sm:p-10 space-y-7 text-left shadow-[0_0_80px_rgba(245,158,11,0.1)] relative">
+            <div className="absolute -top-3.5 right-6 bg-gradient-to-r from-amber-400 to-amber-500 text-black font-mono text-[10px] sm:text-xs font-bold tracking-[0.2em] uppercase px-3 py-1 rounded-full shadow-md">
               EDIÇÃO COMPLETA • 11 PÁGINAS
             </div>
 
@@ -805,23 +620,22 @@ export function App() {
             <div className="space-y-3 border-b border-neutral-800 pb-5">
               <div className="flex justify-between items-center">
                 <span className="font-mono text-xs sm:text-sm tracking-widest text-amber-400 uppercase font-semibold flex items-center gap-1.5">
-                  <Sparkles className="w-4 h-4 text-amber-400" />
-                  MAPA PITAGÓRICO DO DESTINO
+                  PYTHAGOREAN DESTINY DOSSIER
                 </span>
                 <span className="font-mono text-[10px] sm:text-xs tracking-widest border border-amber-500/40 bg-amber-500/10 px-2.5 py-0.5 text-amber-300">
-                  PDF ALTA RESOLUÇÃO
+                  HIGH-RES PDF
                 </span>
               </div>
               <div className="flex items-baseline gap-3">
-                <span className="font-editorial text-4xl sm:text-5xl text-white font-normal">
-                  {displayTotal}
+                <span className="font-editorial text-5xl sm:text-6xl text-white font-normal">
+                  ${displayTotal}
                 </span>
                 <span className="font-mono text-xs sm:text-sm text-neutral-400">
-                  pagamento único via PIX • sem mensalidade
+                  one-time payment
                 </span>
               </div>
               <p className="font-mono text-xs text-neutral-300">
-                11 páginas dedicadas de conteúdo profundo: cada pilar vibracional detalhado sem resumos superficiais, com decomposição matemática letra a letra e ativação hermética.
+                11 dedicated pages of deep content: each vibrational pillar detailed without superficial summaries, with letter-by-letter mathematical decomposition and hermetic activation.
               </p>
             </div>
 
@@ -831,54 +645,54 @@ export function App() {
                 <div className="space-y-4">
                   <div className="space-y-1.5">
                     <label className="block font-mono text-xs text-neutral-200 uppercase tracking-wider font-medium">
-                      1. Nome Completo de Certidão
+                      1. Full Birth Name
                     </label>
                     <input
                       type="text"
                       required
-                      placeholder="Ex: João Ferreira da Silva"
+                      placeholder="Ex: John Doe"
                       value={pixForm.name}
                       onChange={(e) => setPixForm({ ...pixForm, name: e.target.value })}
-                      className="w-full bg-neutral-950 border border-neutral-800 p-3.5 text-white font-mono text-sm focus:outline-none focus:border-amber-400 transition-colors"
+                      className="w-full bg-neutral-950 border border-neutral-800 rounded-lg p-3.5 text-white font-mono text-sm focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all"
                     />
                     <span className="font-mono text-[11px] text-neutral-400 block">
-                      Usado para o cálculo rigoroso da sua Gematria, Expressão, Alma e Personalidade.
+                      Used for the rigorous calculation of your Gematria, Expression, Soul, and Personality.
                     </span>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                       <label className="block font-mono text-xs text-neutral-200 uppercase tracking-wider font-medium">
-                        2. Data de Nascimento
+                        2. Date of Birth
                       </label>
                       <input
                         type="text"
                         required
-                        placeholder="DD/MM/AAAA"
+                        placeholder="MM/DD/YYYY"
                         maxLength={10}
                         value={pixForm.birthDate}
                         onChange={(e) => handleDateChange(e.target.value)}
-                        className="w-full bg-neutral-950 border border-neutral-800 p-3.5 text-white font-mono text-sm focus:outline-none focus:border-amber-400 transition-colors"
+                        className="w-full bg-neutral-950 border border-neutral-800 rounded-lg p-3.5 text-white font-mono text-sm focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all"
                       />
                       <span className="font-mono text-[11px] text-neutral-400 block">
-                        Caminho de Vida e Ano 2026.
+                        Life Path and Year 2026.
                       </span>
                     </div>
 
                     <div className="space-y-1.5">
                       <label className="block font-mono text-xs text-neutral-200 uppercase tracking-wider font-medium">
-                        3. Seu Melhor E-mail
+                        3. Your Best E-mail
                       </label>
                       <input
                         type="email"
                         required
-                        placeholder="seuemail@exemplo.com"
+                        placeholder="your@email.com"
                         value={pixForm.email}
                         onChange={(e) => setPixForm({ ...pixForm, email: e.target.value })}
-                        className="w-full bg-neutral-950 border border-neutral-800 p-3.5 text-white font-mono text-sm focus:outline-none focus:border-amber-400 transition-colors"
+                        className="w-full bg-neutral-950 border border-neutral-800 rounded-lg p-3.5 text-white font-mono text-sm focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all"
                       />
                       <span className="font-mono text-[11px] text-neutral-400 block">
-                        Onde seu PDF será entregue.
+                        Where your PDF will be delivered.
                       </span>
                     </div>
                   </div>
@@ -887,7 +701,7 @@ export function App() {
                 {/* 2 ORDER BUMPS EMBUTIDOS */}
                 <div className="space-y-3 pt-2">
                   <span className="font-mono text-xs text-amber-400 uppercase tracking-widest block font-bold">
-                    UPGRADES RECOMENDADOS PARA SEU MAPA:
+                    RECOMMENDED UPGRADES FOR YOUR DOSSIER:
                   </span>
 
                   {/* Order Bump 1: Dívida Kármica */}
@@ -910,14 +724,14 @@ export function App() {
                       <div className="space-y-1">
                         <div className="flex flex-wrap items-center gap-2">
                           <span className="font-mono text-xs text-amber-300 font-bold uppercase">
-                            [ADICIONAR] Dossiê de Dívidas Kármicas (13, 14, 16 e 19)
+                            [ADD] Karmic Debts Dossier (13, 14, 16, and 19)
                           </span>
                           <span className="font-mono text-[11px] text-white bg-amber-500/20 border border-amber-500/40 px-2 py-0.2">
-                            + R$ 14,90
+                            + $9.90
                           </span>
                         </div>
                         <p className="font-mono text-xs text-neutral-300 leading-relaxed">
-                          Identifique se você carrega travas ancestrais de escassez, sabotagem nos relacionamentos ou bloqueios de saúde decorrentes de vidas passadas e acesse o protocolo de quitação.
+                          Identify if you carry ancestral blocks of scarcity, relationship sabotage, or health issues from past lives and access the clearing protocol.
                         </p>
                       </div>
                     </div>
@@ -946,11 +760,11 @@ export function App() {
                             [ADICIONAR] Guia Estratégico 2026 Mês a Mês
                           </span>
                           <span className="font-mono text-[11px] text-white bg-amber-500/20 border border-amber-500/40 px-2 py-0.2">
-                            + R$ 14,90
+                            + $9.90
                           </span>
                         </div>
                         <p className="font-mono text-xs text-neutral-300 leading-relaxed">
-                          Mapeamento detalhado dos 12 meses do seu ano de 2026. Saiba exatamente em qual mês assinar contratos, investir, poupar, iniciar novos projetos ou proteger sua energia.
+                          Detailed mapping of the 12 months of your 2026 year. Know exactly in which month to sign contracts, invest, save, start new projects, or protect your energy.
                         </p>
                       </div>
                     </div>
@@ -966,16 +780,16 @@ export function App() {
                 <button
                   type="submit"
                   disabled={pixLoading}
-                  className="w-full bg-white text-black hover:bg-neutral-200 py-4 font-mono text-xs sm:text-sm font-bold tracking-widest uppercase transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50 shadow-xl"
+                  className="w-full bg-white text-black hover:bg-neutral-200 py-4 rounded-xl font-mono text-xs sm:text-sm font-bold tracking-widest uppercase transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50 shadow-xl hover:shadow-[0_0_30px_rgba(255,255,255,0.2)]"
                 >
                   {pixLoading ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>GERANDO PAGAMENTO PIX...</span>
+                      <span>GENERATING SECURE CHECKOUT...</span>
                     </>
                   ) : (
                     <>
-                      <span>GERAR MEU MAPA NO PIX ({displayTotal}) ⟶</span>
+                      <span>PROCEED TO CHECKOUT (${displayTotal}) ⟶</span>
                     </>
                   )}
                 </button>
@@ -998,8 +812,7 @@ export function App() {
             {pixStep === "QR_CODE" && pixData && (
               <div className="space-y-6 text-center">
                 <div className="inline-flex items-center gap-2 bg-amber-500/10 border border-amber-500/30 px-3 py-1 text-amber-300 font-mono text-xs">
-                  <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                  PAGAMENTO PIX GERADO • VALOR: {displayTotal}
+                  CHECKOUT GENERATED • AMOUNT: {displayTotal}
                 </div>
 
                 <div className="flex justify-center py-2">
@@ -1076,22 +889,23 @@ export function App() {
                   <CheckCircle2 className="w-8 h-8" />
                 </div>
                 <h3 className="font-editorial text-2xl sm:text-3xl text-white font-normal">
-                  Pagamento Confirmado!
+                  Payment Confirmed!
                 </h3>
                 <p className="font-mono text-xs sm:text-sm text-neutral-300 max-w-md mx-auto">
                   {pixStep === "PAID"
-                    ? "Gerando seu Dossiê Pitagórico Completo em PDF de 11 páginas..."
-                    : `Seu Mapa Pitagórico foi gerado com sucesso e enviado para ${pixForm.email}!`}
+                    ? "Generating your Complete Pythagorean Dossier in an 11-page PDF..."
+                    : `Your Pythagorean Dossier was successfully generated and sent to ${pixForm.email}!`}
                 </p>
                 {pixStep === "DELIVERED" && (
                   <div className="pt-2">
                     <span className="font-mono text-xs text-amber-400 bg-amber-500/10 border border-amber-500/30 px-3 py-1">
-                      Verifique sua caixa de entrada e spam.
+                      Check your inbox and spam folder.
                     </span>
                   </div>
                 )}
               </div>
             )}
+          </div>
           </div>
         </section>
 

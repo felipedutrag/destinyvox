@@ -267,13 +267,13 @@ export async function generateNumerologyContent(
   const maturity = calculateMaturity(lifePath, expression);
   const personalYear = calculatePersonalYear(birthDate, 2026);
 
-  const lpArchetype = getArchetype(lifePath, "pt");
-  const expArchetype = getArchetype(expression, "pt");
-  const suArchetype = getArchetype(soulUrge, "pt");
-  const persArchetype = getArchetype(personality, "pt");
-  const yearArchetype = getArchetype(personalYear, "pt");
-  const bdayArchetype = getArchetype(birthday, "pt");
-  const matArchetype = getArchetype(maturity, "pt");
+  const lpArchetype = getArchetype(lifePath, "en");
+  const expArchetype = getArchetype(expression, "en");
+  const suArchetype = getArchetype(soulUrge, "en");
+  const persArchetype = getArchetype(personality, "en");
+  const yearArchetype = getArchetype(personalYear, "en");
+  const bdayArchetype = getArchetype(birthday, "en");
+  const matArchetype = getArchetype(maturity, "en");
 
   const gematria = calculateGematriaBreakdown(name, birthDate, soulUrge, personality, expression);
 
@@ -285,15 +285,15 @@ export async function generateNumerologyContent(
       .filter(Boolean);
   };
 
-  const lpParagraphs = getParagraphs(LIFE_PATH_INTERPRETATIONS.pt[lifePath] || LIFE_PATH_INTERPRETATIONS.pt[1]);
-  const expParagraphs = getParagraphs(EXPRESSION_INTERPRETATIONS.pt[expression] || EXPRESSION_INTERPRETATIONS.pt[1]);
-  const suParagraphs = getParagraphs(SOUL_URGE_INTERPRETATIONS.pt[soulUrge] || SOUL_URGE_INTERPRETATIONS.pt[1]);
-  const persParagraphs = getParagraphs(PERSONALITY_INTERPRETATIONS.pt[personality] || PERSONALITY_INTERPRETATIONS.pt[1]);
-  const yearParagraphs = getParagraphs(YEARLY_FORECAST_INTERPRETATIONS.pt[personalYear] || YEARLY_FORECAST_INTERPRETATIONS.pt[1]);
-  const bdayParagraphs = getParagraphs(BIRTHDAY_INTERPRETATIONS.pt[birthday] || BIRTHDAY_INTERPRETATIONS.pt[1]);
-  const matParagraphs = getParagraphs(MATURITY_INTERPRETATIONS.pt[maturity] || MATURITY_INTERPRETATIONS.pt[1]);
+  const lpParagraphs = getParagraphs(LIFE_PATH_INTERPRETATIONS.en[lifePath] || LIFE_PATH_INTERPRETATIONS.en[1]);
+  const expParagraphs = getParagraphs(EXPRESSION_INTERPRETATIONS.en[expression] || EXPRESSION_INTERPRETATIONS.en[1]);
+  const suParagraphs = getParagraphs(SOUL_URGE_INTERPRETATIONS.en[soulUrge] || SOUL_URGE_INTERPRETATIONS.en[1]);
+  const persParagraphs = getParagraphs(PERSONALITY_INTERPRETATIONS.en[personality] || PERSONALITY_INTERPRETATIONS.en[1]);
+  const yearParagraphs = getParagraphs(YEARLY_FORECAST_INTERPRETATIONS.en[personalYear] || YEARLY_FORECAST_INTERPRETATIONS.en[1]);
+  const bdayParagraphs = getParagraphs(BIRTHDAY_INTERPRETATIONS.en[birthday] || BIRTHDAY_INTERPRETATIONS.en[1]);
+  const matParagraphs = getParagraphs(MATURITY_INTERPRETATIONS.en[maturity] || MATURITY_INTERPRETATIONS.en[1]);
 
-  const shadowRaw = SHADOW_INTERPRETATIONS.pt[lifePath] || SHADOW_INTERPRETATIONS.pt[1] || "";
+  const shadowRaw = SHADOW_INTERPRETATIONS.en[lifePath] || SHADOW_INTERPRETATIONS.en[1] || "";
   const shadowAll = getParagraphs(shadowRaw);
   const shadowParagraphs = shadowAll.slice(0, 4);
   const shadowTransmutation = shadowAll.slice(4);
@@ -316,57 +316,57 @@ export async function generateNumerologyContent(
       vowelsAdditionString: gematria.vowelsAdditionString,
       consonantsAdditionString: gematria.consonantsAdditionString,
       totalAdditionString: gematria.totalAdditionString,
-      explanation: `A assinatura vibracional de ${name} decomposta segundo a tábua de Pitágoras revela a dinâmica de ${gematria.totalSum} pontos de energia materializada.`,
+      explanation: `The vibrational signature of ${name} decomposed according to the Pythagorean table reveals the dynamic of ${gematria.totalSum} materialization energy points.`,
     },
     pillars: {
       lifePath: {
         number: lifePath,
-        label: "Caminho de Vida (Destino Central)",
+        label: "Life Path (Central Destiny)",
         archetype: lpArchetype.title,
         element: lpArchetype.element,
         keywords: lpArchetype.keyword,
-        dictum: getSoulDictum(lifePath, "pt"),
+        dictum: getSoulDictum(lifePath, "en"),
         paragraphs: lpParagraphs,
       },
       expression: {
         number: expression,
-        label: "Expressão (Marca no Mundo)",
+        label: "Expression (Mark on the World)",
         archetype: expArchetype.title,
         element: expArchetype.element,
         keywords: expArchetype.keyword,
-        dictum: getSoulDictum(expression, "pt"),
+        dictum: getSoulDictum(expression, "en"),
         paragraphs: expParagraphs,
       },
       soulUrge: {
         number: soulUrge,
-        label: "Desejo da Alma (Motivação Interior)",
+        label: "Soul Urge (Inner Motivation)",
         archetype: suArchetype.title,
         element: suArchetype.element,
         keywords: suArchetype.keyword,
-        dictum: getSoulDictum(soulUrge, "pt"),
+        dictum: getSoulDictum(soulUrge, "en"),
         paragraphs: suParagraphs,
       },
       personality: {
         number: personality,
-        label: "Personalidade Exterior (Filtro Social)",
+        label: "Outer Personality (Social Filter)",
         archetype: persArchetype.title,
         element: persArchetype.element,
         keywords: persArchetype.keyword,
-        dictum: getSoulDictum(personality, "pt"),
+        dictum: getSoulDictum(personality, "en"),
         paragraphs: persParagraphs,
       },
       personalYear: {
         number: personalYear,
-        label: "Ano Pessoal Atual (2026)",
+        label: "Current Personal Year (2026)",
         archetype: yearArchetype.title,
         element: yearArchetype.element,
         keywords: yearArchetype.keyword,
-        dictum: getSoulDictum(personalYear, "pt"),
+        dictum: getSoulDictum(personalYear, "en"),
         paragraphs: yearParagraphs,
       },
       birthday: {
         number: birthday,
-        label: "Dom Congênito (Dia de Nascimento)",
+        label: "Innate Talent (Day of Birth)",
         archetype: bdayArchetype.title,
         element: bdayArchetype.element,
         keywords: bdayArchetype.keyword,
@@ -374,7 +374,7 @@ export async function generateNumerologyContent(
       },
       maturity: {
         number: maturity,
-        label: "Missão da Maturidade (35+ Anos)",
+        label: "Maturity Mission (35+ Years)",
         archetype: matArchetype.title,
         element: matArchetype.element,
         keywords: matArchetype.keyword,
@@ -383,14 +383,14 @@ export async function generateNumerologyContent(
     },
     shadow: {
       number: lifePath,
-      label: "Desafio & Alquimia Kármica",
-      title: `A Sombra do ${lpArchetype.title}`,
+      label: "Challenge & Karmic Alchemy",
+      title: `The Shadow of ${lpArchetype.title}`,
       paragraphs: shadowParagraphs,
       transmutation: shadowTransmutation,
     },
     activation: {
       abundanceCode: `${lifePath} • ${expression} • ${soulUrge} — 2026`,
-      manifestationDecree: "Eu reconheço a soberania da minha matriz vibracional. Alinho meus pensamentos à frequência da ordem universal e ativo o fluxo inesgotável de sabedoria, prosperidade e propósito. Os códigos do meu destino estão abertos.",
+      manifestationDecree: "I acknowledge the sovereignty of my vibrational matrix. I align my thoughts to the frequency of universal order and activate the inexhaustible flow of wisdom, prosperity, and purpose. The codes of my destiny are open.",
     },
     orderBumps: {
       karmicDebt: orderBumpsOption?.karmicDebt
