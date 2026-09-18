@@ -596,9 +596,9 @@ export function App() {
 
         {/* Pricing Section com Formulário Embutido (SEM MODAL) */}
         <section id="pricing" className="px-4 sm:px-12 py-12 sm:py-20 max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-start">
             {/* Left Column: Copywriting */}
-            <div className="px-3 sm:px-0 space-y-6 sm:space-y-8 text-left lg:sticky lg:top-24 lg:col-span-6 xl:col-span-7">
+            <div className="px-3 sm:px-0 space-y-6 sm:space-y-8 text-left lg:sticky lg:top-24">
               <div className="space-y-3 sm:space-y-4">
                 <span className="font-mono text-xs sm:text-sm tracking-[0.25em] text-amber-500 uppercase font-semibold">
                   {t.pricingTag}
@@ -624,7 +624,7 @@ export function App() {
             </div>
 
             {/* Right Column: Checkout Card */}
-            <div className="lg:col-span-6 xl:col-span-5 border border-amber-500/30 rounded-2xl bg-[#0a0a0a] p-6 sm:p-8 space-y-7 text-left shadow-[0_0_80px_rgba(245,158,11,0.1)] relative">
+            <div className="border border-amber-500/30 rounded-2xl bg-[#0a0a0a] p-6 sm:p-10 space-y-7 text-left shadow-[0_0_80px_rgba(245,158,11,0.1)] relative">
             <div className="absolute -top-3.5 right-6 bg-gradient-to-r from-amber-400 to-amber-500 text-black font-mono text-[10px] sm:text-xs font-bold tracking-[0.2em] uppercase px-3 py-1 rounded-full shadow-md">
               COMPLETE EDITION • 11 PAGES
             </div>
