@@ -620,7 +620,7 @@ export function App() {
             {/* Right Column: Checkout Card */}
             <div className="border border-amber-500/30 rounded-2xl bg-[#0a0a0a] p-6 sm:p-10 space-y-7 text-left shadow-[0_0_80px_rgba(245,158,11,0.1)] relative">
             <div className="absolute -top-3.5 right-6 bg-gradient-to-r from-amber-400 to-amber-500 text-black font-mono text-[10px] sm:text-xs font-bold tracking-[0.2em] uppercase px-3 py-1 rounded-full shadow-md">
-              EDIÇÃO COMPLETA • 11 PÁGINAS
+              COMPLETE EDITION • 11 PAGES
             </div>
 
             {/* Cabeçalho do Card */}

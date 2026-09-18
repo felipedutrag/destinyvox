@@ -713,17 +713,17 @@ export async function deliverNumerologyMap(params: DeliverMapParams) {
   console.log(`📧 [Deliver] Enviando e-mail para ${customerEmail}...`);
   const htmlContent = `
     <div style="font-family: sans-serif; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #222; background: #0c0c0c; color: #eee; padding: 25px; border-radius: 8px;">
-      <h2 style="color: #f59e0b; margin-top: 0;">Olá, ${customerName}!</h2>
-      <p>Seu pagamento via PIX foi confirmado com sucesso. O seu portal de sabedoria cósmica está ativo. ✨</p>
-      <p>Os números revelaram as frequências da sua alma. Em anexo, você encontrará o seu <strong>Mapa Pitagórico do Destino</strong> completo, calculado e gerado com exclusividade para você.</p>
-      <p>Prepare um ambiente tranquilo, abra o PDF anexo e descubra as diretrizes para alinhar suas decisões ao fluxo de abundância e timing cósmico.</p>
+      <h2 style="color: #f59e0b; margin-top: 0;">Hello, ${customerName}!</h2>
+      <p>Your payment has been successfully confirmed. Your portal of cosmic wisdom is active. ✨</p>
+      <p>The numbers have revealed the frequencies of your soul. Attached, you will find your complete <strong>Pythagorean Destiny Map</strong>, calculated and generated exclusively for you.</p>
+      <p>Prepare a quiet environment, open the attached PDF, and discover the guidelines to align your decisions with the flow of abundance and cosmic timing.</p>
       <br/>
-      <p style="color: #999;">Com reverência,</p>
-      <p><strong style="color: #fff;">Oráculo DestinyVox</strong></p>
+      <p style="color: #999;">With reverence,</p>
+      <p><strong style="color: #fff;">DestinyVox Oracle</strong></p>
     </div>
   `;
 
-  const fileNameStr = `Mapa_DestinyVox_${customerName.replace(/\s+/g, "_")}.pdf`;
+  const fileNameStr = `DestinyVox_Map_${customerName.replace(/\s+/g, "_")}.pdf`;
 
   // 5. Enviar e-mail via Resend
   const isDev = process.env.NODE_ENV !== "production";
@@ -741,8 +741,8 @@ export async function deliverNumerologyMap(params: DeliverMapParams) {
       from: fromEmail,
       to: targetRecipient,
       subject: isDev
-        ? `[TESTE DEV] Seu Mapa Pitagórico do Destino ✨ — ${customerName}`
-        : "Seu Mapa Pitagórico do Destino ✨ — DestinyVox",
+        ? `[DEV TEST] Your Pythagorean Destiny Map ✨ — ${customerName}`
+        : "Your Pythagorean Destiny Map ✨ — DestinyVox",
       html: htmlContent,
       attachments: [
         {
