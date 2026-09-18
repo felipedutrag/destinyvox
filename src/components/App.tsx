@@ -598,7 +598,7 @@ export function App() {
         <section id="pricing" className="px-4 sm:px-12 py-12 sm:py-20 max-w-6xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-start">
             {/* Left Column: Copywriting */}
-            <div className="space-y-6 sm:space-y-8 text-left lg:sticky lg:top-24 lg:col-span-6 xl:col-span-7">
+            <div className="px-3 sm:px-0 space-y-6 sm:space-y-8 text-left lg:sticky lg:top-24 lg:col-span-6 xl:col-span-7">
               <div className="space-y-3 sm:space-y-4">
                 <span className="font-mono text-xs sm:text-sm tracking-[0.25em] text-amber-500 uppercase font-semibold">
                   {t.pricingTag}
