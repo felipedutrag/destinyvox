@@ -77,12 +77,24 @@ export async function GET(request: Request) {
       const deliveryLockIsFresh = paymentMetadata.delivering === true
         && Number.isFinite(deliveryStartedAt)
         && Date.now() - deliveryStartedAt < 10 * 60 * 1000;
+      const deliveryFailedAt = typeof paymentMetadata.delivery_failed_at === "string"
+        ? Date.parse(paymentMetadata.delivery_failed_at)
+        : Number.NaN;
+      const recentlyFailed = Number.isFinite(deliveryFailedAt) && Date.now() - deliveryFailedAt < 60 * 1000;
+
+      if (recentlyFailed && url.searchParams.get("retry") !== "1") {
+        return NextResponse.json(
+          { error: "We couldn’t finish preparing your reading. Please try again." },
+          { status: 503, headers: { "Cache-Control": "private, no-store" } },
+        );
+      }
 
       if (!deliveryLockIsFresh) {
         const claimedMetadata = {
           ...paymentMetadata,
           delivering: true,
           delivery_started_at: new Date().toISOString(),
+          delivery_failed_at: null,
         };
         const { error: claimError } = await supabase
           .from("payments")

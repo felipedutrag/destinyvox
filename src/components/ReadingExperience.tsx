@@ -49,7 +49,7 @@ export function ReadingExperience() {
   const [downloading, setDownloading] = useState(false);
   const [sessionId, setSessionId] = useState("");
 
-  const loadReading = useCallback(async () => {
+  const loadReading = useCallback(async (forceRetry = false) => {
     const id = new URLSearchParams(window.location.search).get("session_id");
     if (!id) {
       setError("This page needs the secure link from your checkout confirmation.");
@@ -60,9 +60,12 @@ export function ReadingExperience() {
     setStage("loading");
     setError("We couldn’t find a reading for this checkout.");
 
+    let shouldForceRetry = forceRetry;
     for (let attempt = 0; attempt < 40; attempt += 1) {
       try {
-        const response = await fetch(`/api/deliver?session_id=${encodeURIComponent(id)}`, { cache: "no-store" });
+        const retryQuery = shouldForceRetry ? "&retry=1" : "";
+        shouldForceRetry = false;
+        const response = await fetch(`/api/deliver?session_id=${encodeURIComponent(id)}${retryQuery}`, { cache: "no-store" });
         if (response.status === 202) {
           await new Promise((resolve) => window.setTimeout(resolve, 2500));
           continue;
@@ -137,7 +140,7 @@ export function ReadingExperience() {
       <main className="mx-auto max-w-4xl px-5 pb-16 pt-8 sm:px-8 sm:pt-14">
         {stage === "loading" && <section className="mx-auto flex max-w-lg flex-col items-center py-24 text-center" aria-live="polite"><LoaderCircle className="mb-6 h-8 w-8 animate-spin text-amber-200" /><h1 className="font-editorial text-3xl text-white">Preparing your personal reading</h1><p className="mt-3 font-mono text-xs leading-6 text-[#aaa397]">Your payment is confirmed. We’re finishing your personalized report now.</p></section>}
 
-        {stage === "error" && <section className="mx-auto max-w-lg py-20 text-center"><Sparkles className="mx-auto mb-5 h-6 w-6 text-amber-200" /><h1 className="font-editorial text-3xl text-white">Your reading is almost ready</h1><p className="mt-4 font-mono text-sm leading-6 text-[#aaa397]">{error}</p><button onClick={() => void loadReading()} className="mt-7 min-h-12 rounded-xl bg-amber-300 px-6 font-mono text-xs font-bold tracking-wide text-[#15120d]">TRY AGAIN</button></section>}
+        {stage === "error" && <section className="mx-auto max-w-lg py-20 text-center"><Sparkles className="mx-auto mb-5 h-6 w-6 text-amber-200" /><h1 className="font-editorial text-3xl text-white">Your reading is almost ready</h1><p className="mt-4 font-mono text-sm leading-6 text-[#aaa397]">{error}</p><button onClick={() => void loadReading(true)} className="mt-7 min-h-12 rounded-xl bg-amber-300 px-6 font-mono text-xs font-bold tracking-wide text-[#15120d]">TRY AGAIN</button></section>}
 
         {stage === "ready" && reading && <section className="journey-enter mx-auto max-w-2xl py-16 text-center"><Sparkles className="mx-auto mb-6 h-7 w-7 text-amber-200" /><p className="font-mono text-[10px] tracking-[0.22em] text-amber-200/80">YOUR PERSONAL READING IS READY</p><h1 className="mt-4 font-editorial text-4xl text-white sm:text-5xl">Made for {firstName}.</h1><p className="mx-auto mt-5 max-w-lg font-mono text-sm leading-7 text-[#b6b0a5]">Your complete numerology profile is ready to explore. You can read it here or download your personalized PDF to keep.</p><button onClick={openReading} className="mt-8 min-h-14 rounded-xl bg-amber-300 px-7 font-mono text-xs font-bold tracking-[0.12em] text-[#15120d]">EXPLORE MY READING</button><p className="mt-4 font-mono text-[10px] text-[#777064]">One-time purchase · Your PDF is included</p></section>}
 

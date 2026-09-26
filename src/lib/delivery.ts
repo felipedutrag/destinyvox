@@ -646,35 +646,10 @@ export async function deliverNumerologyMap(params: DeliverMapParams) {
   const archetype = getArchetype(lifePath, "en");
   const dictum = getSoulDictum(lifePath, "en");
 
-  // 2. Verificar ou Criar Usuário no Supabase Auth
-  let userId: string | null = null;
-  try {
-    const { data: usersData } = await supabase.auth.admin.listUsers();
-    const existingAuthUser = usersData?.users.find(
-      (u) => u.email?.toLowerCase() === customerEmail
-    );
-
-    if (existingAuthUser) {
-      userId = existingAuthUser.id;
-    } else {
-      const { data: newAuthUser, error: authErr } = await supabase.auth.admin.createUser({
-        email: customerEmail,
-        email_confirm: true,
-        user_metadata: {
-          full_name: customerName,
-          birth_date: birthDate,
-        },
-      });
-      if (newAuthUser?.user) {
-        userId = newAuthUser.user.id;
-        console.log(`[Supabase Auth] Novo usuário criado: ${userId}`);
-      } else if (authErr) {
-        console.warn("[Supabase Auth] Aviso ao criar usuário:", authErr.message);
-      }
-    }
-  } catch (authError) {
-    console.warn("[Supabase Auth] Erro no provisionamento do usuário:", authError);
-  }
+  // Purchases are guest checkouts. Do not attach an Auth user unless a matching
+  // public.profiles row exists; numerology_maps.user_id is optional, and a missing
+  // profile would violate its foreign key constraint.
+  const userId: string | null = null;
 
   // Data formatada para campo DATE do PostgreSQL (YYYY-MM-DD)
   const dbBirthDate = `${parsedBirth.year}-${String(parsedBirth.month).padStart(2, "0")}-${String(parsedBirth.day).padStart(2, "0")}`;
