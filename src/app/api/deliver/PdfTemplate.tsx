@@ -10,7 +10,7 @@ const styles = StyleSheet.create({
     paddingTop: 28,
     paddingBottom: 38,
     paddingHorizontal: 42, // Margem lateral ampliada
-    backgroundColor: "#090807",
+    backgroundColor: "#100D09",
     fontFamily: "Helvetica",
     color: "#ffffff",
   },
@@ -20,7 +20,7 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#090807",
+    backgroundColor: "#100D09",
     border: "1pt solid #393225",
     padding: 28,
   },
@@ -31,6 +31,19 @@ const styles = StyleSheet.create({
     right: 14,
     bottom: 14,
     border: "1pt solid #BC8E3B",
+  },
+  watermark: {
+    position: "absolute",
+    top: "44%",
+    left: 0,
+    width: "100%",
+    textAlign: "center",
+    fontSize: 38,
+    fontFamily: "Times-Roman",
+    color: "#D6B56D",
+    letterSpacing: 8,
+    opacity: 0.035,
+    transform: "rotate(-32deg)",
   },
   coverBadge: {
     paddingHorizontal: 14,
@@ -76,19 +89,21 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   title: {
-    fontSize: 22,
-    color: "#FCD34D",
+    fontSize: 21,
+    color: "#F7EEDB",
+    fontFamily: "Times-Roman",
     textAlign: "center",
-    marginBottom: 6,
-    fontWeight: "bold",
-    letterSpacing: 3,
+    marginBottom: 7,
   },
   subtitle: {
     fontSize: 10.5,
-    color: "#ffffff",
+    color: "#DCC99B",
+    fontFamily: "Times-Italic",
     textAlign: "center",
-    marginBottom: 20,
-    letterSpacing: 2,
+    lineHeight: 1.45,
+    marginBottom: 16,
+    letterSpacing: 0.2,
+    width: "88%",
     opacity: 0.85,
   },
   consultantCard: {
@@ -289,6 +304,7 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
       <Page size="A4" style={styles.page}>
         <View style={styles.coverPage}>
           <View style={styles.goldBorder} />
+          <Text style={styles.watermark}>DESTINYVOX</Text>
 
           <Text style={styles.coverBrand}>DestinyVox</Text>
           <Text style={styles.coverBrandCaption}>NUMEROLOGY</Text>
@@ -299,8 +315,8 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
           <Text style={styles.coverNumber}>{pillars.lifePath.number}</Text>
           <Text style={styles.coverNumberLabel}>Your Life Path Number</Text>
 
-          <Text style={styles.title}>Your Numerology Profile</Text>
-          <Text style={styles.subtitle}>A PERSONAL GUIDE TO THE PATTERNS IN YOUR NAME AND BIRTH DATE</Text>
+          <Text style={styles.title}>The secret geometry of who you are.</Text>
+          <Text style={styles.subtitle}>“Numbers do not predict destiny; they reveal who you are when no one is watching.”</Text>
 
           <View style={styles.consultantCard}>
             <Text style={{ fontSize: 8, color: "#FCD34D", letterSpacing: 3, marginBottom: 4, textTransform: "uppercase" }}>
@@ -384,6 +400,7 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
       {/* PAGE 2: VIBRATIONAL MATRIX & GEMATRIA WITH DIDACTIC SUMS      */}
       {/* ============================================================ */}
       <Page size="A4" style={styles.page}>
+        <Text style={styles.watermark}>DESTINYVOX</Text>
         <View style={styles.header}>
           <Text style={styles.headerTag}>NAME AND BIRTH DATE NUMBERS</Text>
           <Text style={styles.headerName}>{profile.fullName}</Text>
@@ -471,6 +488,7 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
       {/* PAGE 3: LIFE PATH (CENTRAL DESTINY)                          */}
       {/* ============================================================ */}
       <Page size="A4" style={styles.page}>
+        <Text style={styles.watermark}>DESTINYVOX</Text>
         <View style={styles.header}>
           <Text style={styles.headerTag}>YOUR LIFE PATH</Text>
           <Text style={styles.headerName}>{profile.fullName}</Text>
@@ -520,6 +538,7 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
       {/* PAGE 4: EXPRESSION POTENTIAL (VOCATION AND TALENT)           */}
       {/* ============================================================ */}
       <Page size="A4" style={styles.page}>
+        <Text style={styles.watermark}>DESTINYVOX</Text>
         <View style={styles.header}>
           <Text style={styles.headerTag}>YOUR EXPRESSION</Text>
           <Text style={styles.headerName}>{profile.fullName}</Text>
@@ -569,6 +588,7 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
       {/* PAGE 5: SOUL URGE (INNER MOTIVATION / ANIMA)                 */}
       {/* ============================================================ */}
       <Page size="A4" style={styles.page}>
+        <Text style={styles.watermark}>DESTINYVOX</Text>
         <View style={styles.header}>
           <Text style={styles.headerTag}>YOUR INNER MOTIVATION</Text>
           <Text style={styles.headerName}>{profile.fullName}</Text>
@@ -618,6 +638,7 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
       {/* PAGE 6: PERSONALITY (THE SOCIAL MASK AND PRESENCE)           */}
       {/* ============================================================ */}
       <Page size="A4" style={styles.page}>
+        <Text style={styles.watermark}>DESTINYVOX</Text>
         <View style={styles.header}>
           <Text style={styles.headerTag}>YOUR SOCIAL PRESENCE</Text>
           <Text style={styles.headerName}>{profile.fullName}</Text>
@@ -667,6 +688,7 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
       {/* PAGE 7: RELATIONSHIPS & WORK THEMES                          */}
       {/* ============================================================ */}
       <Page size="A4" style={styles.page}>
+        <Text style={styles.watermark}>DESTINYVOX</Text>
         <View style={styles.header}>
           <Text style={styles.headerTag}>YOUR NUMBERS IN EVERYDAY LIFE</Text>
           <Text style={styles.headerName}>{profile.fullName}</Text>
@@ -708,6 +730,7 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
       {/* PAGE 7: KARMIC ALCHEMY & SHADOW CHALLENGE                    */}
       {/* ============================================================ */}
       <Page size="A4" style={styles.page}>
+        <Text style={styles.watermark}>DESTINYVOX</Text>
         <View style={styles.header}>
           <Text style={styles.headerTag}>A PATTERN TO WORK WITH</Text>
           <Text style={styles.headerName}>{profile.fullName}</Text>
@@ -761,6 +784,7 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
       {/* PAGE 8: TEMPORAL CYCLE: PERSONAL YEAR 2026                   */}
       {/* ============================================================ */}
       <Page size="A4" style={styles.page}>
+        <Text style={styles.watermark}>DESTINYVOX</Text>
         <View style={styles.header}>
           <Text style={styles.headerTag}>YOUR PERSONAL YEAR {referenceYear}</Text>
           <Text style={styles.headerName}>{profile.fullName}</Text>
@@ -810,6 +834,7 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
       {/* PAGE 9: CONGENITAL GIFT (INNATE BIRTH TALENT)                */}
       {/* ============================================================ */}
       <Page size="A4" style={styles.page}>
+        <Text style={styles.watermark}>DESTINYVOX</Text>
         <View style={styles.header}>
           <Text style={styles.headerTag}>YOUR BIRTHDAY NUMBER</Text>
           <Text style={styles.headerName}>{profile.fullName}</Text>
@@ -853,6 +878,7 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
       {/* PAGE 10: MATURITY MISSION (35-40 YEARS ONWARD)               */}
       {/* ============================================================ */}
       <Page size="A4" style={styles.page}>
+        <Text style={styles.watermark}>DESTINYVOX</Text>
         <View style={styles.header}>
           <Text style={styles.headerTag}>YOUR MATURITY NUMBER</Text>
           <Text style={styles.headerName}>{profile.fullName}</Text>
@@ -897,6 +923,7 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
       {/* ============================================================ */}
       {orderBumps?.karmicDebt?.active && (
         <Page size="A4" style={styles.page}>
+          <Text style={styles.watermark}>DESTINYVOX</Text>
           <View style={styles.header}>
             <Text style={styles.headerTag}>UPGRADE_01: KARMIC_DOSSIER // ANCESTRAL_TRANSMUTATION</Text>
             <Text style={styles.headerName}>{profile.fullName}</Text>
@@ -992,6 +1019,7 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
       {/* ============================================================ */}
       {orderBumps?.personalYearMonths?.active && (
         <Page size="A4" style={styles.page}>
+          <Text style={styles.watermark}>DESTINYVOX</Text>
           <View style={styles.header}>
             <Text style={styles.headerTag}>UPGRADE_02: TIMELINE_{referenceYear} // MONTH_BY_MONTH_NAVIGATION</Text>
             <Text style={styles.headerName}>{profile.fullName}</Text>
@@ -1066,6 +1094,7 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
       {/* FINAL PAGE: HERMETIC ACTIVATION & MANIFESTATION DECREE         */}
       {/* ============================================================ */}
       <Page size="A4" style={styles.page}>
+        <Text style={styles.watermark}>DESTINYVOX</Text>
         <View style={styles.header}>
           <Text style={styles.headerTag}>PUT YOUR INSIGHT INTO ACTION</Text>
           <Text style={styles.headerName}>{profile.fullName}</Text>
