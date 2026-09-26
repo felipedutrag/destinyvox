@@ -3,6 +3,7 @@ import { trackRedditEvent } from "@/lib/redditPixel";
 export type NumerologyFunnelEvent =
   | "numerology_started"
   | "birth_data_submitted"
+  | "email_submitted"
   | "numerology_result_received"
   | "reading_preview_viewed"
   | "offer_viewed"

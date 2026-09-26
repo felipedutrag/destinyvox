@@ -9,16 +9,19 @@ import { getSupabaseAdmin } from "@/lib/supabase";
 import { getStripe } from "@/lib/stripe";
 import type Stripe from "stripe";
 import { FULL_READING_PRICE_CENTS } from "@/lib/pricing";
+import { normalizeOrderBumpSelections, ORDER_BUMPS } from "@/lib/orderBumps";
 
 function confirmedPaymentPayload(session: Stripe.Checkout.Session) {
   const currency = session.currency || "usd";
   const fractionDigits = new Intl.NumberFormat("en", { style: "currency", currency }).resolvedOptions().maximumFractionDigits ?? 2;
+  const selections = normalizeOrderBumpSelections(session.metadata?.orderBumps);
   return {
     status: "preparing",
     paymentConfirmed: true,
     transactionId: session.id,
     amount: session.amount_total === null ? null : session.amount_total / (10 ** fractionDigits),
     currency,
+    orderBumpKeys: ORDER_BUMPS.filter((bump) => selections[bump.key]).map((bump) => bump.key),
   };
 }
 
@@ -125,10 +128,7 @@ export async function GET(request: Request) {
 
         after(async () => {
           try {
-            let orderBumps: { karmicDebt?: boolean; personalYearMonths?: boolean } | undefined;
-            if (metadata.orderBumps) {
-              try { orderBumps = JSON.parse(metadata.orderBumps); } catch { orderBumps = undefined; }
-            }
+            const orderBumps = normalizeOrderBumpSelections(metadata.orderBumps);
             await deliverNumerologyMap({
               name: payerName,
               email: payerEmail,
@@ -190,6 +190,7 @@ export async function GET(request: Request) {
       content: map.full_interpretation,
       amount: session.amount_total === null ? null : session.amount_total / (10 ** (new Intl.NumberFormat("en", { style: "currency", currency: session.currency || "usd" }).resolvedOptions().maximumFractionDigits ?? 2)),
       currency: session.currency || "usd",
+      orderBumpKeys: confirmedPaymentPayload(session).orderBumpKeys,
     }, { headers: { "Cache-Control": "private, no-store" } });
   } catch (error) {
     console.error("Reading retrieval error:", error);

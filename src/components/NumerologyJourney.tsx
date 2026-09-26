@@ -13,6 +13,7 @@ import { buildCosmicInterpretation, type CosmicInterpretation } from "@/utils/in
 import { trackFunnelEvent, trackFunnelTransition } from "@/lib/funnelAnalytics";
 import { trackRedditAddToCart, trackRedditEvent } from "@/lib/redditPixel";
 import { FULL_READING_PRICE_USD } from "@/lib/pricing";
+import { EMPTY_ORDER_BUMP_SELECTIONS, ORDER_BUMPS, getOrderBumpTotalCents, normalizeOrderBumpSelections, type OrderBumpSelections } from "@/lib/orderBumps";
 import { BrandLogo } from "@/components/BrandLogo";
 
 const LOADING_MESSAGES = [
@@ -165,6 +166,7 @@ export function NumerologyJourney() {
   const [name, setName] = useState("");
   const [birthDate, setBirthDate] = useState("");
   const [email, setEmail] = useState("");
+  const [orderBumpSelections, setOrderBumpSelections] = useState<OrderBumpSelections>({ ...EMPTY_ORDER_BUMP_SELECTIONS });
   const [profile, setProfile] = useState<NumerologyProfile | null>(null);
   const [interpretation, setInterpretation] = useState<CosmicInterpretation | null>(null);
   const [fieldError, setFieldError] = useState<string | null>(null);
@@ -173,6 +175,7 @@ export function NumerologyJourney() {
   const [loadingMessage, setLoadingMessage] = useState(0);
   const submitLock = useRef(false);
   const checkoutLock = useRef(false);
+  const lastLeadEmailRef = useRef("");
   const stepRef = useRef<FunnelStep>("entry");
 
   const goTo = (next: FunnelStep) => {
@@ -197,13 +200,14 @@ export function NumerologyJourney() {
     try {
       const saved = sessionStorage.getItem("destinyvox_discovery");
       if (!saved) return;
-      const draft = JSON.parse(saved) as { name?: string; birthDate?: string; email?: string };
+      const draft = JSON.parse(saved) as { name?: string; birthDate?: string; email?: string; orderBumps?: unknown };
       if (!draft.name || !draft.birthDate) return;
       const isoBirthDate = toISODate(draft.birthDate);
       const nextProfile = calculateFullNumerology(draft.name, isoBirthDate);
       setName(draft.name);
       setBirthDate(formatBirthDateUS(isoBirthDate));
       setEmail(draft.email || "");
+      setOrderBumpSelections(normalizeOrderBumpSelections(draft.orderBumps));
       setProfile(nextProfile);
       setInterpretation(buildCosmicInterpretation(nextProfile, "en"));
       stepRef.current = "checkout";
@@ -255,7 +259,6 @@ export function NumerologyJourney() {
       }
       trackFunnelEvent("numerology_result_received");
       trackFunnelEvent("reading_preview_viewed");
-      trackRedditEvent("Lead");
       goTo("revelation");
     } catch {
       setFieldError("We couldn't complete your reading right now. Please try again.");
@@ -272,11 +275,14 @@ export function NumerologyJourney() {
 
   const beginCheckout = () => {
     setCheckoutError(null);
-    trackFunnelEvent("checkout_started", { value: FULL_READING_PRICE_USD, currency: "USD" });
+    const totalCents = FULL_READING_PRICE_USD * 100 + getOrderBumpTotalCents(orderBumpSelections);
+    const selectedBumps = ORDER_BUMPS.filter((bump) => orderBumpSelections[bump.key]);
+    trackFunnelEvent("checkout_started", { value: totalCents / 100, currency: "USD" });
     trackRedditAddToCart({
-      value: FULL_READING_PRICE_USD,
+      value: totalCents / 100,
       currency: "USD",
       plan: "complete_numerology_reading",
+      orderBumps: selectedBumps.map(({ key, title }) => ({ id: key, name: title, category: "Numerology add-on" })),
     });
     goTo("checkout");
   };
@@ -284,12 +290,22 @@ export function NumerologyJourney() {
   const handleCheckout = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (checkoutLock.current || !profile) return;
+    const submittedEmail = email.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(submittedEmail)) {
+      setCheckoutError("Enter a valid email address to continue.");
+      return;
+    }
+    if (lastLeadEmailRef.current !== submittedEmail) {
+      trackRedditEvent("Lead");
+      trackFunnelEvent("email_submitted");
+      lastLeadEmailRef.current = submittedEmail;
+    }
     checkoutLock.current = true;
     setIsCheckoutLoading(true);
     setCheckoutError(null);
 
     try {
-      sessionStorage.setItem("destinyvox_discovery", JSON.stringify({ name, birthDate: toISODate(birthDate), email: email.trim() }));
+      sessionStorage.setItem("destinyvox_discovery", JSON.stringify({ name, birthDate: toISODate(birthDate), email: submittedEmail, orderBumps: orderBumpSelections }));
     } catch {
       // Stripe session metadata preserves the information needed to fulfill the order.
     }
@@ -301,8 +317,9 @@ export function NumerologyJourney() {
         body: JSON.stringify({
           name,
           birthDate: toISODate(birthDate),
-          email: email.trim(),
+          email: submittedEmail,
           plan: "complete_numerology_reading",
+          orderBumps: orderBumpSelections,
         }),
       });
       const data = await response.json();
@@ -319,6 +336,9 @@ export function NumerologyJourney() {
 
   const archetype = profile ? getArchetype(profile.lifePath, "en") : null;
   const firstName = name.split(/\s+/)[0] || "friend";
+  const selectedOrderBumps = ORDER_BUMPS.filter((bump) => orderBumpSelections[bump.key]);
+  const checkoutTotalUsd = FULL_READING_PRICE_USD + getOrderBumpTotalCents(orderBumpSelections) / 100;
+  const formattedCheckoutTotal = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(checkoutTotalUsd);
   const firstReveal = interpretation?.destinyOverview
     .split(/\n\s*\n/)[0]
     .match(/^[\s\S]*?[.!?](?:\s|$)/)?.[0]
@@ -465,10 +485,10 @@ export function NumerologyJourney() {
                 </div>
               </div>
               <h1 className="font-editorial text-[2.6rem] leading-[1.08] tracking-[-0.03em] text-white sm:text-5xl">
-                Discover your complete numerology profile.
+                See how your numbers connect across your life.
               </h1>
               <p className="mt-4 font-mono text-sm leading-6 text-[#b6b0a5]">
-                Go beyond your Life Path Number. Explore the deeper patterns connected to your name and birth date in a complete digital reading.
+                Get your personal 8-number reading for relationships, work, and the year ahead—plus a downloadable PDF you can revisit whenever you need it. One payment. No subscription.
               </p>
 
               <div className="my-6 grid gap-3 sm:grid-cols-2">
@@ -508,15 +528,40 @@ export function NumerologyJourney() {
                 </ul>
               </div>
 
+              <fieldset className="mb-7 space-y-3">
+                <legend className="font-editorial text-2xl text-white">Make your reading more useful</legend>
+                <p className="mb-4 font-mono text-[11px] leading-5 text-[#938c81]">Optional add-ons · $2.99 each · added only when selected</p>
+                {ORDER_BUMPS.map((bump) => {
+                  const checked = orderBumpSelections[bump.key];
+                  return (
+                    <label key={bump.key} className={`flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition ${checked ? "border-amber-200/45 bg-amber-100/[0.055]" : "border-white/[0.09] bg-white/[0.02] hover:border-white/20"}`}>
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={(event) => setOrderBumpSelections((current) => ({ ...current, [bump.key]: event.target.checked }))}
+                        className="mt-1 h-4 w-4 shrink-0 accent-amber-300"
+                      />
+                      <span className="min-w-0 flex-1">
+                        <span className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+                          <span className="font-mono text-xs font-semibold text-white">{bump.title}</span>
+                          <span className="font-mono text-xs text-amber-100">${bump.priceUsd.toFixed(2)}</span>
+                        </span>
+                        <span className="mt-1 block font-mono text-[10px] leading-5 text-[#aaa397]">{bump.description}</span>
+                      </span>
+                    </label>
+                  );
+                })}
+              </fieldset>
+
               <div className="flex items-end justify-between border-b border-white/10 pb-5">
                 <div>
                   <p className="font-mono text-[9px] tracking-[0.17em] text-[#8f887d]">COMPLETE PERSONAL NUMEROLOGY READING</p>
-                  <p className="mt-2 font-mono text-[10px] text-[#8f887d]">One-time payment</p>
+                  <p className="mt-2 font-mono text-[10px] text-[#8f887d]">${FULL_READING_PRICE_USD.toFixed(2)} base · {selectedOrderBumps.length} optional add-on{selectedOrderBumps.length === 1 ? "" : "s"}</p>
                 </div>
-                <p className="font-editorial text-4xl text-white">${FULL_READING_PRICE_USD}</p>
+                <p className="font-editorial text-4xl text-white">{formattedCheckoutTotal}</p>
               </div>
               <div className="mt-5">
-                <PrimaryButton onClick={beginCheckout}>UNLOCK MY FULL READING <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" /></PrimaryButton>
+                <PrimaryButton onClick={beginCheckout}>CONTINUE — {formattedCheckoutTotal} <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" /></PrimaryButton>
                 <p className="mt-3 text-center font-mono text-[10px] text-[#777064]">Secure checkout · No account or subscription</p>
               </div>
             </section>
@@ -530,6 +575,26 @@ export function NumerologyJourney() {
               <p className="font-mono text-[10px] tracking-[0.2em] text-amber-200/80">YOUR COMPLETE PERSONAL READING</p>
               <h1 className="mt-3 font-editorial text-4xl leading-tight text-white sm:text-5xl">Where should we send your reading?</h1>
               <p className="mt-4 font-mono text-sm leading-6 text-[#b6b0a5]">Enter your email to continue to secure checkout. Your birth name and date are already part of your profile.</p>
+
+              <div className="mt-6 rounded-xl border border-white/[0.09] bg-white/[0.025] p-4">
+                <div className="mb-4 border-b border-white/10 pb-4">
+                  <p className="font-mono text-[9px] tracking-[0.18em] text-amber-200/75">PERSONALIZED FOR</p>
+                  <p className="mt-2 font-editorial text-xl text-white">{name}</p>
+                  <p className="mt-1 font-mono text-[10px] tracking-wide text-[#aaa397]">DATE OF BIRTH · {birthDate}</p>
+                </div>
+                <div className="flex items-center justify-between font-mono text-xs text-white">
+                  <span>Complete Personal Numerology Reading</span><span>${FULL_READING_PRICE_USD.toFixed(2)}</span>
+                </div>
+                {selectedOrderBumps.map((bump) => (
+                  <div key={bump.key} className="mt-3 flex items-center justify-between gap-3 font-mono text-[11px] text-[#b6b0a5]">
+                    <span>{bump.title}</span><span>${bump.priceUsd.toFixed(2)}</span>
+                  </div>
+                ))}
+                <div className="mt-4 flex items-center justify-between border-t border-white/10 pt-3 font-mono text-xs text-white">
+                  <span>Estimated total in USD</span><span>{formattedCheckoutTotal}</span>
+                </div>
+                <p className="mt-2 font-mono text-[9px] leading-4 text-[#837d72]">Stripe will show the final amount and any available local-currency conversion before payment.</p>
+              </div>
 
               <form onSubmit={handleCheckout} className="mt-7 space-y-4">
                 <label htmlFor="reading-email" className="block font-mono text-xs text-[#d5d0c6]">Email address</label>

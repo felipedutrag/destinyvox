@@ -4,6 +4,7 @@ import React from "react";
 import { NumerologyPDFDocument } from "@/app/api/deliver/PdfTemplate";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { sendTelegramPixNotification } from "@/lib/telegram";
+import type { OrderBumpSelections } from "@/lib/orderBumps";
 import {
   calculateLifePath,
   calculateExpression,
@@ -104,6 +105,7 @@ export interface NumerologyContent {
   orderBumps?: {
     karmicDebt?: KarmicDebtAnalysis;
     personalYearMonths?: PersonalYearMonthsAnalysis;
+    reflectionPlanner?: ReflectionPlannerAnalysis;
   };
 }
 
@@ -141,6 +143,11 @@ export interface PersonalYearMonthsAnalysis {
   yearArchetype: string;
   months: PersonalMonthItem[];
   executiveAdvice: string;
+}
+
+export interface ReflectionPlannerAnalysis {
+  active: true;
+  prompts: Array<{ day: number; theme: string; focus: string; prompt: string }>;
 }
 
 
@@ -263,7 +270,7 @@ const getResend = () => {
 export async function generateNumerologyContent(
   name: string,
   birthDate: string,
-  orderBumpsOption?: { karmicDebt?: boolean; personalYearMonths?: boolean }
+  orderBumpsOption?: Partial<OrderBumpSelections>
 ): Promise<NumerologyContent> {
   // Normalize every accepted input before any numerology calculation or report copy.
   // The database may provide ISO dates; user-facing values and calculations use MM/DD/YYYY.
@@ -421,7 +428,88 @@ export async function generateNumerologyContent(
       personalYearMonths: orderBumpsOption?.personalYearMonths
         ? generatePersonalYearMonthsData(personalYear, referenceYear)
         : undefined,
+      reflectionPlanner: orderBumpsOption?.reflectionPlanner
+        ? generateReflectionPlannerData({
+            lifePath,
+            expression,
+            soulUrge,
+            personality,
+            personalYear,
+            lifePathArchetype: lpArchetype.title,
+            expressionArchetype: expArchetype.title,
+            soulUrgeArchetype: suArchetype.title,
+            personalityArchetype: persArchetype.title,
+            personalYearArchetype: yearArchetype.title,
+          })
+        : undefined,
     },
+  };
+}
+
+function generateReflectionPlannerData(numbers: {
+  lifePath: number;
+  expression: number;
+  soulUrge: number;
+  personality: number;
+  personalYear: number;
+  lifePathArchetype: string;
+  expressionArchetype: string;
+  soulUrgeArchetype: string;
+  personalityArchetype: string;
+  personalYearArchetype: string;
+}): ReflectionPlannerAnalysis {
+  const anchors = [
+    { label: "Life Path", number: numbers.lifePath, archetype: numbers.lifePathArchetype },
+    { label: "Expression", number: numbers.expression, archetype: numbers.expressionArchetype },
+    { label: "Soul Urge", number: numbers.soulUrge, archetype: numbers.soulUrgeArchetype },
+    { label: "Personality", number: numbers.personality, archetype: numbers.personalityArchetype },
+    { label: "Personal Year", number: numbers.personalYear, archetype: numbers.personalYearArchetype },
+  ];
+  const themes = ["Notice", "Strengths", "Connection", "Choices", "Integrate"];
+  const prompts = [
+    "Which quality of this number felt most present in your day?",
+    "What choice today felt most aligned with this part of your profile?",
+    "Where did this archetype come naturally to you, without extra effort?",
+    "What situation brought out the more difficult side of this pattern?",
+    "What need or value might that reaction be trying to protect?",
+    "Which environment helped this quality become a strength today?",
+    "What skill connected to this number could you use more intentionally?",
+    "Name one moment when you trusted your own way of doing things.",
+    "What feedback have you heard that reflects this pattern?",
+    "What is one small way to practice this strength tomorrow?",
+    "Who helps you feel safe enough to express this side of yourself?",
+    "What do you need to say more clearly in an important relationship?",
+    "When did listening change the way you understood someone today?",
+    "What boundary would make this connection feel more balanced?",
+    "How can you show appreciation in a way that feels natural to you?",
+    "Which difference between you and someone else deserves curiosity rather than judgment?",
+    "What kind of support is easy for you to give but hard to receive?",
+    "What conversation would benefit from a little more patience?",
+    "Where did your actions match the person you want to become?",
+    "Which task deserves your focus instead of your attention being split?",
+    "What can you simplify to make your next step easier?",
+    "What decision are you postponing, and what information would help?",
+    "Where could a small experiment teach you more than more planning?",
+    "What would progress look like if it did not need to be perfect?",
+    "Which lesson from this month do you want to carry forward?",
+    "What pattern do you now recognize sooner than you did before?",
+    "Which strength can you bring into one challenge this week?",
+    "What is one commitment that feels meaningful and realistic?",
+    "Write down a choice you are proud of and why it mattered.",
+    "What intention do you want to set for the next 30 days?",
+  ];
+
+  return {
+    active: true,
+    prompts: prompts.map((prompt, index) => {
+      const anchor = anchors[index % anchors.length];
+      return {
+        day: index + 1,
+        theme: themes[Math.floor(index / 6)],
+        focus: `${anchor.label} ${anchor.number} · ${anchor.archetype}`,
+        prompt,
+      };
+    }),
   };
 }
 
@@ -562,6 +650,7 @@ export interface DeliverMapParams {
   orderBumps?: {
     karmicDebt?: boolean;
     personalYearMonths?: boolean;
+    reflectionPlanner?: boolean;
   };
   /** Set when the caller already claimed the payment's delivery lock. */
   deliveryClaimed?: boolean;
@@ -641,10 +730,12 @@ export async function deliverNumerologyMap(params: DeliverMapParams) {
   if (!orderBumps && params.externalId) {
     const hasKD = params.externalId.includes("KD1");
     const hasPY = params.externalId.includes("PY1");
-    if (hasKD || hasPY) {
+    const hasRP = params.externalId.includes("RP1");
+    if (hasKD || hasPY || hasRP) {
       orderBumps = {
         karmicDebt: hasKD,
         personalYearMonths: hasPY,
+        reflectionPlanner: hasRP,
       };
     }
   }
@@ -654,6 +745,7 @@ export async function deliverNumerologyMap(params: DeliverMapParams) {
     orderBumps = {
       karmicDebt: true,
       personalYearMonths: true,
+      reflectionPlanner: true,
     };
   }
 

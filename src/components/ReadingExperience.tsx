@@ -6,14 +6,15 @@ import type { NumerologyContent, NumerologyPillarData } from "@/lib/delivery";
 import { trackFunnelEvent } from "@/lib/funnelAnalytics";
 import { trackRedditPurchase } from "@/lib/redditPixel";
 import { FULL_READING_PRICE_USD } from "@/lib/pricing";
+import { ORDER_BUMPS } from "@/lib/orderBumps";
 import { formatBirthDateUS } from "@/utils/numerology";
 import { BrandLogo } from "@/components/BrandLogo";
 
-type ReadingResponse = { status: "ready"; mapId: string; name: string; birthDate: string; content: NumerologyContent; amount: number | null; currency: string };
+type ReadingResponse = { status: "ready"; mapId: string; name: string; birthDate: string; content: NumerologyContent; amount: number | null; currency: string; orderBumpKeys?: string[] };
 type Stage = "loading" | "ready" | "reading" | "error";
 const trackedPurchaseSessions = new Set<string>();
 
-function trackConfirmedPurchase(sessionId: string, value: number | null, currency: string) {
+function trackConfirmedPurchase(sessionId: string, value: number | null, currency: string, orderBumpKeys: string[] = []) {
   if (trackedPurchaseSessions.has(sessionId)) return;
   const storageKey = `destinyvox_purchase_${sessionId}`;
 
@@ -28,11 +29,12 @@ function trackConfirmedPurchase(sessionId: string, value: number | null, currenc
 
   const purchaseValue = value ?? FULL_READING_PRICE_USD;
   const purchaseCurrency = currency.toUpperCase();
-  if (!trackRedditPurchase({ value: purchaseValue, currency: purchaseCurrency, plan: "complete_numerology_reading" })) return;
+  const bumpProducts = ORDER_BUMPS.filter((bump) => orderBumpKeys.includes(bump.key)).map((bump) => ({ id: bump.key, name: bump.title, category: "Numerology add-on" }));
+  if (!trackRedditPurchase({ value: purchaseValue, currency: purchaseCurrency, plan: "complete_numerology_reading", orderBumps: bumpProducts })) return;
 
   trackedPurchaseSessions.add(sessionId);
   try { sessionStorage.setItem(storageKey, "1"); } catch { /* In-memory deduplication remains active. */ }
-  trackFunnelEvent("purchase_completed", { value: purchaseValue, currency: purchaseCurrency, transaction_id: sessionId });
+  trackFunnelEvent("purchase_completed", { value: purchaseValue, currency: purchaseCurrency, transaction_id: sessionId, item_count: 1 + bumpProducts.length });
 }
 
 const PILLARS: Array<[keyof NumerologyContent["pillars"], string, string]> = [
@@ -92,7 +94,7 @@ export function ReadingExperience() {
         const response = await fetch(`/api/deliver?session_id=${encodeURIComponent(id)}${retryQuery}`, { cache: "no-store" });
         const data = await response.json();
         if (data.paymentConfirmed === true) {
-          trackConfirmedPurchase(id, typeof data.amount === "number" ? data.amount : null, data.currency || "usd");
+          trackConfirmedPurchase(id, typeof data.amount === "number" ? data.amount : null, data.currency || "usd", Array.isArray(data.orderBumpKeys) ? data.orderBumpKeys : []);
         }
         if (response.status === 202) {
           await new Promise((resolve) => window.setTimeout(resolve, 2500));
@@ -106,7 +108,7 @@ export function ReadingExperience() {
         const result = data as ReadingResponse;
         setReading(result);
         setStage("ready");
-        trackConfirmedPurchase(id, result.amount, result.currency);
+        trackConfirmedPurchase(id, result.amount, result.currency, result.orderBumpKeys || []);
         return;
       } catch {
         await new Promise((resolve) => window.setTimeout(resolve, 2500));

@@ -137,6 +137,7 @@ export type TelegramCheckoutAlertParams = {
   orderBumps: {
     karmicDebt: boolean;
     personalYearMonths: boolean;
+    reflectionPlanner: boolean;
   };
 };
 
@@ -157,7 +158,8 @@ export async function sendTelegramCheckoutInitiated(
 
   const bumps = [];
   if (params.orderBumps.karmicDebt) bumps.push("Karma");
-  if (params.orderBumps.personalYearMonths) bumps.push("2026");
+  if (params.orderBumps.personalYearMonths) bumps.push("Personal Year month-by-month");
+  if (params.orderBumps.reflectionPlanner) bumps.push("30-day reflection planner");
   const bumpsText = bumps.length > 0 ? bumps.join(" + ") : "Nenhum";
 
   const lines = [

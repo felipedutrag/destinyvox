@@ -3,11 +3,12 @@ import { getStripe } from "@/lib/stripe";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { sendTelegramCheckoutInitiated } from "@/lib/telegram";
 import { FULL_READING_PRICE_CENTS } from "@/lib/pricing";
+import { ORDER_BUMPS, getOrderBumpTotalCents, normalizeOrderBumpSelections } from "@/lib/orderBumps";
 import Stripe from "stripe";
 
 export async function POST(request: Request) {
   try {
-    const { name, email, birthDate, plan = "complete_numerology_reading" } = await request.json();
+    const { name, email, birthDate, plan = "complete_numerology_reading", orderBumps: requestedOrderBumps } = await request.json();
     if (typeof name !== "string" || name.trim().length < 2 || name.length > 100 || typeof email !== "string" || !email.includes("@") || typeof birthDate !== "string") {
       return NextResponse.json({ error: "Incomplete data" }, { status: 400 });
     }
@@ -18,8 +19,9 @@ export async function POST(request: Request) {
 
     const cleanName = name.trim().replace(/\s+/g, " ");
     const cleanEmail = email.trim().toLowerCase();
-    const totalCents = FULL_READING_PRICE_CENTS;
-    const external_id = `MAPA_${Date.now()}__||__${encodeURIComponent(cleanName)}__||__${encodeURIComponent(cleanEmail)}__||__${birthDate}__||__${plan}__||__KD0_PY0`;
+    const orderBumps = normalizeOrderBumpSelections(requestedOrderBumps);
+    const totalCents = FULL_READING_PRICE_CENTS + getOrderBumpTotalCents(orderBumps);
+    const external_id = `MAPA_${Date.now()}__||__${encodeURIComponent(cleanName)}__||__${encodeURIComponent(cleanEmail)}__||__${birthDate}__||__${plan}__||__KD${Number(orderBumps.karmicDebt)}_PY${Number(orderBumps.personalYearMonths)}_RP${Number(orderBumps.reflectionPlanner)}`;
     const stripe = getStripe();
     const origin = (process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || "http://localhost:3000").replace(/\/$/, "");
     const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [{
@@ -27,12 +29,23 @@ export async function POST(request: Request) {
         currency: "usd",
         product_data: {
           name: "Complete Personal Numerology Reading",
-          description: "A personalized 8-number profile with full interpretations, relationship and work insights, challenges and growth, and guidance for your current personal year. Includes online access and a downloadable PDF.",
+          description: "Your personalized 8-number reading with relationship, work, growth, and personal-year insights, online access, and a downloadable PDF.",
         },
         unit_amount: totalCents,
       },
       quantity: 1,
     }];
+    for (const bump of ORDER_BUMPS) {
+      if (!orderBumps[bump.key]) continue;
+      lineItems.push({
+        price_data: {
+          currency: "usd",
+          product_data: { name: bump.title, description: bump.stripeDescription },
+          unit_amount: bump.priceCents,
+        },
+        quantity: 1,
+      });
+    }
 
     const session = await stripe.checkout.sessions.create({
       adaptive_pricing: { enabled: true },
@@ -42,7 +55,7 @@ export async function POST(request: Request) {
       locale: "auto",
       client_reference_id: external_id,
       customer_email: cleanEmail,
-      metadata: { birthDate, name: cleanName, email: cleanEmail, plan, orderBumps: "{}", external_id },
+      metadata: { birthDate, name: cleanName, email: cleanEmail, plan, orderBumps: JSON.stringify(orderBumps), external_id },
       success_url: `${origin}/reading?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/?checkout=cancelled`,
     });
@@ -56,11 +69,11 @@ export async function POST(request: Request) {
           const { error } = await supabase.from("payments").insert({
             gateway: "stripe", external_id, transaction_id: session.id, user_id: null,
             payer_name: cleanName, payer_email: cleanEmail, amount_cents: totalCents, status: "PENDING",
-            metadata: { birthDate, plan, rawResponse: session },
+            metadata: { birthDate, plan, orderBumps, rawResponse: session },
           });
           if (error) throw error;
         })(),
-        sendTelegramCheckoutInitiated({ payerName: cleanName, payerEmail: cleanEmail, amountCents: totalCents, plan, orderBumps: { karmicDebt: false, personalYearMonths: false } }),
+        sendTelegramCheckoutInitiated({ payerName: cleanName, payerEmail: cleanEmail, amountCents: totalCents, plan, orderBumps }),
       ]);
 
       for (const result of sideEffects) {

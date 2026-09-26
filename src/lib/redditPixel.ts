@@ -65,6 +65,7 @@ export function trackRedditAddToCart(params: {
   value: number;
   currency?: string;
   plan?: string;
+  orderBumps?: RedditProductItem[];
 }) {
   const planName =
     params.plan === "complete_numerology_reading"
@@ -76,13 +77,14 @@ export function trackRedditAddToCart(params: {
   const payload: RedditEventMetadata = {
     currency: params.currency || "USD",
     value: Number(params.value.toFixed(2)),
-    itemCount: 1,
+    itemCount: 1 + (params.orderBumps?.length || 0),
     products: [
       {
         id: params.plan || "vip",
         name: planName,
         category: "Numerologia",
       },
+      ...(params.orderBumps || []),
     ],
   };
 
@@ -97,6 +99,7 @@ export function trackRedditPurchase(params: {
   value: number;
   currency?: string;
   plan?: string;
+  orderBumps?: RedditProductItem[];
 }): boolean {
   const planName =
     params.plan === "complete_numerology_reading"
@@ -108,13 +111,14 @@ export function trackRedditPurchase(params: {
   const payload: RedditEventMetadata = {
     currency: params.currency || "USD",
     value: Number(params.value.toFixed(2)),
-    itemCount: 1,
+    itemCount: 1 + (params.orderBumps?.length || 0),
     products: [
       {
         id: params.plan || "vip",
         name: planName,
         category: "Numerologia",
       },
+      ...(params.orderBumps || []),
     ],
   };
 

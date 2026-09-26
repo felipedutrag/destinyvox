@@ -3,6 +3,7 @@ import { getStripe } from "@/lib/stripe";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { deliverNumerologyMap } from "@/lib/delivery";
 import { FULL_READING_PRICE_CENTS } from "@/lib/pricing";
+import { normalizeOrderBumpSelections } from "@/lib/orderBumps";
 import Stripe from "stripe";
 
 export async function POST(req: Request) {
@@ -41,7 +42,7 @@ export async function POST(req: Request) {
       const name = metadata?.name;
       const birthDate = metadata?.birthDate;
       const plan = metadata?.plan || "mapa_completo";
-      const orderBumps = metadata?.orderBumps ? JSON.parse(metadata.orderBumps) : {};
+      const orderBumps = normalizeOrderBumpSelections(metadata?.orderBumps);
 
       // 1. Upsert the payment before delivery. The checkout-side background insert
       // can fail or race with this webhook, so the webhook must be self-sufficient.
