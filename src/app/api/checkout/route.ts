@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 import { getStripe } from "@/lib/stripe";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { sendTelegramCheckoutInitiated } from "@/lib/telegram";
@@ -46,23 +46,26 @@ export async function POST(request: Request) {
       cancel_url: `${origin}/?checkout=cancelled`,
     });
 
-    try {
-      const supabase = getSupabaseAdmin();
-      const { data: profile } = await supabase.from("profiles").select("id").eq("email", cleanEmail).maybeSingle();
-      await supabase.from("payments").insert({
-        gateway: "stripe", external_id, transaction_id: session.id, user_id: profile?.id || null,
-        payer_name: cleanName, payer_email: cleanEmail, amount_cents: totalCents, status: "PENDING",
-        metadata: { birthDate, plan, rawResponse: session },
-      });
-    } catch (dbErr) {
-      console.error("[Supabase] Warning: Failed to register pending payment:", dbErr);
-    }
+    console.info(`[Stripe Checkout] Session created; mode=${session.livemode ? "live" : "test"}, adaptivePricing=${session.adaptive_pricing?.enabled ?? "unknown"}, currency=${session.currency}`);
 
-    try {
-      await sendTelegramCheckoutInitiated({ payerName: cleanName, payerEmail: cleanEmail, amountCents: totalCents, plan, orderBumps: { karmicDebt: false, personalYearMonths: false } });
-    } catch (tgErr) {
-      console.error("[Telegram] Warning: Failed to send checkout alert:", tgErr);
-    }
+    after(async () => {
+      const sideEffects = await Promise.allSettled([
+        (async () => {
+          const supabase = getSupabaseAdmin();
+          const { error } = await supabase.from("payments").insert({
+            gateway: "stripe", external_id, transaction_id: session.id, user_id: null,
+            payer_name: cleanName, payer_email: cleanEmail, amount_cents: totalCents, status: "PENDING",
+            metadata: { birthDate, plan, rawResponse: session },
+          });
+          if (error) throw error;
+        })(),
+        sendTelegramCheckoutInitiated({ payerName: cleanName, payerEmail: cleanEmail, amountCents: totalCents, plan, orderBumps: { karmicDebt: false, personalYearMonths: false } }),
+      ]);
+
+      for (const result of sideEffects) {
+        if (result.status === "rejected") console.error("[Checkout] Background follow-up failed:", result.reason);
+      }
+    });
 
     return NextResponse.json({ success: true, url: session.url, external_id });
   } catch (error) {
