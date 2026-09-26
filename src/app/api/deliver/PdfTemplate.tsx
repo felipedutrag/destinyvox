@@ -10,7 +10,7 @@ const styles = StyleSheet.create({
     paddingTop: 28,
     paddingBottom: 38,
     paddingHorizontal: 42, // Margem lateral ampliada
-    backgroundColor: "#070714",
+    backgroundColor: "#090807",
     fontFamily: "Helvetica",
     color: "#ffffff",
   },
@@ -20,9 +20,9 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#070714",
-    border: "16pt solid #101024",
-    padding: 24,
+    backgroundColor: "#090807",
+    border: "1pt solid #393225",
+    padding: 28,
   },
   goldBorder: {
     position: "absolute",
@@ -30,26 +30,54 @@ const styles = StyleSheet.create({
     left: 14,
     right: 14,
     bottom: 14,
-    border: "1.5pt solid #DAA520",
+    border: "1pt solid #BC8E3B",
   },
   coverBadge: {
     paddingHorizontal: 14,
     paddingVertical: 5,
     borderRadius: 3,
-    border: "1pt solid #DAA520",
-    backgroundColor: "#121226",
+    border: "1pt solid #FCD34D",
+    backgroundColor: "#14120f",
     marginBottom: 16,
   },
   coverBadgeText: {
     fontSize: 8.5,
-    color: "#DAA520",
+    color: "#FCD34D",
     fontWeight: "bold",
     letterSpacing: 3,
     textTransform: "uppercase",
   },
+  coverBrand: {
+    fontSize: 13,
+    color: "#F7EEDB",
+    fontFamily: "Times-Roman",
+    letterSpacing: 1.5,
+    marginBottom: 4,
+  },
+  coverBrandCaption: {
+    fontSize: 6.5,
+    color: "#BC8E3B",
+    letterSpacing: 3,
+    marginBottom: 18,
+  },
+  coverNumber: {
+    fontSize: 58,
+    color: "#FCD34D",
+    fontFamily: "Times-Roman",
+    lineHeight: 1,
+    textAlign: "center",
+  },
+  coverNumberLabel: {
+    fontSize: 7,
+    color: "#9A9182",
+    letterSpacing: 2,
+    textTransform: "uppercase",
+    marginTop: 2,
+    marginBottom: 10,
+  },
   title: {
     fontSize: 22,
-    color: "#DAA520",
+    color: "#FCD34D",
     textAlign: "center",
     marginBottom: 6,
     fontWeight: "bold",
@@ -68,8 +96,8 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     alignItems: "center",
     padding: 14,
-    backgroundColor: "#111124",
-    border: "1pt solid #2d2d4a",
+    backgroundColor: "#11100e",
+    border: "1pt solid #393225",
     borderRadius: 6,
     width: "86%",
   },
@@ -82,41 +110,42 @@ const styles = StyleSheet.create({
   },
   birthDate: {
     fontSize: 10,
-    color: "#DAA520",
+    color: "#FCD34D",
     letterSpacing: 1.5,
   },
   coreSummaryRow: {
     flexDirection: "row",
-    justifyContent: "center",
-    gap: 7,
+    justifyContent: "space-between",
+    flexWrap: "wrap",
+    rowGap: 7,
     marginTop: 10,
     marginBottom: 16,
-    width: "94%",
+    width: "92%",
   },
   summaryPill: {
-    flex: 1,
-    backgroundColor: "#121226",
-    border: "1pt solid #2d2d4a",
-    borderRadius: 4,
-    paddingVertical: 7,
-    paddingHorizontal: 4,
+    width: "31.5%",
+    backgroundColor: "#14120f",
+    border: "0.7pt solid #393225",
+    borderRadius: 5,
+    paddingVertical: 8,
+    paddingHorizontal: 6,
     alignItems: "center",
   },
   summaryPillLabel: {
-    fontSize: 6.5,
-    color: "#8e8ea8",
+    fontSize: 7,
+    color: "#B8B0A2",
     textTransform: "uppercase",
     marginBottom: 2,
     textAlign: "center",
   },
   summaryPillNum: {
-    fontSize: 14,
-    color: "#DAA520",
+    fontSize: 17,
+    color: "#FCD34D",
     fontWeight: "bold",
   },
   summaryPillTitle: {
-    fontSize: 6.2,
-    color: "#d8d8e8",
+    fontSize: 7,
+    color: "#D5CFC4",
     textAlign: "center",
     marginTop: 1,
   },
@@ -124,34 +153,34 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    borderBottom: "1pt solid #252542",
+    borderBottom: "1pt solid #393225",
     paddingBottom: 6,
     marginBottom: 10,
   },
   headerTag: {
     fontSize: 8,
-    color: "#DAA520",
+    color: "#FCD34D",
     fontWeight: "bold",
     letterSpacing: 1.5,
     textTransform: "uppercase",
   },
   headerName: {
     fontSize: 8,
-    color: "#8e8ea8",
+    color: "#9A9182",
     letterSpacing: 1,
     textTransform: "uppercase",
   },
   sectionTitle: {
     fontSize: 12.5,
-    color: "#DAA520",
+    color: "#FCD34D",
     fontWeight: "bold",
     letterSpacing: 1,
     textTransform: "uppercase",
     marginBottom: 7,
   },
   heroCard: {
-    backgroundColor: "#111124",
-    border: "1pt solid #DAA520",
+    backgroundColor: "#11100e",
+    border: "1pt solid #BC8E3B",
     borderRadius: 6,
     padding: 9,
     marginBottom: 8,
@@ -162,8 +191,8 @@ const styles = StyleSheet.create({
     width: 42,
     height: 42,
     borderRadius: 5,
-    backgroundColor: "#1a1a36",
-    border: "1.5pt solid #DAA520",
+    backgroundColor: "#211d16",
+    border: "1pt solid #BC8E3B",
     justifyContent: "center",
     alignItems: "center",
     marginRight: 11,
@@ -171,7 +200,7 @@ const styles = StyleSheet.create({
   heroBadgeText: {
     fontSize: 21,
     fontWeight: "bold",
-    color: "#DAA520",
+    color: "#FCD34D",
   },
   heroTitle: {
     fontSize: 11,
@@ -182,32 +211,32 @@ const styles = StyleSheet.create({
   },
   heroSubtitle: {
     fontSize: 8.5,
-    color: "#DAA520",
+    color: "#FCD34D",
     marginTop: 2,
     letterSpacing: 0.5,
   },
   dictumBox: {
-    backgroundColor: "#121226",
-    borderLeft: "2.5pt solid #DAA520",
+    backgroundColor: "#14120f",
+    borderLeft: "2.5pt solid #BC8E3B",
     padding: 7,
     marginBottom: 8,
   },
   dictumText: {
     fontSize: 8.8,
     fontStyle: "italic",
-    color: "#f3e7c4",
+    color: "#F3E6C8",
     lineHeight: 1.38,
   },
   paragraph: {
     fontSize: 10.5, // Fonte ampliada conforme pedido (era 8.8, 9.6)
     lineHeight: 1.45,
-    color: "#dcdce8",
+    color: "#DED7CA",
     marginBottom: 6.5,
     textAlign: "justify",
   },
   highlightBox: {
-    backgroundColor: "#121226",
-    border: "1pt solid #2d2d4a",
+    backgroundColor: "#14120f",
+    border: "1pt solid #393225",
     borderRadius: 4,
     padding: 8,
     marginTop: 5,
@@ -215,14 +244,14 @@ const styles = StyleSheet.create({
   highlightTitle: {
     fontSize: 8.6,
     fontWeight: "bold",
-    color: "#DAA520",
+    color: "#FCD34D",
     letterSpacing: 1,
     marginBottom: 3,
     textTransform: "uppercase",
   },
   highlightText: {
     fontSize: 8.4,
-    color: "#b0b0c6",
+    color: "#B8B0A2",
     lineHeight: 1.38,
   },
   footer: {
@@ -230,7 +259,7 @@ const styles = StyleSheet.create({
     bottom: 14,
     left: 42,
     right: 42,
-    borderTop: "0.5pt solid #222238",
+    borderTop: "0.5pt solid #393225",
     paddingTop: 5,
     flexDirection: "row",
     justifyContent: "space-between",
@@ -238,12 +267,12 @@ const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: 7.5,
-    color: "#606078",
+    color: "#796F60",
     letterSpacing: 1,
   },
   pageNumber: {
     fontSize: 7.5,
-    color: "#DAA520",
+    color: "#FCD34D",
     fontWeight: "bold",
   },
 });
@@ -260,20 +289,25 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
       <Page size="A4" style={styles.page}>
         <View style={styles.coverPage}>
           <View style={styles.goldBorder} />
-          
+
+          <Text style={styles.coverBrand}>DestinyVox</Text>
+          <Text style={styles.coverBrandCaption}>NUMEROLOGY</Text>
           <View style={styles.coverBadge}>
-            <Text style={styles.coverBadgeText}>DESTINYVOX // ENGINE V.4.2</Text>
+            <Text style={styles.coverBadgeText}>YOUR PERSONAL NUMBER MAP</Text>
           </View>
 
-          <Text style={styles.title}>PYTHAGOREAN DESTINY MAP</Text>
-          <Text style={styles.subtitle}>VIBRATIONAL DOSSIER OF CONSCIOUSNESS ENGINEERING</Text>
+          <Text style={styles.coverNumber}>{pillars.lifePath.number}</Text>
+          <Text style={styles.coverNumberLabel}>Your Life Path Number</Text>
+
+          <Text style={styles.title}>Your Numerology Profile</Text>
+          <Text style={styles.subtitle}>A PERSONAL GUIDE TO THE PATTERNS IN YOUR NAME AND BIRTH DATE</Text>
 
           <View style={styles.consultantCard}>
-            <Text style={{ fontSize: 8, color: "#DAA520", letterSpacing: 3, marginBottom: 4, textTransform: "uppercase" }}>
-              TITULAR CONSULTANT
+            <Text style={{ fontSize: 8, color: "#FCD34D", letterSpacing: 3, marginBottom: 4, textTransform: "uppercase" }}>
+              PREPARED FOR
             </Text>
             <Text style={styles.consultantName}>{profile.fullName}</Text>
-            <Text style={styles.birthDate}>NATAL COORDINATE: {profile.birthDate}</Text>
+            <Text style={styles.birthDate}>BIRTH DATE: {profile.birthDate}</Text>
           </View>
 
           {/* 5 Pillars in Cover Grid */}
@@ -314,15 +348,15 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
           {((orderBumps?.karmicDebt?.active) || (orderBumps?.personalYearMonths?.active)) && (
             <View style={{ flexDirection: "row", justifyContent: "center", gap: 8, marginTop: 10, marginBottom: 2 }}>
               {orderBumps?.karmicDebt?.active && (
-                <View style={{ backgroundColor: "#15152d", border: "1pt solid #DAA520", paddingHorizontal: 8, paddingVertical: 3, borderRadius: 3 }}>
-                  <Text style={{ fontSize: 6.8, color: "#DAA520", fontWeight: "bold", letterSpacing: 0.8 }}>
+                <View style={{ backgroundColor: "#211C13", border: "1pt solid #FCD34D", paddingHorizontal: 8, paddingVertical: 3, borderRadius: 3 }}>
+                  <Text style={{ fontSize: 6.8, color: "#FCD34D", fontWeight: "bold", letterSpacing: 0.8 }}>
                     ★ KARMIC DEBTS DOSSIER INCLUDED
                   </Text>
                 </View>
               )}
               {orderBumps?.personalYearMonths?.active && (
-                <View style={{ backgroundColor: "#15152d", border: "1pt solid #DAA520", paddingHorizontal: 8, paddingVertical: 3, borderRadius: 3 }}>
-                  <Text style={{ fontSize: 6.8, color: "#DAA520", fontWeight: "bold", letterSpacing: 0.8 }}>
+                <View style={{ backgroundColor: "#211C13", border: "1pt solid #FCD34D", paddingHorizontal: 8, paddingVertical: 3, borderRadius: 3 }}>
+                  <Text style={{ fontSize: 6.8, color: "#FCD34D", fontWeight: "bold", letterSpacing: 0.8 }}>
                     ★ {referenceYear} MONTH-BY-MONTH GUIDE INCLUDED
                   </Text>
                 </View>
@@ -331,11 +365,11 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
           )}
 
           <View style={{ marginTop: 18, alignItems: "center" }}>
-            <Text style={{ fontSize: 8, color: "#8e8ea8", letterSpacing: 1.5, marginBottom: 3 }}>
-              CALCULATIONS RIGOROUSLY COMPUTED ACCORDING TO THE HERMETIC TRADITION
+              <Text style={{ fontSize: 8, color: "#9A9182", letterSpacing: 1.5, marginBottom: 3 }}>
+              A THOUGHTFUL FRAMEWORK FOR SELF-REFLECTION
             </Text>
-            <Text style={{ fontSize: 7, color: "#606078", letterSpacing: 1 }}>
-              EXCLUSIVE AND NON-TRANSFERABLE EDITION • DESTINYVOX CRYPTOGRAPHIC PROTOCOL
+            <Text style={{ fontSize: 7, color: "#796F60", letterSpacing: 1 }}>
+              CREATED FOR {profile.firstName.toUpperCase()}  |  DESTINYVOX
             </Text>
           </View>
         </View>
@@ -351,7 +385,7 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
       {/* ============================================================ */}
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
-          <Text style={styles.headerTag}>LOG_01: VIBRATIONAL_MATRIX // NOMINAL_GEMATRIA</Text>
+          <Text style={styles.headerTag}>NAME AND BIRTH DATE NUMBERS</Text>
           <Text style={styles.headerName}>{profile.fullName}</Text>
         </View>
 
@@ -365,25 +399,25 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
           <Text style={styles.highlightTitle}>Phonetic Breakdown by Word (Values with '+'):</Text>
           <View style={{ flexDirection: "column", gap: 5, marginVertical: 4 }}>
             {gematria.words.map((w, wIdx) => (
-              <View key={wIdx} style={{ backgroundColor: "#1a1a36", padding: 5, borderRadius: 4, border: "0.5pt solid #353555" }}>
+              <View key={wIdx} style={{ backgroundColor: "#211D16", padding: 5, borderRadius: 4, border: "0.5pt solid #4B412E" }}>
                 <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 2 }}>
                   <Text style={{ fontSize: 8.5, fontWeight: "bold", color: "#ffffff" }}>{w.word}</Text>
-                  <Text style={{ fontSize: 7.5, color: "#DAA520", fontWeight: "bold" }}>Total: {w.sum} ➔ Reduction: {w.reductionString}</Text>
+                  <Text style={{ fontSize: 7.5, color: "#FCD34D", fontWeight: "bold" }}>Total: {w.sum} ➔ Reduction: {w.reductionString}</Text>
                 </View>
-                <Text style={{ fontSize: 7.5, color: "#c8c8dc" }}>
+                <Text style={{ fontSize: 7.5, color: "#C8BFAF" }}>
                   {w.additionString}
                 </Text>
               </View>
             ))}
           </View>
-          <Text style={{ fontSize: 7.5, color: "#DAA520", marginTop: 3 }}>
+          <Text style={{ fontSize: 7.5, color: "#FCD34D", marginTop: 3 }}>
             Total Gross Nominal Sum: {gematria.totalSum} points ➔ Theosophical Reduction: {gematria.expressionNumber}
           </Text>
         </View>
 
         {/* Cálculo da Data com '+' */}
         {gematria.dateCalculationString ? (
-          <View style={[styles.highlightBox, { marginVertical: 5, padding: 8, borderColor: "#DAA520" }]}>
+          <View style={[styles.highlightBox, { marginVertical: 5, padding: 8, borderColor: "#FCD34D" }]}>
             <Text style={styles.highlightTitle}>Mathematical Calculation of Birth Date (Life Path):</Text>
             <Text style={{ fontSize: 8, color: "#ffffff", marginTop: 2 }}>
               Date: {profile.birthDate} ➔ {gematria.dateCalculationString} = {pillars.lifePath.number}
@@ -396,20 +430,20 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
           <View style={[styles.summaryPill, { flex: 1, padding: 7 }]}>
             <Text style={styles.summaryPillLabel}>Vowels (Soul Urge)</Text>
             <Text style={[styles.summaryPillNum, { fontSize: 15 }]}>{gematria.soulUrgeNumber}</Text>
-            <Text style={{ fontSize: 6.8, color: "#8e8ea8", marginTop: 1 }}>Sum: {gematria.vowelsSum}</Text>
-            <Text style={{ fontSize: 7, color: "#d8d8e8", textAlign: "center", marginTop: 2 }}>The secret cry of your essence</Text>
+            <Text style={{ fontSize: 6.8, color: "#9A9182", marginTop: 1 }}>Sum: {gematria.vowelsSum}</Text>
+            <Text style={{ fontSize: 7, color: "#D5CFC4", textAlign: "center", marginTop: 2 }}>The secret cry of your essence</Text>
           </View>
           <View style={[styles.summaryPill, { flex: 1, padding: 7 }]}>
             <Text style={styles.summaryPillLabel}>Consonants (Personality)</Text>
             <Text style={[styles.summaryPillNum, { fontSize: 15 }]}>{gematria.personalityNumber}</Text>
-            <Text style={{ fontSize: 6.8, color: "#8e8ea8", marginTop: 1 }}>Sum: {gematria.consonantsSum}</Text>
-            <Text style={{ fontSize: 7, color: "#d8d8e8", textAlign: "center", marginTop: 2 }}>The social attire and presence</Text>
+            <Text style={{ fontSize: 6.8, color: "#9A9182", marginTop: 1 }}>Sum: {gematria.consonantsSum}</Text>
+            <Text style={{ fontSize: 7, color: "#D5CFC4", textAlign: "center", marginTop: 2 }}>The social attire and presence</Text>
           </View>
-          <View style={[styles.summaryPill, { flex: 1, padding: 7, borderColor: "#DAA520" }]}>
-            <Text style={[styles.summaryPillLabel, { color: "#DAA520" }]}>Total (Expression)</Text>
-            <Text style={[styles.summaryPillNum, { fontSize: 15, color: "#DAA520" }]}>{gematria.expressionNumber}</Text>
-            <Text style={{ fontSize: 6.8, color: "#8e8ea8", marginTop: 1 }}>Sum: {gematria.totalSum}</Text>
-            <Text style={{ fontSize: 7, color: "#d8d8e8", textAlign: "center", marginTop: 2 }}>Your realizing mark in the world</Text>
+          <View style={[styles.summaryPill, { flex: 1, padding: 7, borderColor: "#FCD34D" }]}>
+            <Text style={[styles.summaryPillLabel, { color: "#FCD34D" }]}>Total (Expression)</Text>
+            <Text style={[styles.summaryPillNum, { fontSize: 15, color: "#FCD34D" }]}>{gematria.expressionNumber}</Text>
+            <Text style={{ fontSize: 6.8, color: "#9A9182", marginTop: 1 }}>Sum: {gematria.totalSum}</Text>
+            <Text style={{ fontSize: 7, color: "#D5CFC4", textAlign: "center", marginTop: 2 }}>Your realizing mark in the world</Text>
           </View>
         </View>
 
@@ -438,7 +472,7 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
       {/* ============================================================ */}
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
-          <Text style={styles.headerTag}>LOG_02: LIFE_PATH // PILLAR_01</Text>
+          <Text style={styles.headerTag}>YOUR LIFE PATH</Text>
           <Text style={styles.headerName}>{profile.fullName}</Text>
         </View>
 
@@ -448,7 +482,7 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
           </View>
           <View style={{ flex: 1 }}>
             <Text style={styles.heroTitle}>{pillars.lifePath.label}</Text>
-            <Text style={{ fontSize: 13, fontWeight: "bold", color: "#DAA520", marginTop: 1 }}>
+            <Text style={{ fontSize: 13, fontWeight: "bold", color: "#FCD34D", marginTop: 1 }}>
               {pillars.lifePath.archetype}
             </Text>
             <Text style={styles.heroSubtitle}>
@@ -487,7 +521,7 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
       {/* ============================================================ */}
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
-          <Text style={styles.headerTag}>LOG_03: EXPRESSION // PILLAR_02</Text>
+          <Text style={styles.headerTag}>YOUR EXPRESSION</Text>
           <Text style={styles.headerName}>{profile.fullName}</Text>
         </View>
 
@@ -497,7 +531,7 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
           </View>
           <View style={{ flex: 1 }}>
             <Text style={styles.heroTitle}>{pillars.expression.label}</Text>
-            <Text style={{ fontSize: 13, fontWeight: "bold", color: "#DAA520", marginTop: 1 }}>
+            <Text style={{ fontSize: 13, fontWeight: "bold", color: "#FCD34D", marginTop: 1 }}>
               {pillars.expression.archetype}
             </Text>
             <Text style={styles.heroSubtitle}>
@@ -536,7 +570,7 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
       {/* ============================================================ */}
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
-          <Text style={styles.headerTag}>LOG_04: SOUL_URGE // PILLAR_03</Text>
+          <Text style={styles.headerTag}>YOUR INNER MOTIVATION</Text>
           <Text style={styles.headerName}>{profile.fullName}</Text>
         </View>
 
@@ -546,7 +580,7 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
           </View>
           <View style={{ flex: 1 }}>
             <Text style={styles.heroTitle}>{pillars.soulUrge.label}</Text>
-            <Text style={{ fontSize: 13, fontWeight: "bold", color: "#DAA520", marginTop: 1 }}>
+            <Text style={{ fontSize: 13, fontWeight: "bold", color: "#FCD34D", marginTop: 1 }}>
               {pillars.soulUrge.archetype}
             </Text>
             <Text style={styles.heroSubtitle}>
@@ -585,7 +619,7 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
       {/* ============================================================ */}
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
-          <Text style={styles.headerTag}>LOG_05: PERSONALITY // PILLAR_04</Text>
+          <Text style={styles.headerTag}>YOUR SOCIAL PRESENCE</Text>
           <Text style={styles.headerName}>{profile.fullName}</Text>
         </View>
 
@@ -595,7 +629,7 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
           </View>
           <View style={{ flex: 1 }}>
             <Text style={styles.heroTitle}>{pillars.personality.label}</Text>
-            <Text style={{ fontSize: 13, fontWeight: "bold", color: "#DAA520", marginTop: 1 }}>
+            <Text style={{ fontSize: 13, fontWeight: "bold", color: "#FCD34D", marginTop: 1 }}>
               {pillars.personality.archetype}
             </Text>
             <Text style={styles.heroSubtitle}>
@@ -675,26 +709,26 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
       {/* ============================================================ */}
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
-          <Text style={styles.headerTag}>LOG_06: KARMIC_ALCHEMY // SHADOW_CHALLENGE</Text>
+          <Text style={styles.headerTag}>A PATTERN TO WORK WITH</Text>
           <Text style={styles.headerName}>{profile.fullName}</Text>
         </View>
 
-        <View style={[styles.heroCard, { borderColor: "#c28820" }]}>
-          <View style={[styles.heroBadge, { borderColor: "#c28820" }]}>
-            <Text style={[styles.heroBadgeText, { color: "#c28820" }]}>{shadow.number}</Text>
+        <View style={[styles.heroCard, { borderColor: "#BC8E3B" }]}>
+          <View style={[styles.heroBadge, { borderColor: "#BC8E3B" }]}>
+            <Text style={[styles.heroBadgeText, { color: "#FCD34D" }]}>{shadow.number}</Text>
           </View>
           <View style={{ flex: 1 }}>
             <Text style={styles.heroTitle}>{shadow.label}</Text>
-            <Text style={{ fontSize: 13, fontWeight: "bold", color: "#c28820", marginTop: 1 }}>
+            <Text style={{ fontSize: 13, fontWeight: "bold", color: "#FCD34D", marginTop: 1 }}>
               {shadow.title}
             </Text>
-            <Text style={[styles.heroSubtitle, { color: "#c28820" }]}>
-              INVERTED FREQUENCY • KARMIC FRICTION POINT
+            <Text style={[styles.heroSubtitle, { color: "#BC8E3B" }]}>
+              A REFLECTION POINT FOR GROWTH
             </Text>
           </View>
         </View>
 
-        <View style={[styles.dictumBox, { borderLeftColor: "#c28820" }]}>
+        <View style={[styles.dictumBox, { borderLeftColor: "#BC8E3B" }]}>
           <Text style={styles.dictumText}>
             "That which you do not bring to the light of consciousness manifests in your life as destiny. The spiritual gold is hidden beneath the densest matter of your shadow."
           </Text>
@@ -706,12 +740,12 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
           </Text>
         ))}
 
-        <View style={[styles.highlightBox, { borderColor: "#c28820", backgroundColor: "#15152a" }]}>
-          <Text style={[styles.highlightTitle, { color: "#DAA520" }]}>
+        <View style={[styles.highlightBox, { borderColor: "#BC8E3B", backgroundColor: "#14120f" }]}>
+          <Text style={[styles.highlightTitle, { color: "#FCD34D" }]}>
             The Gold of the Shadow: Hermetic Transmutation Protocol
           </Text>
           {shadow.transmutation.map((tp, tIdx) => (
-            <Text key={tIdx} style={[styles.highlightText, { color: "#e0d8c0", marginBottom: 3 }]}>
+            <Text key={tIdx} style={[styles.highlightText, { color: "#DED7CA", marginBottom: 3 }]}>
               {tp}
             </Text>
           ))}
@@ -728,7 +762,7 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
       {/* ============================================================ */}
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
-          <Text style={styles.headerTag}>LOG_07: PERSONAL_YEAR_{referenceYear} // TEMPORAL_CYCLE</Text>
+          <Text style={styles.headerTag}>YOUR PERSONAL YEAR {referenceYear}</Text>
           <Text style={styles.headerName}>{profile.fullName}</Text>
         </View>
 
@@ -738,7 +772,7 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
           </View>
           <View style={{ flex: 1 }}>
             <Text style={styles.heroTitle}>ANNUAL CYCLE: {pillars.personalYear.label}</Text>
-            <Text style={{ fontSize: 13, fontWeight: "bold", color: "#DAA520", marginTop: 1 }}>
+            <Text style={{ fontSize: 13, fontWeight: "bold", color: "#FCD34D", marginTop: 1 }}>
               {pillars.personalYear.archetype}
             </Text>
             <Text style={styles.heroSubtitle}>
@@ -777,7 +811,7 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
       {/* ============================================================ */}
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
-          <Text style={styles.headerTag}>LOG_08: CONGENITAL_GIFT // INNATE_TALENT</Text>
+          <Text style={styles.headerTag}>YOUR BIRTHDAY NUMBER</Text>
           <Text style={styles.headerName}>{profile.fullName}</Text>
         </View>
 
@@ -787,7 +821,7 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
           </View>
           <View style={{ flex: 1 }}>
             <Text style={styles.heroTitle}>{pillars.birthday.label}</Text>
-            <Text style={{ fontSize: 13, fontWeight: "bold", color: "#DAA520", marginTop: 1 }}>
+            <Text style={{ fontSize: 13, fontWeight: "bold", color: "#FCD34D", marginTop: 1 }}>
               {pillars.birthday.archetype}
             </Text>
             <Text style={styles.heroSubtitle}>
@@ -820,7 +854,7 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
       {/* ============================================================ */}
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
-          <Text style={styles.headerTag}>LOG_09: MATURITY // FINAL_CONVERSION</Text>
+          <Text style={styles.headerTag}>YOUR MATURITY NUMBER</Text>
           <Text style={styles.headerName}>{profile.fullName}</Text>
         </View>
 
@@ -830,7 +864,7 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
           </View>
           <View style={{ flex: 1 }}>
             <Text style={styles.heroTitle}>{pillars.maturity.label}</Text>
-            <Text style={{ fontSize: 13, fontWeight: "bold", color: "#DAA520", marginTop: 1 }}>
+            <Text style={{ fontSize: 13, fontWeight: "bold", color: "#FCD34D", marginTop: 1 }}>
               {pillars.maturity.archetype}
             </Text>
             <Text style={styles.heroSubtitle}>
@@ -870,11 +904,11 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
 
           <View style={styles.heroCard}>
             <View style={styles.heroBadge}>
-              <Text style={{ fontSize: 24, fontWeight: "bold", color: "#DAA520" }}>∞</Text>
+              <Text style={{ fontSize: 24, fontWeight: "bold", color: "#FCD34D" }}>∞</Text>
             </View>
             <View style={{ flex: 1 }}>
               <Text style={styles.heroTitle}>Exclusive Karmic Debts Dossier</Text>
-              <Text style={{ fontSize: 11, fontWeight: "bold", color: "#DAA520", marginTop: 1 }}>
+              <Text style={{ fontSize: 11, fontWeight: "bold", color: "#FCD34D", marginTop: 1 }}>
                 PROTOCOLS 13, 14, 16 AND 19 OF COSMIC RECTIFICATION
               </Text>
               <Text style={styles.heroSubtitle}>
@@ -884,9 +918,9 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
           </View>
 
           {/* Consultant Diagnosis */}
-          <View style={[styles.highlightBox, { borderColor: "#DAA520", padding: 7, marginVertical: 3 }]}>
+          <View style={[styles.highlightBox, { borderColor: "#FCD34D", padding: 7, marginVertical: 3 }]}>
             <Text style={styles.highlightTitle}>Nominal & Natal Diagnosis of Karmic Debt:</Text>
-            <Text style={[styles.highlightText, { fontSize: 8.2, color: "#f0eedb" }]}>
+            <Text style={[styles.highlightText, { fontSize: 8.2, color: "#F7EEDB" }]}>
               {orderBumps.karmicDebt.statusText}
             </Text>
           </View>
@@ -900,48 +934,48 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
                   key={idx}
                   style={{
                     width: "49%",
-                    backgroundColor: "#111124",
-                    border: isDetected ? "1.5pt solid #DAA520" : "0.5pt solid #2d2d4a",
+                    backgroundColor: "#11100E",
+                    border: isDetected ? "1.5pt solid #FCD34D" : "0.5pt solid #393225",
                     borderRadius: 4,
                     padding: 6,
                     marginBottom: 5,
                   }}
                 >
-                  <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", borderBottom: "0.5pt solid #252542", paddingBottom: 2, marginBottom: 3 }}>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", borderBottom: "0.5pt solid #393225", paddingBottom: 2, marginBottom: 3 }}>
                     <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-                      <View style={{ backgroundColor: "#1c1c38", border: "1pt solid #DAA520", paddingHorizontal: 4, paddingVertical: 1, borderRadius: 2 }}>
-                        <Text style={{ fontSize: 7.8, fontWeight: "bold", color: "#DAA520" }}>{item.number} ➔ {item.transmutedTo}</Text>
+                      <View style={{ backgroundColor: "#292216", border: "1pt solid #FCD34D", paddingHorizontal: 4, paddingVertical: 1, borderRadius: 2 }}>
+                        <Text style={{ fontSize: 7.8, fontWeight: "bold", color: "#FCD34D" }}>{item.number} ➔ {item.transmutedTo}</Text>
                       </View>
                       <Text style={{ fontSize: 7.2, fontWeight: "bold", color: "#ffffff" }}>Debt {item.number}</Text>
                     </View>
-                    <Text style={{ fontSize: 6.2, color: isDetected ? "#DAA520" : "#70708a", fontWeight: "bold" }}>
+                    <Text style={{ fontSize: 6.2, color: isDetected ? "#FCD34D" : "#796F60", fontWeight: "bold" }}>
                       {isDetected ? "● DETECTED" : "PREVENTIVE"}
                     </Text>
                   </View>
 
-                  <Text style={{ fontSize: 6.8, color: "#DAA520", fontStyle: "italic", marginBottom: 2 }}>
+                  <Text style={{ fontSize: 6.8, color: "#FCD34D", fontStyle: "italic", marginBottom: 2 }}>
                     {item.theme}
                   </Text>
                   
-                  <Text style={{ fontSize: 6.2, color: "#8e8ea8", fontWeight: "bold", marginTop: 1 }}>DIAGNOSIS:</Text>
-                  <Text style={{ fontSize: 6.6, color: "#c8c8dc", lineHeight: 1.25, marginBottom: 2 }}>{item.diagnosis}</Text>
+                  <Text style={{ fontSize: 6.2, color: "#9A9182", fontWeight: "bold", marginTop: 1 }}>DIAGNOSIS:</Text>
+                  <Text style={{ fontSize: 6.6, color: "#C8BFAF", lineHeight: 1.25, marginBottom: 2 }}>{item.diagnosis}</Text>
 
-                  <Text style={{ fontSize: 6.2, color: "#8e8ea8", fontWeight: "bold", marginTop: 1 }}>SYMPTOMS ON PHYSICAL PLANE:</Text>
-                  <Text style={{ fontSize: 6.6, color: "#c8c8dc", lineHeight: 1.25, marginBottom: 2 }}>{item.symptoms}</Text>
+                  <Text style={{ fontSize: 6.2, color: "#9A9182", fontWeight: "bold", marginTop: 1 }}>SYMPTOMS ON PHYSICAL PLANE:</Text>
+                  <Text style={{ fontSize: 6.6, color: "#C8BFAF", lineHeight: 1.25, marginBottom: 2 }}>{item.symptoms}</Text>
 
-                  <Text style={{ fontSize: 6.2, color: "#DAA520", fontWeight: "bold", marginTop: 1 }}>ALCHEMY & PROTOCOL:</Text>
-                  <Text style={{ fontSize: 6.6, color: "#f7e8bd", lineHeight: 1.25, backgroundColor: "#181830", padding: 3, borderRadius: 2 }}>{item.protocol}</Text>
+                  <Text style={{ fontSize: 6.2, color: "#FCD34D", fontWeight: "bold", marginTop: 1 }}>ALCHEMY & PROTOCOL:</Text>
+                  <Text style={{ fontSize: 6.6, color: "#F3E6C8", lineHeight: 1.25, backgroundColor: "#211D16", padding: 3, borderRadius: 2 }}>{item.protocol}</Text>
                 </View>
               );
             })}
           </View>
 
           {/* Karmic Revocation Decree */}
-          <View style={[styles.dictumBox, { borderLeftColor: "#DAA520", backgroundColor: "#111124", padding: 7, marginVertical: 2 }]}>
-            <Text style={{ fontSize: 8, fontWeight: "bold", color: "#DAA520", marginBottom: 2, textTransform: "uppercase", letterSpacing: 0.8 }}>
+          <View style={[styles.dictumBox, { borderLeftColor: "#FCD34D", backgroundColor: "#11100E", padding: 7, marginVertical: 2 }]}>
+            <Text style={{ fontSize: 8, fontWeight: "bold", color: "#FCD34D", marginBottom: 2, textTransform: "uppercase", letterSpacing: 0.8 }}>
               Revocation Protocol & Cosmic Settlement Decree:
             </Text>
-            <Text style={{ fontSize: 7.5, fontStyle: "italic", color: "#f5ecd0", lineHeight: 1.35 }}>
+            <Text style={{ fontSize: 7.5, fontStyle: "italic", color: "#F7EEDB", lineHeight: 1.35 }}>
               "{orderBumps.karmicDebt.manifestationDecree}"
             </Text>
           </View>
@@ -965,11 +999,11 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
 
           <View style={styles.heroCard}>
             <View style={styles.heroBadge}>
-              <Text style={{ fontSize: 13, fontWeight: "bold", color: "#DAA520" }}>{referenceYear}</Text>
+              <Text style={{ fontSize: 13, fontWeight: "bold", color: "#FCD34D" }}>{referenceYear}</Text>
             </View>
             <View style={{ flex: 1 }}>
               <Text style={styles.heroTitle}>Strategic Guide {referenceYear} Month by Month</Text>
-              <Text style={{ fontSize: 11, fontWeight: "bold", color: "#DAA520", marginTop: 1 }}>
+              <Text style={{ fontSize: 11, fontWeight: "bold", color: "#FCD34D", marginTop: 1 }}>
                 PERSONAL YEAR {orderBumps.personalYearMonths.personalYear} — {orderBumps.personalYearMonths.yearArchetype}
               </Text>
               <Text style={styles.heroSubtitle}>
@@ -985,28 +1019,28 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
                 key={mIdx}
                 style={{
                   width: "49%",
-                  backgroundColor: "#111124",
-                  border: "0.5pt solid #2d2d4a",
+                  backgroundColor: "#11100E",
+                  border: "0.5pt solid #393225",
                   borderRadius: 4,
                   padding: 4,
                   marginBottom: 3,
                 }}
               >
-                <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", borderBottom: "0.5pt solid #222238", paddingBottom: 1, marginBottom: 2 }}>
+                <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", borderBottom: "0.5pt solid #393225", paddingBottom: 1, marginBottom: 2 }}>
                   <Text style={{ fontSize: 7.5, fontWeight: "bold", color: "#ffffff" }}>
                     {m.monthName}
                   </Text>
-                  <View style={{ backgroundColor: "#1c1c38", border: "1pt solid #DAA520", paddingHorizontal: 3, paddingVertical: 1, borderRadius: 2 }}>
-                    <Text style={{ fontSize: 6.5, fontWeight: "bold", color: "#DAA520" }}>Month {m.personalMonthNumber}</Text>
+                  <View style={{ backgroundColor: "#292216", border: "1pt solid #FCD34D", paddingHorizontal: 3, paddingVertical: 1, borderRadius: 2 }}>
+                    <Text style={{ fontSize: 6.5, fontWeight: "bold", color: "#FCD34D" }}>Month {m.personalMonthNumber}</Text>
                   </View>
                 </View>
 
                 <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 1 }}>
-                  <Text style={{ fontSize: 6.5, color: "#DAA520", fontWeight: "bold" }}>{m.archetype}</Text>
-                  <Text style={{ fontSize: 6.2, color: "#8e8ea8" }}>{m.theme}</Text>
+                  <Text style={{ fontSize: 6.5, color: "#FCD34D", fontWeight: "bold" }}>{m.archetype}</Text>
+                  <Text style={{ fontSize: 6.2, color: "#9A9182" }}>{m.theme}</Text>
                 </View>
 
-                <Text style={{ fontSize: 6.5, color: "#c8c8dc", lineHeight: 1.2 }}>
+                <Text style={{ fontSize: 6.5, color: "#C8BFAF", lineHeight: 1.2 }}>
                   {m.guidance}
                 </Text>
               </View>
@@ -1014,9 +1048,9 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
           </View>
 
           {/* Timing Executive Directive Box */}
-          <View style={[styles.highlightBox, { borderColor: "#DAA520", backgroundColor: "#111124", padding: 6, marginVertical: 2 }]}>
+          <View style={[styles.highlightBox, { borderColor: "#FCD34D", backgroundColor: "#11100E", padding: 6, marginVertical: 2 }]}>
             <Text style={[styles.highlightTitle, { fontSize: 7.6 }]}>Executive Timing Directive & Annual Flow:</Text>
-            <Text style={[styles.highlightText, { fontSize: 7.2, color: "#f2ebd6", lineHeight: 1.3 }]}>
+            <Text style={[styles.highlightText, { fontSize: 7.2, color: "#F3E6C8", lineHeight: 1.3 }]}>
               {orderBumps.personalYearMonths.executiveAdvice}
             </Text>
           </View>
@@ -1033,7 +1067,7 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
       {/* ============================================================ */}
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
-          <Text style={styles.headerTag}>LOG_10: HERMETIC_ACTIVATION // MANIFESTATION_DECREE</Text>
+          <Text style={styles.headerTag}>PUT YOUR INSIGHT INTO ACTION</Text>
           <Text style={styles.headerName}>{profile.fullName}</Text>
         </View>
 
@@ -1043,24 +1077,24 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
         </Text>
 
         {/* Abundance Code Activation Card */}
-        <View style={[styles.highlightBox, { borderColor: "#DAA520", padding: 12, marginVertical: 8, alignItems: "center" }]}>
-          <Text style={{ fontSize: 8.5, color: "#8e8ea8", letterSpacing: 2, marginBottom: 4, textTransform: "uppercase" }}>
+        <View style={[styles.highlightBox, { borderColor: "#FCD34D", padding: 12, marginVertical: 8, alignItems: "center" }]}>
+          <Text style={{ fontSize: 8.5, color: "#9A9182", letterSpacing: 2, marginBottom: 4, textTransform: "uppercase" }}>
             NUMERIC CODE FOR ABUNDANCE ACTIVATION
           </Text>
-          <Text style={{ fontSize: 22, fontWeight: "bold", color: "#DAA520", letterSpacing: 5, marginVertical: 4 }}>
+          <Text style={{ fontSize: 22, fontWeight: "bold", color: "#FCD34D", letterSpacing: 5, marginVertical: 4 }}>
             {activation.abundanceCode}
           </Text>
-          <Text style={{ fontSize: 7.8, color: "#d8d8e8", textAlign: "center", lineHeight: 1.4, paddingHorizontal: 16 }}>
+          <Text style={{ fontSize: 7.8, color: "#D5CFC4", textAlign: "center", lineHeight: 1.4, paddingHorizontal: 16 }}>
             This combination brings together your Life Path, Expression, and Soul Urge numbers. Use it as a personal reflection prompt when setting intentions and considering the themes explored in this reading.
           </Text>
         </View>
 
         {/* Solemn Decree Box */}
-        <View style={[styles.dictumBox, { borderLeftColor: "#DAA520", backgroundColor: "#111124", padding: 12, marginVertical: 6 }]}>
-          <Text style={{ fontSize: 9.5, fontWeight: "bold", color: "#DAA520", marginBottom: 6, textTransform: "uppercase", letterSpacing: 1 }}>
+        <View style={[styles.dictumBox, { borderLeftColor: "#FCD34D", backgroundColor: "#11100E", padding: 12, marginVertical: 6 }]}>
+          <Text style={{ fontSize: 9.5, fontWeight: "bold", color: "#FCD34D", marginBottom: 6, textTransform: "uppercase", letterSpacing: 1 }}>
             Hermetic Decree of Personal Sovereignty:
           </Text>
-          <Text style={{ fontSize: 9.4, fontStyle: "italic", color: "#f5ecd0", lineHeight: 1.5, textAlign: "justify" }}>
+          <Text style={{ fontSize: 9.4, fontStyle: "italic", color: "#F7EEDB", lineHeight: 1.5, textAlign: "justify" }}>
             "{activation.manifestationDecree}"
           </Text>
         </View>
@@ -1071,9 +1105,9 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
           <Text style={styles.highlightText}>
             This document represents the complete analytical mapping of {profile.fullName}'s vibrational matrix, rigorously calculated from the Pythagorean table and the laws of hermetic correspondence. Keep this dossier as a permanent compass for your major decisions.
           </Text>
-          <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 8, paddingTop: 6, borderTop: "0.5pt solid #252542" }}>
-            <Text style={{ fontSize: 7, color: "#606078" }}>AUTHENTICATION KEY: DVX-PYTHAGORAS-{referenceYear}-OK</Text>
-            <Text style={{ fontSize: 7, color: "#DAA520", fontWeight: "bold" }}>STATUS: ACTIVATED & HOMOLOGATED</Text>
+          <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 8, paddingTop: 6, borderTop: "0.5pt solid #393225" }}>
+            <Text style={{ fontSize: 7, color: "#796F60" }}>AUTHENTICATION KEY: DVX-PYTHAGORAS-{referenceYear}-OK</Text>
+            <Text style={{ fontSize: 7, color: "#FCD34D", fontWeight: "bold" }}>STATUS: ACTIVATED & HOMOLOGATED</Text>
           </View>
         </View>
 

@@ -733,13 +733,17 @@ export async function deliverNumerologyMap(params: DeliverMapParams) {
 
   // 5. Enviar e-mail via Resend
   const isDev = process.env.NODE_ENV !== "production";
-  // Em modo DEV local, usa delivered@resend.dev para simular sucesso sem gastar quota da conta
-  const targetRecipient = isDev ? "delivered@resend.dev" : customerEmail;
-  const fromEmail = isDev
-    ? "DestinyVox Test <onboarding@resend.dev>"
-    : (process.env.RESEND_FROM_EMAIL || "DestinyVox <contato@destinyvox.online>");
+  // Send to the checkout address in every environment so development can verify
+  // actual delivery. The sender domain must be verified with Resend.
+  const targetRecipient = customerEmail;
+  const fromEmail = process.env.RESEND_FROM_EMAIL || "DestinyVox <contato@destinyvox.online>";
 
-  console.log(`📧 [Deliver] Enviando e-mail para ${targetRecipient} (Modo: ${isDev ? 'DEV/TESTE - delivered@resend.dev (zero quota gasta)' : 'PRODUÇÃO'})...`);
+  console.log(`📧 [Deliver] Enviando e-mail para ${targetRecipient} (Modo: ${isDev ? "DEV/TESTE" : "PRODUÇÃO"})...`);
+  // The Stripe webhook and the reading page can race to finish the same
+  // delivery. Let Resend deduplicate at the provider boundary as a final guard.
+  const emailIdempotencyKey = params.transactionId || params.externalId
+    ? `numerology-map/${params.transactionId || params.externalId}`
+    : undefined;
 
   try {
     const resend = getResend();
@@ -756,10 +760,14 @@ export async function deliverNumerologyMap(params: DeliverMapParams) {
           content: Buffer.from(pdfBuffer),
         },
       ],
-    });
+    }, emailIdempotencyKey ? { idempotencyKey: emailIdempotencyKey } : undefined);
 
     if (emailError) {
-      console.error("[Deliver] ❌ Erro retornado pela API Resend:", emailError);
+      if (emailError.statusCode === 409 && emailIdempotencyKey) {
+        console.info(`[Deliver] E-mail duplicado bloqueado pelo Resend (${emailIdempotencyKey}).`);
+      } else {
+        console.error("[Deliver] ❌ Erro retornado pela API Resend:", emailError);
+      }
     } else {
       console.log(`[Deliver] ✅ E-mail enviado com sucesso (ID: ${emailData?.id}) para ${targetRecipient}`);
 

@@ -57,11 +57,8 @@ export async function POST(req: Request) {
             amount_cents: session.amount_total ?? FULL_READING_PRICE_CENTS,
             status: "PAID",
             paid_at: new Date().toISOString(),
-            metadata: {
-              ...metadata,
-              stripe_currency: session.currency,
-              stripe_amount_total: session.amount_total,
-            },
+            // Preserve delivery metadata on retries. Replacing this JSON here
+            // could erase the lock/email_sent flag set by the reading page.
           }, { onConflict: "external_id" });
         if (paymentError) throw paymentError;
         console.log(`[Stripe Webhook] Payment ${externalId} marked as PAID`);
