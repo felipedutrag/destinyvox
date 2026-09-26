@@ -7,10 +7,26 @@ import React from "react";
 import { NumerologyPDFDocument } from "./PdfTemplate";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { getStripe } from "@/lib/stripe";
+import type Stripe from "stripe";
+
+function confirmedPaymentPayload(session: Stripe.Checkout.Session) {
+  const currency = session.currency || "usd";
+  const fractionDigits = new Intl.NumberFormat("en", { style: "currency", currency }).resolvedOptions().maximumFractionDigits ?? 2;
+  return {
+    status: "preparing",
+    paymentConfirmed: true,
+    transactionId: session.id,
+    amount: session.amount_total === null ? null : session.amount_total / (10 ** fractionDigits),
+    currency,
+  };
+}
 
 export async function GET(request: Request) {
+  let confirmedSession: Stripe.Checkout.Session | null = null;
+  let isPdfRequest = false;
   try {
     const url = new URL(request.url);
+    isPdfRequest = url.searchParams.get("format") === "pdf";
     const sessionId = url.searchParams.get("session_id");
     if (!sessionId) return NextResponse.json({ error: "Missing checkout session" }, { status: 400 });
 
@@ -18,6 +34,7 @@ export async function GET(request: Request) {
     if (session.payment_status !== "paid" || !session.client_reference_id?.startsWith("MAPA_")) {
       return NextResponse.json({ error: "Payment not confirmed" }, { status: 403 });
     }
+    confirmedSession = session;
 
     const supabase = getSupabaseAdmin();
     const { data: payment, error: paymentError } = await supabase
@@ -38,7 +55,10 @@ export async function GET(request: Request) {
     let paymentMetadata = (payment?.metadata || {}) as Record<string, unknown>;
 
     if (!payerEmail || !birthDate || !session.client_reference_id) {
-      return NextResponse.json({ error: "Checkout is missing the details needed to prepare this reading." }, { status: 422 });
+      return NextResponse.json(
+        { ...confirmedPaymentPayload(session), status: "error", error: "Checkout is missing the details needed to prepare this reading." },
+        { status: 422, headers: { "Cache-Control": "private, no-store" } },
+      );
     }
 
     if (!payment) {
@@ -131,7 +151,7 @@ export async function GET(request: Request) {
         });
       }
 
-      return NextResponse.json({ status: "preparing" }, { status: 202, headers: { "Cache-Control": "private, no-store" } });
+      return NextResponse.json(confirmedPaymentPayload(session), { status: 202, headers: { "Cache-Control": "private, no-store" } });
     }
 
     const { data: map, error: mapError } = await supabase
@@ -142,7 +162,7 @@ export async function GET(request: Request) {
 
     if (mapError) throw mapError;
     if (!map?.full_interpretation) {
-      return NextResponse.json({ status: "preparing" }, { status: 202, headers: { "Cache-Control": "private, no-store" } });
+      return NextResponse.json(confirmedPaymentPayload(session), { status: 202, headers: { "Cache-Control": "private, no-store" } });
     }
 
     if (url.searchParams.get("format") === "pdf") {
@@ -172,6 +192,9 @@ export async function GET(request: Request) {
     }, { headers: { "Cache-Control": "private, no-store" } });
   } catch (error) {
     console.error("Reading retrieval error:", error);
+    if (confirmedSession && !isPdfRequest) {
+      return NextResponse.json(confirmedPaymentPayload(confirmedSession), { status: 202, headers: { "Cache-Control": "private, no-store" } });
+    }
     const details = error instanceof Error ? error.message : JSON.stringify(error);
     if (/fetch failed|ENOTFOUND|ECONNREFUSED|SUPABASE_URL/i.test(details)) {
       return NextResponse.json(

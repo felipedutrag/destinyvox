@@ -30,8 +30,8 @@ export interface RedditEventMetadata {
 export function trackRedditEvent(
   eventName: "PageVisit" | "InitiateCheckout" | "AddToCart" | "Purchase" | "SignUp" | "Lead" | "Custom" | string,
   metadata?: RedditEventMetadata
-) {
-  if (typeof window === "undefined") return;
+): boolean {
+  if (typeof window === "undefined") return false;
 
   if (typeof window.rdt === "function") {
     try {
@@ -44,14 +44,17 @@ export function trackRedditEvent(
         window.rdt("track", finalEventName);
       }
       console.log(`🎯 [Reddit Pixel] Evento '${eventName}' disparado como '${finalEventName}':`, finalMetadata || {});
+      return true;
     } catch (err) {
       console.error(`❌ [Reddit Pixel] Erro ao disparar '${eventName}':`, err);
+      return false;
     }
   } else {
     console.warn(
       `⚠️ [Reddit Pixel] window.rdt não está pronto ou foi bloqueado por adblock. Evento '${eventName}':`,
       metadata
     );
+    return false;
   }
 }
 
@@ -94,7 +97,7 @@ export function trackRedditPurchase(params: {
   value: number;
   currency?: string;
   plan?: string;
-}) {
+}): boolean {
   const planName =
     params.plan === "complete_numerology_reading"
       ? "Complete Personal Numerology Reading"
@@ -115,6 +118,7 @@ export function trackRedditPurchase(params: {
     ],
   };
 
-  console.log(`💰 [Reddit Pixel] Purchase disparado com sucesso:`, payload);
-  trackRedditEvent("Purchase", payload);
+  const tracked = trackRedditEvent("Purchase", payload);
+  if (tracked) console.log("💰 [Reddit Pixel] Purchase enviado à fila do pixel:", payload);
+  return tracked;
 }

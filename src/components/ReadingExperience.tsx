@@ -10,6 +10,29 @@ import { BrandLogo } from "@/components/BrandLogo";
 
 type ReadingResponse = { status: "ready"; mapId: string; name: string; birthDate: string; content: NumerologyContent; amount: number | null; currency: string };
 type Stage = "loading" | "ready" | "reading" | "error";
+const trackedPurchaseSessions = new Set<string>();
+
+function trackConfirmedPurchase(sessionId: string, value: number | null, currency: string) {
+  if (trackedPurchaseSessions.has(sessionId)) return;
+  const storageKey = `destinyvox_purchase_${sessionId}`;
+
+  try {
+    if (sessionStorage.getItem(storageKey)) {
+      trackedPurchaseSessions.add(sessionId);
+      return;
+    }
+  } catch {
+    // The in-memory set still prevents duplicate events during this page visit.
+  }
+
+  const purchaseValue = value ?? 27;
+  const purchaseCurrency = currency.toUpperCase();
+  if (!trackRedditPurchase({ value: purchaseValue, currency: purchaseCurrency, plan: "complete_numerology_reading" })) return;
+
+  trackedPurchaseSessions.add(sessionId);
+  try { sessionStorage.setItem(storageKey, "1"); } catch { /* In-memory deduplication remains active. */ }
+  trackFunnelEvent("purchase_completed", { value: purchaseValue, currency: purchaseCurrency, transaction_id: sessionId });
+}
 
 const PILLARS: Array<[keyof NumerologyContent["pillars"], string, string]> = [
   ["lifePath", "Life Path", "The direction and lessons highlighted by your birth date."],
@@ -66,11 +89,14 @@ export function ReadingExperience() {
         const retryQuery = shouldForceRetry ? "&retry=1" : "";
         shouldForceRetry = false;
         const response = await fetch(`/api/deliver?session_id=${encodeURIComponent(id)}${retryQuery}`, { cache: "no-store" });
+        const data = await response.json();
+        if (data.paymentConfirmed === true) {
+          trackConfirmedPurchase(id, typeof data.amount === "number" ? data.amount : null, data.currency || "usd");
+        }
         if (response.status === 202) {
           await new Promise((resolve) => window.setTimeout(resolve, 2500));
           continue;
         }
-        const data = await response.json();
         if (!response.ok || data.status !== "ready") {
           setError(data.error || "Unable to load your reading.");
           setStage("error");
@@ -79,18 +105,7 @@ export function ReadingExperience() {
         const result = data as ReadingResponse;
         setReading(result);
         setStage("ready");
-        const purchaseValue = result.amount ?? 27;
-        const purchaseCurrency = result.currency.toUpperCase();
-        trackFunnelEvent("purchase_completed", { value: purchaseValue, currency: purchaseCurrency, transaction_id: id });
-        try {
-          const key = `destinyvox_purchase_${id}`;
-          if (!sessionStorage.getItem(key)) {
-            trackRedditPurchase({ value: purchaseValue, currency: purchaseCurrency, plan: "complete_numerology_reading" });
-            sessionStorage.setItem(key, "1");
-          }
-        } catch {
-          trackRedditPurchase({ value: purchaseValue, currency: purchaseCurrency, plan: "complete_numerology_reading" });
-        }
+        trackConfirmedPurchase(id, result.amount, result.currency);
         return;
       } catch {
         await new Promise((resolve) => window.setTimeout(resolve, 2500));
