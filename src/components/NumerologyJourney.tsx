@@ -11,7 +11,7 @@ import {
 } from "@/utils/numerology";
 import { buildCosmicInterpretation, type CosmicInterpretation } from "@/utils/interpretations";
 import { trackFunnelEvent, trackFunnelTransition } from "@/lib/funnelAnalytics";
-import { trackRedditAddToCart } from "@/lib/redditPixel";
+import { trackRedditAddToCart, trackRedditEvent } from "@/lib/redditPixel";
 import { FULL_READING_PRICE_USD } from "@/lib/pricing";
 import { BrandLogo } from "@/components/BrandLogo";
 
@@ -79,58 +79,39 @@ type InterpretationSlide = {
   text: string;
 };
 
-function InterpretationCarousel({ slides }: { slides: InterpretationSlide[] }) {
-  const viewportRef = useRef<HTMLDivElement>(null);
+function InterpretationSteps({ slides }: { slides: InterpretationSlide[] }) {
   const [activeIndex, setActiveIndex] = useState(0);
-
-  const goToSlide = (index: number) => {
-    const nextIndex = Math.max(0, Math.min(index, slides.length - 1));
-    const viewport = viewportRef.current;
-    const slide = viewport?.children[nextIndex] as HTMLElement | undefined;
-    if (!viewport || !slide) return;
-    const slideLeft = slide.getBoundingClientRect().left - viewport.getBoundingClientRect().left + viewport.scrollLeft;
-    viewport.scrollTo({ left: slideLeft, behavior: "smooth" });
-    setActiveIndex(nextIndex);
-  };
-
-  const updateActiveSlide = () => {
-    const viewport = viewportRef.current;
-    if (!viewport) return;
-    const viewportLeft = viewport.getBoundingClientRect().left;
-    const slides = Array.from(viewport.children) as HTMLElement[];
-    const nearestIndex = slides.reduce((nearest, slide, index) =>
-      Math.abs(slide.getBoundingClientRect().left - viewportLeft)
-        < Math.abs(slides[nearest].getBoundingClientRect().left - viewportLeft) ? index : nearest,
-    0);
-    setActiveIndex((current) => current === nearestIndex ? current : nearestIndex);
-  };
+  const activeSlide = slides[activeIndex];
 
   return (
-    <div className="mt-7" aria-roledescription="carousel" aria-label="Your three personal interpretations">
-      <div
-        ref={viewportRef}
-        onScroll={updateActiveSlide}
-        className="flex snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:gap-4"
-      >
+    <div className="mt-7" aria-label="Your three personal interpretations">
+      <div className="flex items-center justify-between font-mono text-[10px] tracking-[0.14em] text-[#938c81]">
+        <span>STEP {String(activeIndex + 1).padStart(2, "0")} <span className="text-[#5f5a52]">OF {String(slides.length).padStart(2, "0")}</span></span>
+        <span>{activeSlide.title}</span>
+      </div>
+
+      <div className="mt-3 flex gap-2" aria-hidden="true">
         {slides.map((slide, index) => (
-          <div key={slide.title} role="group" aria-roledescription="slide" aria-label={`${index + 1} of ${slides.length}`} className="min-w-0 flex-[0_0_88%] snap-start sm:flex-[0_0_58%] lg:flex-[0_0_46%]">
-            <PreviewInterpretation {...slide} />
-          </div>
+          <span key={slide.title} className={`h-1 flex-1 rounded-full transition-colors ${index <= activeIndex ? "bg-amber-300" : "bg-white/10"}`} />
         ))}
       </div>
 
-      <div className="mt-3 flex items-center justify-between gap-4">
-        <p className="font-mono text-[10px] tracking-wide text-[#938c81]" aria-live="polite">0{activeIndex + 1} <span className="text-[#5f5a52]">/ 0{slides.length}</span></p>
+      <div key={activeSlide.title} className="journey-enter mt-4" role="group" aria-roledescription="step" aria-label={`Step ${activeIndex + 1} of ${slides.length}`}>
+        <PreviewInterpretation {...activeSlide} />
+      </div>
+
+      <div className="mt-4 flex items-center justify-between gap-4">
+        <p className="font-mono text-[10px] tracking-wide text-[#938c81]" aria-live="polite">{String(activeIndex + 1).padStart(2, "0")} <span className="text-[#5f5a52]">/ {String(slides.length).padStart(2, "0")}</span></p>
         <div className="flex items-center gap-2">
-          <button type="button" onClick={() => goToSlide(activeIndex - 1)} disabled={activeIndex === 0} aria-label="Previous interpretation" className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 text-[#c2bcb1] transition hover:border-amber-200/50 hover:text-amber-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-200 disabled:cursor-not-allowed disabled:opacity-35">
+          <button type="button" onClick={() => setActiveIndex((current) => Math.max(current - 1, 0))} disabled={activeIndex === 0} aria-label="Previous interpretation" className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 text-[#c2bcb1] transition hover:border-amber-200/50 hover:text-amber-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-200 disabled:cursor-not-allowed disabled:opacity-35">
             <ArrowLeft className="h-4 w-4" />
           </button>
-          <button type="button" onClick={() => goToSlide(activeIndex + 1)} disabled={activeIndex === slides.length - 1} aria-label="Next interpretation" className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 text-[#c2bcb1] transition hover:border-amber-200/50 hover:text-amber-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-200 disabled:cursor-not-allowed disabled:opacity-35">
+          <button type="button" onClick={() => setActiveIndex((current) => Math.min(current + 1, slides.length - 1))} disabled={activeIndex === slides.length - 1} aria-label="Next interpretation" className="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-amber-200/25 px-4 font-mono text-[10px] tracking-wide text-amber-100 transition hover:border-amber-200/60 hover:bg-amber-100/[0.05] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-200 disabled:cursor-not-allowed disabled:opacity-35">
+            NEXT STEP
             <ArrowRight className="h-4 w-4" />
           </button>
         </div>
       </div>
-      <p className="mt-1 font-mono text-[9px] text-[#777064]">Swipe or use the arrows to explore each interpretation.</p>
     </div>
   );
 }
@@ -274,6 +255,7 @@ export function NumerologyJourney() {
       }
       trackFunnelEvent("numerology_result_received");
       trackFunnelEvent("reading_preview_viewed");
+      trackRedditEvent("Lead");
       goTo("revelation");
     } catch {
       setFieldError("We couldn't complete your reading right now. Please try again.");
@@ -351,7 +333,7 @@ export function NumerologyJourney() {
       <div className="relative z-10 flex flex-1 flex-col">
         <Brand step={step} />
 
-        <main className={`mx-auto flex w-full flex-1 flex-col justify-center px-5 pb-12 sm:px-7 sm:pb-16 ${step === "deeper" ? "max-w-5xl" : "max-w-xl"}`}>
+        <main className="mx-auto flex w-full max-w-xl flex-1 flex-col justify-center px-5 pb-12 sm:px-7 sm:pb-16">
           {step === "entry" && (
             <section className="journey-enter">
               <div className="mb-5 inline-flex items-center gap-2 font-mono text-[10px] tracking-[0.2em] text-amber-200/80 sm:text-[11px]">
@@ -458,7 +440,7 @@ export function NumerologyJourney() {
                 Your birth date and name each reveal a different part of your profile. Explore your path, natural strengths, and the patterns you can grow through.
               </p>
 
-              <InterpretationCarousel
+              <InterpretationSteps
                 slides={[
                   { icon: Heart, title: "Your path and purpose", number: profile.lifePath, archetype: getArchetype(profile.lifePath, "en").title, text: interpretation.destinyOverview },
                   { icon: BriefcaseBusiness, title: "The strengths in your name", number: profile.expression, archetype: getArchetype(profile.expression, "en").title, text: interpretation.hiddenTalents },
