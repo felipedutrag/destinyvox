@@ -158,20 +158,20 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   headerTag: {
-    fontSize: 8,
+    fontSize: 8.5,
     color: "#FCD34D",
     fontWeight: "bold",
     letterSpacing: 1.5,
     textTransform: "uppercase",
   },
   headerName: {
-    fontSize: 8,
+    fontSize: 8.4,
     color: "#9A9182",
     letterSpacing: 1,
     textTransform: "uppercase",
   },
   sectionTitle: {
-    fontSize: 12.5,
+    fontSize: 13.5,
     color: "#FCD34D",
     fontWeight: "bold",
     letterSpacing: 1,
@@ -203,14 +203,14 @@ const styles = StyleSheet.create({
     color: "#FCD34D",
   },
   heroTitle: {
-    fontSize: 11,
+    fontSize: 11.5,
     fontWeight: "bold",
     color: "#ffffff",
     letterSpacing: 0.5,
     textTransform: "uppercase",
   },
   heroSubtitle: {
-    fontSize: 8.5,
+    fontSize: 9,
     color: "#FCD34D",
     marginTop: 2,
     letterSpacing: 0.5,
@@ -228,7 +228,7 @@ const styles = StyleSheet.create({
     lineHeight: 1.38,
   },
   paragraph: {
-    fontSize: 10.5, // Fonte ampliada conforme pedido (era 8.8, 9.6)
+    fontSize: 11,
     lineHeight: 1.45,
     color: "#DED7CA",
     marginBottom: 6.5,
@@ -242,7 +242,7 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   highlightTitle: {
-    fontSize: 8.6,
+    fontSize: 9,
     fontWeight: "bold",
     color: "#FCD34D",
     letterSpacing: 1,
@@ -250,7 +250,7 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
   },
   highlightText: {
-    fontSize: 8.4,
+    fontSize: 8.9,
     color: "#B8B0A2",
     lineHeight: 1.38,
   },
@@ -674,28 +674,28 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
 
         <Text style={styles.sectionTitle}>Relationships & Connection</Text>
         <Text style={styles.paragraph}>
-          Your Soul Urge reflects inner motivations, while your Personality number describes the qualities you tend to show in social settings. Reading them together offers two complementary prompts for thinking about how you connect.
+          Your Soul Urge points to the emotional conditions that help you feel fulfilled, while your Personality describes the qualities people tend to notice first. Read together, they reveal where your private needs and social style naturally support each other - and where they may ask for clearer communication.
         </Text>
         <View style={styles.highlightBox}>
           <Text style={styles.highlightTitle}>Inner needs · Soul Urge {pillars.soulUrge.number} ({pillars.soulUrge.archetype})</Text>
-          <Text style={styles.highlightText}>Consider how themes of {pillars.soulUrge.keywords.toLowerCase()} show up in the closeness, trust, and communication you value.</Text>
+          <Text style={styles.highlightText}>Themes of {pillars.soulUrge.keywords.toLowerCase()} can shape the closeness, trust, and communication you seek. Notice which needs you state openly and which you may expect someone else to intuit. Naming them with care makes it easier to build relationships that feel both supportive and genuine.</Text>
         </View>
         <View style={styles.highlightBox}>
           <Text style={styles.highlightTitle}>Social presence · Personality {pillars.personality.number} ({pillars.personality.archetype})</Text>
-          <Text style={styles.highlightText}>Notice how qualities of {pillars.personality.keywords.toLowerCase()} shape the way others may first experience you, and how that compares with what you need privately.</Text>
+          <Text style={styles.highlightText}>Qualities of {pillars.personality.keywords.toLowerCase()} influence the impression you make and the role you may take in a group. Compare that outward style with what you need privately; a small gap between the two is normal. Let people see more of your real preferences instead of relying on them to read the signals.</Text>
         </View>
 
         <Text style={[styles.sectionTitle, { marginTop: 18 }]}>Work & Purpose</Text>
         <Text style={styles.paragraph}>
-          Your Expression number points to the abilities represented in your name. Your Life Path adds a broader direction. Together, they can help you reflect on the kind of contribution that feels both capable and meaningful.
+          Your Expression describes abilities you can develop and contribute, while your Life Path points to themes that may keep returning as you grow. Use both as prompts to identify work that is practical, engaging, and connected to the kind of impact you want to make.
         </Text>
         <View style={styles.highlightBox}>
           <Text style={styles.highlightTitle}>Ways of contributing · Expression {pillars.expression.number} ({pillars.expression.archetype})</Text>
-          <Text style={styles.highlightText}>Explore work that makes room for themes of {pillars.expression.keywords.toLowerCase()}.</Text>
+          <Text style={styles.highlightText}>Look for projects that make room for {pillars.expression.keywords.toLowerCase()}. These qualities can become strengths through practice: choose one skill to deepen, seek useful feedback, and notice which tasks leave you focused rather than simply busy.</Text>
         </View>
         <View style={styles.highlightBox}>
           <Text style={styles.highlightTitle}>Longer direction · Life Path {pillars.lifePath.number} ({pillars.lifePath.archetype})</Text>
-          <Text style={styles.highlightText}>Use themes of {pillars.lifePath.keywords.toLowerCase()} as a reflection point when considering goals, responsibilities, and the impact you want your work to have.</Text>
+          <Text style={styles.highlightText}>Themes of {pillars.lifePath.keywords.toLowerCase()} can help you evaluate goals, responsibilities, and the effect your work has on others. Treat this number as a compass rather than a fixed job title: choose the next opportunity that lets you use your strengths while building a more sustainable direction.</Text>
         </View>
 
         <View style={styles.footer} fixed>

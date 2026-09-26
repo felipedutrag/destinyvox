@@ -3,7 +3,7 @@
 
 export interface NumerologyProfile {
   fullName: string;
-  birthDate: string; // YYYY-MM-DD
+  birthDate: string; // Canonical MM/DD/YYYY for display; parsers also accept ISO YYYY-MM-DD for storage boundaries.
   lifePath: number; // Caminho da Vida / Destino
   expression: number; // Expressão / Missão
   soulUrge: number; // Desejo da Alma / Motivação (Vogais)
@@ -66,7 +66,8 @@ export function reduceStrictSingleDigit(n: number): number {
   return n;
 }
 
-// Parse ISO dates internally and MM/DD/YYYY dates at user-facing boundaries.
+// User-facing slash dates are always MM/DD/YYYY. ISO is accepted only for
+// transport/storage boundaries, then callers normalize it before calculating.
 export function parseBirthDate(birthDateStr: string): { day: number; month: number; year: number } {
   const value = birthDateStr.trim();
   let year: number;
@@ -90,7 +91,7 @@ export function parseBirthDate(birthDateStr: string): { day: number; month: numb
     day = Number(compactUs[2]);
     year = Number(compactUs[3]);
   } else {
-    throw new RangeError("Birth date must use MM/DD/YYYY or YYYY-MM-DD.");
+    throw new RangeError("Birth date must use MM/DD/YYYY (or ISO YYYY-MM-DD for stored dates).");
   }
 
   const parsed = new Date(Date.UTC(year, month - 1, day));
@@ -195,18 +196,19 @@ export function calculateAttitude(birthDateStr: string): number {
 
 // Gerar Perfil Numerológico Completo (7 Pilares Pitagóricos)
 export function calculateFullNumerology(fullName: string, birthDate: string): NumerologyProfile {
-  const lifePath = calculateLifePath(birthDate);
+  const usBirthDate = formatBirthDateUS(birthDate);
+  const lifePath = calculateLifePath(usBirthDate);
   const expression = calculateExpression(fullName);
   const soulUrge = calculateSoulUrge(fullName);
   const personality = calculatePersonality(fullName);
-  const birthday = calculateBirthday(birthDate);
+  const birthday = calculateBirthday(usBirthDate);
   const maturity = calculateMaturity(lifePath, expression);
-  const personalYear = calculatePersonalYear(birthDate);
-  const attitude = calculateAttitude(birthDate);
+  const personalYear = calculatePersonalYear(usBirthDate);
+  const attitude = calculateAttitude(usBirthDate);
 
   return {
     fullName,
-    birthDate,
+    birthDate: usBirthDate,
     lifePath,
     expression,
     soulUrge,

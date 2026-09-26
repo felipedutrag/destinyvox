@@ -217,6 +217,7 @@ import {
   calculateMaturity,
   calculatePersonalMonth,
   calculatePersonalDay,
+  formatBirthDateUS,
   getArchetype,
   getSoulDictum,
 } from "@/utils/numerology";
@@ -306,17 +307,19 @@ function cleanNumerologyData(data: unknown): NumerologyContent {
 }
 
 async function generateNumerologyContent(name: string, birthDate: string): Promise<NumerologyContent> {
-  const lifePath = calculateLifePath(birthDate);
+  const usBirthDate = formatBirthDateUS(birthDate);
+  const referenceYear = new Date().getFullYear();
+  const lifePath = calculateLifePath(usBirthDate);
   const expression = calculateExpression(name);
   const soulUrge = calculateSoulUrge(name);
   const personality = calculatePersonality(name);
-  const personalYear = calculatePersonalYear(birthDate, 2026);
+  const personalYear = calculatePersonalYear(usBirthDate, referenceYear);
 
   const prompt = `
     Você é o ARCHITECTUS SUPREMO da Numerologia Pitagórica e Análise Numérica Hermética.
     Sua missão é gerar um RELATÓRIO TÉCNICO DE ENGENHARIA ESPIRITUAL (Mapa Pitagórico do Destino) para:
     Nome: ${name}
-    Data de Nascimento: ${birthDate}
+    Data de Nascimento (MM/DD/YYYY): ${usBirthDate}
 
     ESTE NÃO É UM HORÓSCOPO. É UM DOSSIÊ DE DADOS VIBRACIONAIS.
     OS CÁLCULOS MATEMÁTICOS JÁ FORAM FEITOS COM PRECISÃO ABSOLUTA. USE ESTES NÚMEROS:
@@ -324,7 +327,7 @@ async function generateNumerologyContent(name: string, birthDate: string): Promi
     - Expressão (Nome Completo): ${expression}
     - Motivação (Alma): ${soulUrge}
     - Personalidade (Imagem): ${personality}
-    - Ano Pessoal (2026): ${personalYear}
+    - Ano Pessoal (${referenceYear}): ${personalYear}
 
     INSTRUÇÕES DE CONTEÚDO (CRÍTICAS):
     1. EXTENSÃO EXTREMA: Cada seção da "analise" DEVE ser um ensaio profundo (800-1200 palavras por item).
@@ -341,7 +344,7 @@ async function generateNumerologyContent(name: string, birthDate: string): Promi
         "expressao": "${expression} - Análise da marca vibracional no tecido da realidade.",
         "motivacao": "${soulUrge} - O motor térmico da alma e seus desejos ocultos.",
         "personalidade": "${personality} - O firewall social e como ele filtra a abundância.",
-        "ano_pessoal": "${personalYear} - Plano estratégico trimestral para 2026.",
+        "ano_pessoal": "${personalYear} - Plano estratégico para ${referenceYear}.",
         "gematria_detalhada": "Apresente o cálculo letra por letra de ${name} e o valor final absoluto, explicando a frequência resultante."
       },
       "analise": {
@@ -357,7 +360,7 @@ async function generateNumerologyContent(name: string, birthDate: string): Promi
         "ancora_riqueza": "A base de segurança Malkuth que sustenta o império.",
         "intuicao_investimento": "Protocolos de tomada de decisão sob risco.",
         "codigo_abundancia": "Gere uma sequência numérica mística personalizada (Ex: 71427321893) e explique a ciência por trás dela.",
-        "desafio_2026": "Análise estratégica de 2026: janelas de oportunidade e riscos.",
+        "desafio_2026": "Análise estratégica de ${referenceYear}: janelas de oportunidade e riscos.",
         "conclusao": "Decreto de ativação final e comando de manifestação absoluta."
       }
     }
@@ -434,7 +437,7 @@ async function generateNumerologyContent(name: string, birthDate: string): Promi
       expressao: `${expression} - A vibração da liderança e originalidade.`,
       motivacao: `${soulUrge} - O desejo de liberdade e novas experiências.`,
       personalidade: `${personality} - A imagem de estabilidade e confiança.`,
-      ano_pessoal: `${personalYear} - Um ano de mudanças e prosperidade.`,
+      ano_pessoal: `${personalYear} - Um ano de mudanças e prosperidade em ${referenceYear}.`,
       gematria_detalhada: `Cálculo de ressonância nominal para ${name}: Frequência Base ${expression}.`
     },
     analise: {
@@ -450,7 +453,7 @@ async function generateNumerologyContent(name: string, birthDate: string): Promi
       ancora_riqueza: "Sua capacidade de iniciar do zero e escalar novos projetos.",
       intuicao_investimento: "Siga seu instinto quando o mercado estiver em pânico.",
       codigo_abundancia: "520 741 8",
-      desafio_2026: "Saber a hora exata de delegar o operacional.",
+      desafio_2026: `Em ${referenceYear}, saber a hora exata de delegar o operacional.`,
       conclusao: "A riqueza é o seu direito de nascença incontestável."
     }
   };

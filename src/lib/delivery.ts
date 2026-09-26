@@ -15,6 +15,7 @@ import {
   calculateAttitude,
   calculatePersonalMonth,
   calculatePersonalDay,
+  reduceToSingleDigitOrMaster,
   getArchetype,
   getSoulDictum,
   parseBirthDate,
@@ -157,6 +158,7 @@ const PYTHAGOREAN_MAP: Record<string, number> = {
 const VOWELS_SET = new Set(["a", "e", "i", "o", "u"]);
 
 function calculateGematriaBreakdown(name: string, birthDate: string, soulUrgeNum: number, persNum: number, expNum: number) {
+  const dateForCalculation = formatBirthDateUS(birthDate);
   const normalizedWords = name.trim().split(/\s+/).filter(Boolean);
   let vowelsSum = 0;
   let consonantsSum = 0;
@@ -215,7 +217,7 @@ function calculateGematriaBreakdown(name: string, birthDate: string, soulUrgeNum
   });
 
   // Cálculo da data com +
-  const digits = birthDate.replace(/[^0-9]/g, "");
+  const digits = dateForCalculation.replace(/[^0-9]/g, "");
   let dateCalculationString = "";
   if (digits.length >= 8) {
     const digitSumString = digits.split("").join(" + ");
@@ -263,16 +265,19 @@ export async function generateNumerologyContent(
   birthDate: string,
   orderBumpsOption?: { karmicDebt?: boolean; personalYearMonths?: boolean }
 ): Promise<NumerologyContent> {
+  // Normalize every accepted input before any numerology calculation or report copy.
+  // The database may provide ISO dates; user-facing values and calculations use MM/DD/YYYY.
+  const usBirthDate = formatBirthDateUS(birthDate);
   const firstName = extractFirstName(name);
-  const lifePath = calculateLifePath(birthDate);
+  const lifePath = calculateLifePath(usBirthDate);
   const expression = calculateExpression(name);
   const soulUrge = calculateSoulUrge(name);
   const personality = calculatePersonality(name);
-  const birthday = calculateBirthday(birthDate);
+  const birthday = calculateBirthday(usBirthDate);
   const maturity = calculateMaturity(lifePath, expression);
   const referenceYear = new Date().getFullYear();
-  const personalYear = calculatePersonalYear(birthDate, referenceYear);
-  const attitude = calculateAttitude(birthDate);
+  const personalYear = calculatePersonalYear(usBirthDate, referenceYear);
+  const attitude = calculateAttitude(usBirthDate);
 
   const lpArchetype = getArchetype(lifePath, "en");
   const expArchetype = getArchetype(expression, "en");
@@ -283,7 +288,7 @@ export async function generateNumerologyContent(
   const matArchetype = getArchetype(maturity, "en");
   const attArchetype = getArchetype(attitude, "en");
 
-  const gematria = calculateGematriaBreakdown(name, birthDate, soulUrge, personality, expression);
+  const gematria = calculateGematriaBreakdown(name, usBirthDate, soulUrge, personality, expression);
 
   const getParagraphs = (raw: string | undefined): string[] => {
     if (!raw) return [];
@@ -310,7 +315,7 @@ export async function generateNumerologyContent(
     profile: {
       fullName: name,
       firstName,
-      birthDate,
+      birthDate: usBirthDate,
       referenceYear,
     },
     gematria: {
@@ -411,7 +416,7 @@ export async function generateNumerologyContent(
     },
     orderBumps: {
       karmicDebt: orderBumpsOption?.karmicDebt
-        ? generateKarmicDebtData(name, birthDate, lifePath, expression, soulUrge)
+        ? generateKarmicDebtData(name, usBirthDate)
         : undefined,
       personalYearMonths: orderBumpsOption?.personalYearMonths
         ? generatePersonalYearMonthsData(personalYear, referenceYear)
@@ -420,10 +425,32 @@ export async function generateNumerologyContent(
   };
 }
 
-function generateKarmicDebtData(name: string, birthDate: string, lifePath: number, expression: number, soulUrge: number): KarmicDebtAnalysis {
-  const { day } = parseBirthDate(birthDate);
-  const identifiedDebts: number[] = [];
-  if ([13, 14, 16, 19].includes(day)) identifiedDebts.push(day);
+function generateKarmicDebtData(name: string, birthDate: string): KarmicDebtAnalysis {
+  const { day, month, year } = parseBirthDate(formatBirthDateUS(birthDate));
+  const nameTotals = calculateGematriaBreakdown(name, birthDate, 0, 0, 0);
+  const lifePathTotal = reduceToSingleDigitOrMaster(day)
+    + reduceToSingleDigitOrMaster(month)
+    + reduceToSingleDigitOrMaster(year);
+  const debtNumbers = new Set([13, 14, 16, 19]);
+  const detectedPositions = new Map<number, string[]>();
+
+  const collectDebtNumbers = (position: string, startingValue: number) => {
+    let value = startingValue;
+    while (value > 9 && ![11, 22, 33].includes(value)) {
+      if (debtNumbers.has(value)) {
+        detectedPositions.set(value, [...(detectedPositions.get(value) || []), position]);
+      }
+      value = value.toString().split("").reduce((sum, digit) => sum + Number(digit), 0);
+    }
+  };
+
+  collectDebtNumbers("Life Path", lifePathTotal);
+  collectDebtNumbers("Expression", nameTotals.totalSum);
+  collectDebtNumbers("Soul Urge", nameTotals.vowelsSum);
+  collectDebtNumbers("Personality", nameTotals.consonantsSum);
+  collectDebtNumbers("Birthday", day);
+
+  const identifiedDebts = [...detectedPositions.keys()];
 
   const items: KarmicDebtItem[] = [
     {
@@ -466,8 +493,8 @@ function generateKarmicDebtData(name: string, birthDate: string, lifePath: numbe
 
   const hasDebt = identifiedDebts.length > 0;
   const statusText = hasDebt
-    ? `We have identified the direct incidence of Karmic Debt ${identifiedDebts.join(", ")} on your day of birth (${day}). Your priority rectification protocol should focus on this coordinate.`
-    : `Your primary matrix does not present direct debts in the fundamental pillars. This dossier acts as a preventive hermetic protocol and purification of ancestral memories.`;
+    ? `Karmic Debt ${identifiedDebts.map((number) => `${number} (${detectedPositions.get(number)?.join(" and ")})`).join(", ")} appears in the unreduced totals of your core numbers. The dossier highlights the corresponding reflection themes.`
+    : "No 13, 14, 16, or 19 appeared in the unreduced totals checked for your Life Path, Expression, Soul Urge, Personality, or Birthday number. The dossier includes the four themes as optional reflection prompts.";
 
   return {
     active: true,
