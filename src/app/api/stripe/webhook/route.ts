@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getStripe } from "@/lib/stripe";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { deliverNumerologyMap } from "@/lib/delivery";
+import { FULL_READING_PRICE_CENTS } from "@/lib/pricing";
 import Stripe from "stripe";
 
 export async function POST(req: Request) {
@@ -53,7 +54,7 @@ export async function POST(req: Request) {
             transaction_id: session.id,
             payer_name: name || session.customer_details?.name || "Customer",
             payer_email: email || "",
-            amount_cents: session.amount_total ?? 2700,
+            amount_cents: session.amount_total ?? FULL_READING_PRICE_CENTS,
             status: "PAID",
             paid_at: new Date().toISOString(),
             metadata: {
@@ -78,7 +79,7 @@ export async function POST(req: Request) {
             birthDate,
             transactionId: session.id,
             externalId: externalId,
-            amountCents: session.amount_total || 2700,
+            amountCents: session.amount_total ?? FULL_READING_PRICE_CENTS,
             currency: session.currency || "usd",
             plan,
             orderBumps,

@@ -8,6 +8,7 @@ import { NumerologyPDFDocument } from "./PdfTemplate";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { getStripe } from "@/lib/stripe";
 import type Stripe from "stripe";
+import { FULL_READING_PRICE_CENTS } from "@/lib/pricing";
 
 function confirmedPaymentPayload(session: Stripe.Checkout.Session) {
   const currency = session.currency || "usd";
@@ -70,7 +71,7 @@ export async function GET(request: Request) {
           transaction_id: session.id,
           payer_name: payerName,
           payer_email: payerEmail,
-          amount_cents: session.amount_total ?? 2700,
+          amount_cents: session.amount_total ?? FULL_READING_PRICE_CENTS,
           status: "PAID",
           paid_at: new Date().toISOString(),
           metadata: { ...metadata, stripe_currency: session.currency, stripe_amount_total: session.amount_total },
@@ -134,7 +135,7 @@ export async function GET(request: Request) {
               birthDate,
               transactionId: session.id,
               externalId: session.client_reference_id,
-              amountCents: session.amount_total ?? 2700,
+              amountCents: session.amount_total ?? FULL_READING_PRICE_CENTS,
               currency: session.currency || "usd",
               plan: metadata.plan,
               orderBumps,

@@ -5,6 +5,7 @@ import { Download, LoaderCircle, Sparkles } from "lucide-react";
 import type { NumerologyContent, NumerologyPillarData } from "@/lib/delivery";
 import { trackFunnelEvent } from "@/lib/funnelAnalytics";
 import { trackRedditPurchase } from "@/lib/redditPixel";
+import { FULL_READING_PRICE_USD } from "@/lib/pricing";
 import { formatBirthDateUS } from "@/utils/numerology";
 import { BrandLogo } from "@/components/BrandLogo";
 
@@ -25,7 +26,7 @@ function trackConfirmedPurchase(sessionId: string, value: number | null, currenc
     // The in-memory set still prevents duplicate events during this page visit.
   }
 
-  const purchaseValue = value ?? 27;
+  const purchaseValue = value ?? FULL_READING_PRICE_USD;
   const purchaseCurrency = currency.toUpperCase();
   if (!trackRedditPurchase({ value: purchaseValue, currency: purchaseCurrency, plan: "complete_numerology_reading" })) return;
 

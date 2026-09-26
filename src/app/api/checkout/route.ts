@@ -2,6 +2,7 @@ import { after, NextResponse } from "next/server";
 import { getStripe } from "@/lib/stripe";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { sendTelegramCheckoutInitiated } from "@/lib/telegram";
+import { FULL_READING_PRICE_CENTS } from "@/lib/pricing";
 import Stripe from "stripe";
 
 export async function POST(request: Request) {
@@ -17,7 +18,7 @@ export async function POST(request: Request) {
 
     const cleanName = name.trim().replace(/\s+/g, " ");
     const cleanEmail = email.trim().toLowerCase();
-    const totalCents = 2700;
+    const totalCents = FULL_READING_PRICE_CENTS;
     const external_id = `MAPA_${Date.now()}__||__${encodeURIComponent(cleanName)}__||__${encodeURIComponent(cleanEmail)}__||__${birthDate}__||__${plan}__||__KD0_PY0`;
     const stripe = getStripe();
     const origin = (process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || "http://localhost:3000").replace(/\/$/, "");

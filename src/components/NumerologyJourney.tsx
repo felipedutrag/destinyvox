@@ -12,9 +12,9 @@ import {
 import { buildCosmicInterpretation, type CosmicInterpretation } from "@/utils/interpretations";
 import { trackFunnelEvent, trackFunnelTransition } from "@/lib/funnelAnalytics";
 import { trackRedditAddToCart } from "@/lib/redditPixel";
+import { FULL_READING_PRICE_USD } from "@/lib/pricing";
 import { BrandLogo } from "@/components/BrandLogo";
 
-const FULL_READING_PRICE = 27;
 const LOADING_MESSAGES = [
   "Reading your numbers...",
   "Connecting the patterns...",
@@ -290,9 +290,9 @@ export function NumerologyJourney() {
 
   const beginCheckout = () => {
     setCheckoutError(null);
-    trackFunnelEvent("checkout_started", { value: FULL_READING_PRICE, currency: "USD" });
+    trackFunnelEvent("checkout_started", { value: FULL_READING_PRICE_USD, currency: "USD" });
     trackRedditAddToCart({
-      value: FULL_READING_PRICE,
+      value: FULL_READING_PRICE_USD,
       currency: "USD",
       plan: "complete_numerology_reading",
     });
@@ -531,7 +531,7 @@ export function NumerologyJourney() {
                   <p className="font-mono text-[9px] tracking-[0.17em] text-[#8f887d]">COMPLETE PERSONAL NUMEROLOGY READING</p>
                   <p className="mt-2 font-mono text-[10px] text-[#8f887d]">One-time payment</p>
                 </div>
-                <p className="font-editorial text-4xl text-white">$27</p>
+                <p className="font-editorial text-4xl text-white">${FULL_READING_PRICE_USD}</p>
               </div>
               <div className="mt-5">
                 <PrimaryButton onClick={beginCheckout}>UNLOCK MY FULL READING <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" /></PrimaryButton>
@@ -566,12 +566,12 @@ export function NumerologyJourney() {
 
                 <div className="flex items-center justify-between border-y border-white/10 py-4 font-mono text-xs">
                   <span className="text-[#b6b0a5]">Your Personal Numerology Reading</span>
-                  <span className="text-white">$27.00</span>
+                  <span className="text-white">${FULL_READING_PRICE_USD.toFixed(2)}</span>
                 </div>
                 <PrimaryButton type="submit" disabled={isCheckoutLoading}>
                   {isCheckoutLoading ? <><LoaderCircle className="h-4 w-4 animate-spin" /> OPENING SECURE CHECKOUT...</> : <>CONTINUE TO SECURE CHECKOUT <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" /></>}
                 </PrimaryButton>
-                <p className="text-center font-mono text-[10px] leading-5 text-[#777064]">One-time payment of $27 · Your reading and personalized PDF are included.</p>
+                <p className="text-center font-mono text-[10px] leading-5 text-[#777064]">One-time payment of ${FULL_READING_PRICE_USD} · Your reading and personalized PDF are included.</p>
               </form>
             </section>
           )}
