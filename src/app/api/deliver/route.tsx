@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 import { deliverNumerologyMap } from "@/lib/delivery";
 import { Resend } from "resend";
 import { GoogleGenAI } from "@google/genai";
@@ -22,12 +22,103 @@ export async function GET(request: Request) {
     const supabase = getSupabaseAdmin();
     const { data: payment, error: paymentError } = await supabase
       .from("payments")
-      .select("map_id, status")
+      .select("id, external_id, map_id, status, metadata")
       .eq("transaction_id", session.id)
       .maybeSingle();
 
     if (paymentError) throw paymentError;
-    if (!payment?.map_id || payment.status !== "PAID") {
+
+    // A paid Stripe session is the source of truth. Recover missing payment rows
+    // (for example, when a local Stripe webhook is not forwarded) and start delivery.
+    const metadata = session.metadata || {};
+    const payerName = metadata.name || session.customer_details?.name || "Customer";
+    const payerEmail = metadata.email || session.customer_details?.email || session.customer_email || "";
+    const birthDate = metadata.birthDate || "";
+    let paymentId = payment?.id;
+    let paymentMetadata = (payment?.metadata || {}) as Record<string, unknown>;
+
+    if (!payerEmail || !birthDate || !session.client_reference_id) {
+      return NextResponse.json({ error: "Checkout is missing the details needed to prepare this reading." }, { status: 422 });
+    }
+
+    if (!payment) {
+      const { data: recoveredPayment, error: upsertError } = await supabase
+        .from("payments")
+        .upsert({
+          gateway: "stripe",
+          external_id: session.client_reference_id,
+          transaction_id: session.id,
+          payer_name: payerName,
+          payer_email: payerEmail,
+          amount_cents: session.amount_total ?? 2700,
+          status: "PAID",
+          paid_at: new Date().toISOString(),
+          metadata: { ...metadata, stripe_currency: session.currency, stripe_amount_total: session.amount_total },
+        }, { onConflict: "external_id" })
+        .select("id, external_id, map_id, status, metadata")
+        .single();
+      if (upsertError) throw upsertError;
+      paymentId = recoveredPayment.id;
+      paymentMetadata = (recoveredPayment.metadata || {}) as Record<string, unknown>;
+    } else if (payment.status !== "PAID") {
+      const { error: updateError } = await supabase
+        .from("payments")
+        .update({ status: "PAID", paid_at: new Date().toISOString() })
+        .eq("id", payment.id);
+      if (updateError) throw updateError;
+    }
+
+    if (!payment?.map_id) {
+      if (!paymentId) throw new Error("Paid checkout has no payment record to attach the reading to");
+
+      const deliveryStartedAt = typeof paymentMetadata.delivery_started_at === "string"
+        ? Date.parse(paymentMetadata.delivery_started_at)
+        : Number.NaN;
+      const deliveryLockIsFresh = paymentMetadata.delivering === true
+        && Number.isFinite(deliveryStartedAt)
+        && Date.now() - deliveryStartedAt < 10 * 60 * 1000;
+
+      if (!deliveryLockIsFresh) {
+        const claimedMetadata = {
+          ...paymentMetadata,
+          delivering: true,
+          delivery_started_at: new Date().toISOString(),
+        };
+        const { error: claimError } = await supabase
+          .from("payments")
+          .update({ status: "PAID", metadata: claimedMetadata })
+          .eq("id", paymentId);
+        if (claimError) throw claimError;
+
+        after(async () => {
+          try {
+            let orderBumps: { karmicDebt?: boolean; personalYearMonths?: boolean } | undefined;
+            if (metadata.orderBumps) {
+              try { orderBumps = JSON.parse(metadata.orderBumps); } catch { orderBumps = undefined; }
+            }
+            await deliverNumerologyMap({
+              name: payerName,
+              email: payerEmail,
+              birthDate,
+              transactionId: session.id,
+              externalId: session.client_reference_id,
+              amountCents: session.amount_total ?? 2700,
+              currency: session.currency || "usd",
+              plan: metadata.plan,
+              orderBumps,
+              deliveryClaimed: true,
+            });
+          } catch (deliveryError) {
+            console.error(`[Reading] Background recovery failed for ${session.id}:`, deliveryError);
+            const { error: unlockError } = await supabase
+              .from("payments")
+              .update({ metadata: { ...claimedMetadata, delivering: false, delivery_failed_at: new Date().toISOString() } })
+              .eq("id", paymentId);
+            if (unlockError) console.error("[Reading] Could not release delivery lock:", unlockError);
+          }
+        });
+      }
+
       return NextResponse.json({ status: "preparing" }, { status: 202, headers: { "Cache-Control": "private, no-store" } });
     }
 

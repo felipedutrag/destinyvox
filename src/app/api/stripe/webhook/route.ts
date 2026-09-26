@@ -42,24 +42,31 @@ export async function POST(req: Request) {
       const plan = metadata?.plan || "mapa_completo";
       const orderBumps = metadata?.orderBumps ? JSON.parse(metadata.orderBumps) : {};
 
-      // 1. Update Payment Status in DB
+      // 1. Upsert the payment before delivery. The checkout-side background insert
+      // can fail or race with this webhook, so the webhook must be self-sufficient.
       try {
-        await supabase
+        const { error: paymentError } = await supabase
           .from("payments")
-          .update({
+          .upsert({
+            gateway: "stripe",
+            external_id: externalId,
+            transaction_id: session.id,
+            payer_name: name || session.customer_details?.name || "Customer",
+            payer_email: email || "",
+            amount_cents: session.amount_total ?? 2700,
             status: "PAID",
             paid_at: new Date().toISOString(),
-            amount_cents: session.amount_total ?? 2700,
             metadata: {
               ...metadata,
               stripe_currency: session.currency,
               stripe_amount_total: session.amount_total,
             },
-          })
-          .eq("external_id", externalId);
+          }, { onConflict: "external_id" });
+        if (paymentError) throw paymentError;
         console.log(`[Stripe Webhook] Payment ${externalId} marked as PAID`);
       } catch (dbErr) {
         console.error(`[Stripe Webhook] Error updating payment ${externalId}:`, dbErr);
+        return NextResponse.json({ error: "Could not record the confirmed payment" }, { status: 500 });
       }
 
       // 2. Deliver the PDF Map

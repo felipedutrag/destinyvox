@@ -536,6 +536,8 @@ export interface DeliverMapParams {
     karmicDebt?: boolean;
     personalYearMonths?: boolean;
   };
+  /** Set when the caller already claimed the payment's delivery lock. */
+  deliveryClaimed?: boolean;
 }
 
 /**
@@ -581,7 +583,7 @@ export async function deliverNumerologyMap(params: DeliverMapParams) {
         && Number.isFinite(deliveryStartedAt)
         && Date.now() - deliveryStartedAt < 10 * 60 * 1000;
 
-      if (existingPayment.map_id || meta.email_sent || deliveryLockIsFresh) {
+      if (existingPayment.map_id || meta.email_sent || (deliveryLockIsFresh && !params.deliveryClaimed)) {
         console.log(`[Deliver] 🛑 Entrega já realizada ou em andamento para o pagamento ${existingPayment.id}. Evitando envio de e-mail duplicado.`);
         return {
           success: true,
@@ -721,6 +723,9 @@ export async function deliverNumerologyMap(params: DeliverMapParams) {
     }
   } else if (mapErr) {
     console.error("[Supabase] ❌ Erro ao salvar mapa numerológico:", mapErr);
+    throw mapErr;
+  } else {
+    throw new Error("Supabase did not return the created numerology map");
   }
 
   // 4. Montar PDF
