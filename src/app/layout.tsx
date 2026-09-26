@@ -3,9 +3,9 @@ import "./globals.css";
 import RedditPixel from "@/components/RedditPixel";
 
 export const metadata: Metadata = {
-  title: "DestinyVox VIP — O Dossiê Numerológico Definitivo",
+  title: "DestinyVox — Your Personal Numerology Reading",
   description:
-    "Converse diretamente com o Oráculo DestinyVox: respostas ultra-personalizadas sobre decisões de vida, amor, carreira e timing cósmico.",
+    "Discover the patterns in your name and birth date with a personalized numerology reading.",
 };
 
 export default function RootLayout({
@@ -14,7 +14,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="pt-BR" suppressHydrationWarning>
+    <html lang="en-US" suppressHydrationWarning>
       <head>
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <link rel="apple-touch-icon" href="/favicon.svg" />

@@ -66,63 +66,55 @@ export function reduceStrictSingleDigit(n: number): number {
   return n;
 }
 
-// Parser seguro de datas de nascimento (suporta YYYY-MM-DD, MM/DD/YYYY, DD/MM/YYYY com fail-safe inteligente)
+// Parse ISO dates internally and MM/DD/YYYY dates at user-facing boundaries.
 export function parseBirthDate(birthDateStr: string): { day: number; month: number; year: number } {
-  const digits = birthDateStr.replace(/[^0-9]/g, '');
-  let year = 1990, month = 1, day = 1;
+  const value = birthDateStr.trim();
+  let year: number;
+  let month: number;
+  let day: number;
 
-  if (birthDateStr.includes('-')) {
-    const parts = birthDateStr.split('-');
-    if (parts[0] && parts[0].length === 4) {
-      // YYYY-MM-DD
-      year = parseInt(parts[0], 10);
-      month = parseInt(parts[1] ?? '1', 10);
-      day = parseInt(parts[2] ?? '1', 10);
-    } else {
-      // DD-MM-YYYY (Formato brasileiro)
-      day = parseInt(parts[0] ?? '1', 10);
-      month = parseInt(parts[1] ?? '1', 10);
-      year = parseInt(parts[2] ?? '1990', 10);
-    }
-  } else if (birthDateStr.includes('/')) {
-    const parts = birthDateStr.split('/');
-    if (parts[2] && parts[2].length === 4) {
-      // DD/MM/YYYY (Padrão brasileiro: dia/mês/ano)
-      day = parseInt(parts[0] ?? '1', 10);
-      month = parseInt(parts[1] ?? '1', 10);
-      year = parseInt(parts[2], 10);
-    } else if (parts[0] && parts[0].length === 4) {
-      // YYYY/MM/DD
-      year = parseInt(parts[0], 10);
-      month = parseInt(parts[1] ?? '1', 10);
-      day = parseInt(parts[2] ?? '1', 10);
-    } else {
-      day = parseInt(parts[0] ?? '1', 10);
-      month = parseInt(parts[1] ?? '1', 10);
-      year = parseInt(parts[2] ?? '1990', 10);
-    }
-  } else if (digits.length === 8) {
-    // DDMMYYYY (Padrão brasileiro)
-    day = parseInt(digits.slice(0, 2), 10);
-    month = parseInt(digits.slice(2, 4), 10);
-    year = parseInt(digits.slice(4, 8), 10);
+  const iso = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  const us = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(value);
+  const compactUs = /^(\d{2})(\d{2})(\d{4})$/.exec(value);
+
+  if (iso) {
+    year = Number(iso[1]);
+    month = Number(iso[2]);
+    day = Number(iso[3]);
+  } else if (us) {
+    month = Number(us[1]);
+    day = Number(us[2]);
+    year = Number(us[3]);
+  } else if (compactUs) {
+    month = Number(compactUs[1]);
+    day = Number(compactUs[2]);
+    year = Number(compactUs[3]);
+  } else {
+    throw new RangeError("Birth date must use MM/DD/YYYY or YYYY-MM-DD.");
   }
 
-  // Fallback caso alguém passe invertido (mês > 12 e dia <= 12)
-  if (month > 12 && day <= 12) {
-    const temp = month;
-    month = day;
-    day = temp;
+  const parsed = new Date(Date.UTC(year, month - 1, day));
+  if (
+    year < 1 || month < 1 || month > 12 || day < 1 ||
+    parsed.getUTCFullYear() !== year || parsed.getUTCMonth() !== month - 1 || parsed.getUTCDate() !== day
+  ) {
+    throw new RangeError("Birth date is not a valid calendar date.");
   }
-
   return { day, month, year };
+}
+
+export function formatBirthDateUS(birthDate: string): string {
+  const { month, day, year } = parseBirthDate(birthDate);
+  return `${String(month).padStart(2, "0")}/${String(day).padStart(2, "0")}/${String(year).padStart(4, "0")}`;
+}
+
+export function toISODate(birthDate: string): string {
+  const { month, day, year } = parseBirthDate(birthDate);
+  return `${String(year).padStart(4, "0")}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
 
 // 1. Caminho da Vida (Life Path): Soma do Dia + Mês + Ano de nascimento
 export function calculateLifePath(birthDateStr: string): number {
-  const digits = birthDateStr.replace(/[^0-9]/g, '');
-  if (!digits || digits.length < 8) return 1;
-
   const { day, month, year } = parseBirthDate(birthDateStr);
   const redDay = reduceToSingleDigitOrMaster(day);
   const redMonth = reduceToSingleDigitOrMaster(month);
@@ -178,9 +170,6 @@ export function calculatePersonality(name: string): number {
 
 // 5. Ano Pessoal: Dia + Mês de Nascimento + Ano Universal Corrente
 export function calculatePersonalYear(birthDateStr: string, currentYear = new Date().getFullYear()): number {
-  const digits = birthDateStr.replace(/[^0-9]/g, '');
-  if (!digits || digits.length < 8) return 1;
-
   const { day, month } = parseBirthDate(birthDateStr);
   const sum = reduceStrictSingleDigit(day) + reduceStrictSingleDigit(month) + reduceStrictSingleDigit(currentYear);
   return reduceStrictSingleDigit(sum);
@@ -200,8 +189,6 @@ export function calculatePersonalDay(personalMonth: number, currentDay = new Dat
 
 // Número de Atitude: Soma do Dia + Mês do Nascimento
 export function calculateAttitude(birthDateStr: string): number {
-  const digits = birthDateStr.replace(/[^0-9]/g, '');
-  if (!digits || digits.length < 8) return 1;
   const { day, month } = parseBirthDate(birthDateStr);
   return reduceToSingleDigitOrMaster(day + month);
 }

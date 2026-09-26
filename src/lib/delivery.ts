@@ -18,6 +18,7 @@ import {
   getArchetype,
   getSoulDictum,
   parseBirthDate,
+  formatBirthDateUS,
 } from "@/utils/numerology";
 
 import {
@@ -62,6 +63,7 @@ export interface NumerologyContent {
     fullName: string;
     firstName: string;
     birthDate: string;
+    referenceYear?: number;
   };
   gematria: {
     words: GematriaWord[];
@@ -134,6 +136,7 @@ export interface PersonalMonthItem {
 export interface PersonalYearMonthsAnalysis {
   active: boolean;
   personalYear: number;
+  referenceYear?: number;
   yearArchetype: string;
   months: PersonalMonthItem[];
   executiveAdvice: string;
@@ -267,7 +270,8 @@ export async function generateNumerologyContent(
   const personality = calculatePersonality(name);
   const birthday = calculateBirthday(birthDate);
   const maturity = calculateMaturity(lifePath, expression);
-  const personalYear = calculatePersonalYear(birthDate, 2026);
+  const referenceYear = new Date().getFullYear();
+  const personalYear = calculatePersonalYear(birthDate, referenceYear);
   const attitude = calculateAttitude(birthDate);
 
   const lpArchetype = getArchetype(lifePath, "en");
@@ -307,6 +311,7 @@ export async function generateNumerologyContent(
       fullName: name,
       firstName,
       birthDate,
+      referenceYear,
     },
     gematria: {
       words: gematria.words,
@@ -361,7 +366,7 @@ export async function generateNumerologyContent(
       },
       personalYear: {
         number: personalYear,
-        label: "Current Personal Year (2026)",
+        label: `Current Personal Year (${referenceYear})`,
         archetype: yearArchetype.title,
         element: yearArchetype.element,
         keywords: yearArchetype.keyword,
@@ -390,7 +395,7 @@ export async function generateNumerologyContent(
         archetype: attArchetype.title,
         element: attArchetype.element,
         keywords: attArchetype.keyword,
-        paragraphs: [],
+        paragraphs: [`Your Attitude Number is based on your birth month and day. It describes the approach you may bring to new situations and the first impression you tend to make. The ${attArchetype.title} archetype is associated with ${attArchetype.keyword.toLowerCase()}. Use these qualities as a point of reflection, alongside the deeper motivations shown by your Soul Urge and the direction of your Life Path.`],
       },
     },
     shadow: {
@@ -401,7 +406,7 @@ export async function generateNumerologyContent(
       transmutation: shadowTransmutation,
     },
     activation: {
-      abundanceCode: `${lifePath} • ${expression} • ${soulUrge} — 2026`,
+      abundanceCode: `${lifePath} • ${expression} • ${soulUrge} — ${referenceYear}`,
       manifestationDecree: "I acknowledge the sovereignty of my vibrational matrix. I align my thoughts to the frequency of universal order and activate the inexhaustible flow of wisdom, prosperity, and purpose. The codes of my destiny are open.",
     },
     orderBumps: {
@@ -409,7 +414,7 @@ export async function generateNumerologyContent(
         ? generateKarmicDebtData(name, birthDate, lifePath, expression, soulUrge)
         : undefined,
       personalYearMonths: orderBumpsOption?.personalYearMonths
-        ? generatePersonalYearMonthsData(personalYear)
+        ? generatePersonalYearMonthsData(personalYear, referenceYear)
         : undefined,
     },
   };
@@ -490,7 +495,7 @@ const MONTH_THEMES: Record<number, { theme: string; guidance: string; archetype:
   9: { archetype: "The Sage", theme: "Conclusion and Detachment", guidance: "Close worn-out cycles, forgive pending issues, and prepare the ground for the new. Do not start major projects now." },
 };
 
-function generatePersonalYearMonthsData(personalYear: number): PersonalYearMonthsAnalysis {
+function generatePersonalYearMonthsData(personalYear: number, referenceYear = new Date().getFullYear()): PersonalYearMonthsAnalysis {
   const months: PersonalMonthItem[] = MONTH_NAMES.map((monthName, idx) => {
     const monthNum = idx + 1;
     let sum = personalYear + monthNum;
@@ -511,6 +516,7 @@ function generatePersonalYearMonthsData(personalYear: number): PersonalYearMonth
   return {
     active: true,
     personalYear,
+    referenceYear,
     yearArchetype: getArchetype(personalYear, "en").title,
     months,
     executiveAdvice: `In Personal Year ${personalYear}, the months of greatest material harvest and financial leverage coincide with Personal Months 1, 3, and 8. Use Personal Months 4 and 7 to organize the foundations and protect your assets.`,
@@ -524,6 +530,7 @@ export interface DeliverMapParams {
   transactionId?: string | null;
   externalId?: string | null;
   amountCents?: number;
+  currency?: string;
   plan?: string;
   orderBumps?: {
     karmicDebt?: boolean;
@@ -567,7 +574,14 @@ export async function deliverNumerologyMap(params: DeliverMapParams) {
       matchedPaymentId = existingPayment.id;
       const meta = (existingPayment.metadata || {}) as Record<string, unknown>;
 
-      if (existingPayment.map_id || meta.email_sent || meta.delivering) {
+      const deliveryStartedAt = typeof meta.delivery_started_at === "string"
+        ? Date.parse(meta.delivery_started_at)
+        : Number.NaN;
+      const deliveryLockIsFresh = meta.delivering === true
+        && Number.isFinite(deliveryStartedAt)
+        && Date.now() - deliveryStartedAt < 10 * 60 * 1000;
+
+      if (existingPayment.map_id || meta.email_sent || deliveryLockIsFresh) {
         console.log(`[Deliver] 🛑 Entrega já realizada ou em andamento para o pagamento ${existingPayment.id}. Evitando envio de e-mail duplicado.`);
         return {
           success: true,
@@ -590,9 +604,9 @@ export async function deliverNumerologyMap(params: DeliverMapParams) {
     }
   }
 
-  // Formatar data para exibição e cálculos estritamente no padrão brasileiro (DD/MM/AAAA)
+  // Normalize dates to the US-facing MM/DD/YYYY format before interpretation/PDF generation.
   const parsedBirth = parseBirthDate(birthDateRaw || "01/01/1990");
-  const birthDate = `${String(parsedBirth.day).padStart(2, "0")}/${String(parsedBirth.month).padStart(2, "0")}/${parsedBirth.year}`;
+  const birthDate = formatBirthDateUS(`${String(parsedBirth.year).padStart(4, "0")}-${String(parsedBirth.month).padStart(2, "0")}-${String(parsedBirth.day).padStart(2, "0")}`);
 
   let orderBumps = params.orderBumps;
   if (!orderBumps && params.externalId) {
@@ -624,7 +638,7 @@ export async function deliverNumerologyMap(params: DeliverMapParams) {
   const personality = calculatePersonality(customerName);
   const birthday = calculateBirthday(birthDate);
   const maturity = calculateMaturity(lifePath, expression);
-  const personalYear = calculatePersonalYear(birthDate, 2026);
+  const personalYear = numerologyData.pillars.personalYear.number;
   const personalMonth = calculatePersonalMonth(personalYear);
   const personalDay = calculatePersonalDay(personalMonth);
   const archetype = getArchetype(lifePath, "en");
@@ -794,6 +808,7 @@ export async function deliverNumerologyMap(params: DeliverMapParams) {
       payerName: customerName,
       payerEmail: customerEmail,
       amountCents: params.amountCents || 3990,
+      currency: params.currency || "brl",
       transactionId: params.transactionId || "N/A",
       externalId: params.externalId || undefined,
       plan: params.plan,

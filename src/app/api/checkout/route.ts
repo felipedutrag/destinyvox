@@ -6,121 +6,65 @@ import Stripe from "stripe";
 
 export async function POST(request: Request) {
   try {
-    const { name, email, birthDate, plan, orderBumps } = await request.json();
-
-    if (!name || !email || !birthDate) {
+    const { name, email, birthDate, plan = "complete_numerology_reading" } = await request.json();
+    if (typeof name !== "string" || name.trim().length < 2 || name.length > 100 || typeof email !== "string" || !email.includes("@") || typeof birthDate !== "string") {
       return NextResponse.json({ error: "Incomplete data" }, { status: 400 });
     }
-
-    const cleanEmail = email.trim().toLowerCase();
-
-    const baseAmountCents = 900; // $9.00 USD
-    const karmicDebtCents = orderBumps?.karmicDebt ? 500 : 0; // $5.00 USD
-    const personalYearMonthsCents = orderBumps?.personalYearMonths ? 500 : 0; // $5.00 USD
-
-    const bumpsTag = `${orderBumps?.karmicDebt ? 'KD1' : 'KD0'}_${orderBumps?.personalYearMonths ? 'PY1' : 'PY0'}`;
-    const external_id = `MAPA_${Date.now()}__||__${encodeURIComponent(name)}__||__${encodeURIComponent(email)}__||__${birthDate}__||__${plan || "mapa_completo"}__||__${bumpsTag}`;
-
-    let description = "DestinyVox — Pythagorean Destiny Dossier (11 Pages PDF)";
-    if (orderBumps?.karmicDebt && orderBumps?.personalYearMonths) {
-      description += " + Karmic Debts + 2026 Month-by-Month Guide";
-    } else if (orderBumps?.karmicDebt) {
-      description += " + Karmic Debts Dossier";
-    } else if (orderBumps?.personalYearMonths) {
-      description += " + 2026 Month-by-Month Guide";
+    const date = new Date(`${birthDate}T00:00:00`);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(birthDate) || Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== birthDate || date > new Date()) {
+      return NextResponse.json({ error: "Invalid date of birth" }, { status: 400 });
     }
 
+    const cleanName = name.trim().replace(/\s+/g, " ");
+    const cleanEmail = email.trim().toLowerCase();
+    const totalCents = 2700;
+    const external_id = `MAPA_${Date.now()}__||__${encodeURIComponent(cleanName)}__||__${encodeURIComponent(cleanEmail)}__||__${birthDate}__||__${plan}__||__KD0_PY0`;
     const stripe = getStripe();
     const origin = (process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || "http://localhost:3000").replace(/\/$/, "");
-
-    const totalCents = baseAmountCents + karmicDebtCents + personalYearMonthsCents;
-
-    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [
-      {
-        price_data: {
-          currency: "usd",
-          product_data: {
-            name: "Pythagorean Destiny Dossier",
-            description,
-          },
-          unit_amount: totalCents,
+    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [{
+      price_data: {
+        currency: "usd",
+        product_data: {
+          name: "Complete Personal Numerology Reading",
+          description: "A personalized 8-number profile with full interpretations, relationship and work insights, challenges and growth, and guidance for your current personal year. Includes online access and a downloadable PDF.",
         },
-        quantity: 1,
-      }
-    ];
+        unit_amount: totalCents,
+      },
+      quantity: 1,
+    }];
 
-    const sessionParams: Stripe.Checkout.SessionCreateParams = {
+    const session = await stripe.checkout.sessions.create({
+      adaptive_pricing: { enabled: true },
       payment_method_types: ["card"],
       line_items: lineItems,
       mode: "payment",
+      locale: "auto",
       client_reference_id: external_id,
       customer_email: cleanEmail,
-      metadata: {
-        birthDate,
-        name,
-        email: cleanEmail,
-        plan: plan || "mapa_completo",
-        orderBumps: JSON.stringify(orderBumps || {}),
-        karmicDebt: String(!!orderBumps?.karmicDebt),
-        personalYearMonths: String(!!orderBumps?.personalYearMonths),
-        external_id,
-      },
-      success_url: `${origin}/?status=success&session_id={CHECKOUT_SESSION_ID}&total=${totalCents}`,
-      cancel_url: `${origin}/`,
-    };
+      metadata: { birthDate, name: cleanName, email: cleanEmail, plan, orderBumps: "{}", external_id },
+      success_url: `${origin}/reading?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/?checkout=cancelled`,
+    });
 
-    const session = await stripe.checkout.sessions.create(sessionParams);
-
-    // Persist payment as pending in Supabase
     try {
       const supabase = getSupabaseAdmin();
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("id")
-        .eq("email", cleanEmail)
-        .maybeSingle();
-
+      const { data: profile } = await supabase.from("profiles").select("id").eq("email", cleanEmail).maybeSingle();
       await supabase.from("payments").insert({
-        gateway: "stripe",
-        external_id: external_id,
-        transaction_id: session.id,
-        user_id: profile?.id || null,
-        payer_name: name,
-        payer_email: cleanEmail,
-        amount_cents: baseAmountCents + karmicDebtCents + personalYearMonthsCents,
-        status: "PENDING",
-        metadata: {
-          birthDate,
-          plan: plan || "mapa_completo",
-          rawResponse: session,
-        },
+        gateway: "stripe", external_id, transaction_id: session.id, user_id: profile?.id || null,
+        payer_name: cleanName, payer_email: cleanEmail, amount_cents: totalCents, status: "PENDING",
+        metadata: { birthDate, plan, rawResponse: session },
       });
-      console.log(`[Supabase] Pending payment registered for ${email}`);
     } catch (dbErr) {
       console.error("[Supabase] Warning: Failed to register pending payment:", dbErr);
     }
 
     try {
-      await sendTelegramCheckoutInitiated({
-        payerName: name,
-        payerEmail: cleanEmail,
-        amountCents: baseAmountCents + karmicDebtCents + personalYearMonthsCents,
-        plan,
-        orderBumps: {
-          karmicDebt: !!orderBumps?.karmicDebt,
-          personalYearMonths: !!orderBumps?.personalYearMonths,
-        },
-      });
+      await sendTelegramCheckoutInitiated({ payerName: cleanName, payerEmail: cleanEmail, amountCents: totalCents, plan, orderBumps: { karmicDebt: false, personalYearMonths: false } });
     } catch (tgErr) {
       console.error("[Telegram] Warning: Failed to send checkout alert:", tgErr);
     }
 
-    return NextResponse.json({
-      success: true,
-      url: session.url,
-      external_id: external_id
-    });
-
+    return NextResponse.json({ success: true, url: session.url, external_id });
   } catch (error) {
     console.error("Checkout Error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

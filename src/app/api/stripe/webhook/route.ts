@@ -49,6 +49,12 @@ export async function POST(req: Request) {
           .update({
             status: "PAID",
             paid_at: new Date().toISOString(),
+            amount_cents: session.amount_total ?? 2700,
+            metadata: {
+              ...metadata,
+              stripe_currency: session.currency,
+              stripe_amount_total: session.amount_total,
+            },
           })
           .eq("external_id", externalId);
         console.log(`[Stripe Webhook] Payment ${externalId} marked as PAID`);
@@ -65,12 +71,29 @@ export async function POST(req: Request) {
             birthDate,
             transactionId: session.id,
             externalId: externalId,
+            amountCents: session.amount_total || 2700,
+            currency: session.currency || "usd",
             plan,
             orderBumps,
           });
           console.log(`[Stripe Webhook] Successfully delivered map to ${email}`);
         } catch (deliveryErr) {
           console.error(`[Stripe Webhook] Error delivering map to ${email}:`, deliveryErr);
+          try {
+            await supabase
+              .from("payments")
+              .update({
+                metadata: {
+                  ...metadata,
+                  delivering: false,
+                  delivery_failed_at: new Date().toISOString(),
+                },
+              })
+              .eq("transaction_id", session.id);
+          } catch (unlockErr) {
+            console.error(`[Stripe Webhook] Could not release delivery lock for ${session.id}:`, unlockErr);
+          }
+          return NextResponse.json({ error: "Payment received, but reading delivery failed" }, { status: 500 });
         }
       }
     }

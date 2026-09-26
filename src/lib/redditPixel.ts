@@ -1,6 +1,6 @@
 /**
  * Utilitário de rastreamento do Reddit Ads Pixel
- * Suporta os eventos padrões InitiateCheckout e Purchase com metadados.
+ * Dispara eventos padrão do Reddit Ads com metadados do produto.
  * Funciona em produção e em modo de desenvolvimento (localhost).
  */
 
@@ -20,8 +20,6 @@ export interface RedditEventMetadata {
   currency?: string;
   value?: number;
   itemCount?: number;
-  transactionId?: string;
-  conversionId?: string;
   products?: RedditProductItem[];
   [key: string]: any;
 }
@@ -37,13 +35,8 @@ export function trackRedditEvent(
 
   if (typeof window.rdt === "function") {
     try {
-      let finalEventName = eventName;
-      let finalMetadata = metadata ? { ...metadata } : {};
-
-      // Send as AddToCart standard event for Reddit
-      if (eventName === "InitiateCheckout") {
-        finalEventName = "AddToCart";
-      }
+      const finalEventName = eventName;
+      const finalMetadata = metadata ? { ...metadata } : {};
 
       if (Object.keys(finalMetadata).length > 0) {
         window.rdt("track", finalEventName, finalMetadata);
@@ -63,24 +56,24 @@ export function trackRedditEvent(
 }
 
 /**
- * Dispara o evento de InitiateCheckout do Reddit Ads (ao gerar o QR Code do PIX ou iniciar checkout)
+ * Registra a inclusão da leitura personalizada no fluxo de compra.
  */
-export function trackRedditInitiateCheckout(params: {
+export function trackRedditAddToCart(params: {
   value: number;
   currency?: string;
-  transactionId?: string;
   plan?: string;
 }) {
   const planName =
-    params.plan === "30_questions" || params.plan === "vip"
+    params.plan === "complete_numerology_reading"
+      ? "Complete Personal Numerology Reading"
+      : params.plan === "30_questions" || params.plan === "vip"
       ? "DestinyVox VIP — 30 Consultas & Mapa Pitagórico Completo"
       : "DestinyVox Essencial — 10 Consultas";
 
   const payload: RedditEventMetadata = {
-    currency: params.currency || "BRL",
+    currency: params.currency || "USD",
     value: Number(params.value.toFixed(2)),
     itemCount: 1,
-    // AddToCart doesn't support transactionId or conversionId, so we omit them here.
     products: [
       {
         id: params.plan || "vip",
@@ -90,8 +83,8 @@ export function trackRedditInitiateCheckout(params: {
     ],
   };
 
-  console.log(`💳 [Reddit Pixel] InitiateCheckout disparado para plano [${params.plan}]:`, payload);
-  trackRedditEvent("InitiateCheckout", payload);
+  console.log(`🛒 [Reddit Pixel] AddToCart disparado para plano [${params.plan}]:`, payload);
+  trackRedditEvent("AddToCart", payload);
 }
 
 /**
@@ -100,21 +93,19 @@ export function trackRedditInitiateCheckout(params: {
 export function trackRedditPurchase(params: {
   value: number;
   currency?: string;
-  transactionId: string;
-  conversionId?: string;
   plan?: string;
 }) {
   const planName =
-    params.plan === "30_questions" || params.plan === "vip"
+    params.plan === "complete_numerology_reading"
+      ? "Complete Personal Numerology Reading"
+      : params.plan === "30_questions" || params.plan === "vip"
       ? "DestinyVox VIP — 30 Consultas & Mapa Pitagórico Completo"
       : "DestinyVox Essencial — 10 Consultas";
 
   const payload: RedditEventMetadata = {
-    currency: params.currency || "BRL",
+    currency: params.currency || "USD",
     value: Number(params.value.toFixed(2)),
     itemCount: 1,
-    transactionId: params.transactionId,
-    conversionId: params.conversionId || params.transactionId,
     products: [
       {
         id: params.plan || "vip",

@@ -250,6 +250,7 @@ const styles = StyleSheet.create({
 
 export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: string, birthDate: string, content: NumerologyContent }) => {
   const { profile, gematria, pillars, shadow, activation, orderBumps } = content;
+  const referenceYear = profile.referenceYear || 2026;
 
   return (
     <Document title={`Pythagorean Destiny Map - ${name}`}>
@@ -303,7 +304,7 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
               <Text style={styles.summaryPillTitle}>{pillars.attitude.archetype}</Text>
             </View>
             <View style={styles.summaryPill}>
-              <Text style={styles.summaryPillLabel}>Year 2026</Text>
+              <Text style={styles.summaryPillLabel}>Year {referenceYear}</Text>
               <Text style={styles.summaryPillNum}>{pillars.personalYear.number}</Text>
               <Text style={styles.summaryPillTitle}>{pillars.personalYear.archetype}</Text>
             </View>
@@ -322,7 +323,7 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
               {orderBumps?.personalYearMonths?.active && (
                 <View style={{ backgroundColor: "#15152d", border: "1pt solid #DAA520", paddingHorizontal: 8, paddingVertical: 3, borderRadius: 3 }}>
                   <Text style={{ fontSize: 6.8, color: "#DAA520", fontWeight: "bold", letterSpacing: 0.8 }}>
-                    ★ 2026 MONTH-BY-MONTH GUIDE INCLUDED
+                    ★ {referenceYear} MONTH-BY-MONTH GUIDE INCLUDED
                   </Text>
                 </View>
               )}
@@ -340,7 +341,7 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
         </View>
 
         <View style={styles.footer} fixed>
-          <Text style={styles.footerText}>DESTINYVOX // PYTHAGOREAN PROTOCOL © 2026</Text>
+          <Text style={styles.footerText}>DESTINYVOX // PYTHAGOREAN PROTOCOL © {referenceYear}</Text>
           <Text style={styles.pageNumber} render={({ pageNumber, totalPages }) => `PAGE ${pageNumber} OF ${totalPages}`} fixed />
         </View>
       </Page>
@@ -420,14 +421,14 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
             • Soul Urge: {pillars.soulUrge.number} ({pillars.soulUrge.archetype}) — The affective and animic fuel.{'\n'}
             • Personality: {pillars.personality.number} ({pillars.personality.archetype}) — The relational interface with the world.{'\n'}
             • Attitude: {pillars.attitude.number} ({pillars.attitude.archetype}) — The initial reaction and approach to life.{'\n'}
-            • Personal Year 2026: {pillars.personalYear.number} ({pillars.personalYear.archetype}) — The temporal climate of this annual cycle.{'\n'}
+            • Personal Year {referenceYear}: {pillars.personalYear.number} ({pillars.personalYear.archetype}) — The temporal climate of this annual cycle.{'\n'}
             • Congenital Gift: {pillars.birthday.number} ({pillars.birthday.archetype}) — The innate talent brought at birth.{'\n'}
             • Maturity: {pillars.maturity.number} ({pillars.maturity.archetype}) — The consecration from 35-40 years onward.
           </Text>
         </View>
 
         <View style={styles.footer} fixed>
-          <Text style={styles.footerText}>DESTINYVOX // PYTHAGOREAN PROTOCOL © 2026</Text>
+          <Text style={styles.footerText}>DESTINYVOX // PYTHAGOREAN PROTOCOL © {referenceYear}</Text>
           <Text style={styles.pageNumber} render={({ pageNumber, totalPages }) => `PAGE ${pageNumber} OF ${totalPages}`} fixed />
         </View>
       </Page>
@@ -476,7 +477,7 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
         </View>
 
         <View style={styles.footer} fixed>
-          <Text style={styles.footerText}>DESTINYVOX // PYTHAGOREAN PROTOCOL © 2026</Text>
+          <Text style={styles.footerText}>DESTINYVOX // PYTHAGOREAN PROTOCOL © {referenceYear}</Text>
           <Text style={styles.pageNumber} render={({ pageNumber, totalPages }) => `PAGE ${pageNumber} OF ${totalPages}`} fixed />
         </View>
       </Page>
@@ -525,7 +526,7 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
         </View>
 
         <View style={styles.footer} fixed>
-          <Text style={styles.footerText}>DESTINYVOX // PYTHAGOREAN PROTOCOL © 2026</Text>
+          <Text style={styles.footerText}>DESTINYVOX // PYTHAGOREAN PROTOCOL © {referenceYear}</Text>
           <Text style={styles.pageNumber} render={({ pageNumber, totalPages }) => `PAGE ${pageNumber} OF ${totalPages}`} fixed />
         </View>
       </Page>
@@ -574,7 +575,7 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
         </View>
 
         <View style={styles.footer} fixed>
-          <Text style={styles.footerText}>DESTINYVOX // PYTHAGOREAN PROTOCOL © 2026</Text>
+          <Text style={styles.footerText}>DESTINYVOX // PYTHAGOREAN PROTOCOL © {referenceYear}</Text>
           <Text style={styles.pageNumber} render={({ pageNumber, totalPages }) => `PAGE ${pageNumber} OF ${totalPages}`} fixed />
         </View>
       </Page>
@@ -623,7 +624,48 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
         </View>
 
         <View style={styles.footer} fixed>
-          <Text style={styles.footerText}>DESTINYVOX // PYTHAGOREAN PROTOCOL © 2026</Text>
+          <Text style={styles.footerText}>DESTINYVOX // PYTHAGOREAN PROTOCOL © {referenceYear}</Text>
+          <Text style={styles.pageNumber} render={({ pageNumber, totalPages }) => `PAGE ${pageNumber} OF ${totalPages}`} fixed />
+        </View>
+      </Page>
+
+      {/* ============================================================ */}
+      {/* PAGE 7: RELATIONSHIPS & WORK THEMES                          */}
+      {/* ============================================================ */}
+      <Page size="A4" style={styles.page}>
+        <View style={styles.header}>
+          <Text style={styles.headerTag}>YOUR NUMBERS IN EVERYDAY LIFE</Text>
+          <Text style={styles.headerName}>{profile.fullName}</Text>
+        </View>
+
+        <Text style={styles.sectionTitle}>Relationships & Connection</Text>
+        <Text style={styles.paragraph}>
+          Your Soul Urge reflects inner motivations, while your Personality number describes the qualities you tend to show in social settings. Reading them together offers two complementary prompts for thinking about how you connect.
+        </Text>
+        <View style={styles.highlightBox}>
+          <Text style={styles.highlightTitle}>Inner needs · Soul Urge {pillars.soulUrge.number} ({pillars.soulUrge.archetype})</Text>
+          <Text style={styles.highlightText}>Consider how themes of {pillars.soulUrge.keywords.toLowerCase()} show up in the closeness, trust, and communication you value.</Text>
+        </View>
+        <View style={styles.highlightBox}>
+          <Text style={styles.highlightTitle}>Social presence · Personality {pillars.personality.number} ({pillars.personality.archetype})</Text>
+          <Text style={styles.highlightText}>Notice how qualities of {pillars.personality.keywords.toLowerCase()} shape the way others may first experience you, and how that compares with what you need privately.</Text>
+        </View>
+
+        <Text style={[styles.sectionTitle, { marginTop: 18 }]}>Work & Purpose</Text>
+        <Text style={styles.paragraph}>
+          Your Expression number points to the abilities represented in your name. Your Life Path adds a broader direction. Together, they can help you reflect on the kind of contribution that feels both capable and meaningful.
+        </Text>
+        <View style={styles.highlightBox}>
+          <Text style={styles.highlightTitle}>Ways of contributing · Expression {pillars.expression.number} ({pillars.expression.archetype})</Text>
+          <Text style={styles.highlightText}>Explore work that makes room for themes of {pillars.expression.keywords.toLowerCase()}.</Text>
+        </View>
+        <View style={styles.highlightBox}>
+          <Text style={styles.highlightTitle}>Longer direction · Life Path {pillars.lifePath.number} ({pillars.lifePath.archetype})</Text>
+          <Text style={styles.highlightText}>Use themes of {pillars.lifePath.keywords.toLowerCase()} as a reflection point when considering goals, responsibilities, and the impact you want your work to have.</Text>
+        </View>
+
+        <View style={styles.footer} fixed>
+          <Text style={styles.footerText}>DESTINYVOX // PYTHAGOREAN PROTOCOL © {referenceYear}</Text>
           <Text style={styles.pageNumber} render={({ pageNumber, totalPages }) => `PAGE ${pageNumber} OF ${totalPages}`} fixed />
         </View>
       </Page>
@@ -676,7 +718,7 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
         </View>
 
         <View style={styles.footer} fixed>
-          <Text style={styles.footerText}>DESTINYVOX // PYTHAGOREAN PROTOCOL © 2026</Text>
+          <Text style={styles.footerText}>DESTINYVOX // PYTHAGOREAN PROTOCOL © {referenceYear}</Text>
           <Text style={styles.pageNumber} render={({ pageNumber, totalPages }) => `PAGE ${pageNumber} OF ${totalPages}`} fixed />
         </View>
       </Page>
@@ -686,7 +728,7 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
       {/* ============================================================ */}
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
-          <Text style={styles.headerTag}>LOG_07: PERSONAL_YEAR_2026 // TEMPORAL_CYCLE</Text>
+          <Text style={styles.headerTag}>LOG_07: PERSONAL_YEAR_{referenceYear} // TEMPORAL_CYCLE</Text>
           <Text style={styles.headerName}>{profile.fullName}</Text>
         </View>
 
@@ -718,14 +760,14 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
         ))}
 
         <View style={styles.highlightBox}>
-          <Text style={styles.highlightTitle}>Strategic Plan 2026: Windows of Opportunity:</Text>
+          <Text style={styles.highlightTitle}>Strategic Plan {referenceYear}: Windows of Opportunity:</Text>
           <Text style={styles.highlightText}>
-            The Personal Year {pillars.personalYear.number} ({pillars.personalYear.archetype}) dictates the rhythm of the material and spiritual tides in 2026. Align investments, projects, and contracts with this cosmic dynamic to sail with the wind in your favor.
+            The Personal Year {pillars.personalYear.number} ({pillars.personalYear.archetype}) dictates the rhythm of the material and spiritual tides in {referenceYear}. Align investments, projects, and contracts with this cosmic dynamic to sail with the wind in your favor.
           </Text>
         </View>
 
         <View style={styles.footer} fixed>
-          <Text style={styles.footerText}>DESTINYVOX // PYTHAGOREAN PROTOCOL © 2026</Text>
+          <Text style={styles.footerText}>DESTINYVOX // PYTHAGOREAN PROTOCOL © {referenceYear}</Text>
           <Text style={styles.pageNumber} render={({ pageNumber, totalPages }) => `PAGE ${pageNumber} OF ${totalPages}`} fixed />
         </View>
       </Page>
@@ -768,7 +810,7 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
         </View>
 
         <View style={styles.footer} fixed>
-          <Text style={styles.footerText}>DESTINYVOX // PYTHAGOREAN PROTOCOL © 2026</Text>
+          <Text style={styles.footerText}>DESTINYVOX // PYTHAGOREAN PROTOCOL © {referenceYear}</Text>
           <Text style={styles.pageNumber} render={({ pageNumber, totalPages }) => `PAGE ${pageNumber} OF ${totalPages}`} fixed />
         </View>
       </Page>
@@ -811,7 +853,7 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
         </View>
 
         <View style={styles.footer} fixed>
-          <Text style={styles.footerText}>DESTINYVOX // PYTHAGOREAN PROTOCOL © 2026</Text>
+          <Text style={styles.footerText}>DESTINYVOX // PYTHAGOREAN PROTOCOL © {referenceYear}</Text>
           <Text style={styles.pageNumber} render={({ pageNumber, totalPages }) => `PAGE ${pageNumber} OF ${totalPages}`} fixed />
         </View>
       </Page>
@@ -905,7 +947,7 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
           </View>
 
           <View style={styles.footer} fixed>
-            <Text style={styles.footerText}>DESTINYVOX // PYTHAGOREAN PROTOCOL © 2026</Text>
+            <Text style={styles.footerText}>DESTINYVOX // PYTHAGOREAN PROTOCOL © {referenceYear}</Text>
             <Text style={styles.pageNumber} render={({ pageNumber, totalPages }) => `PAGE ${pageNumber} OF ${totalPages}`} fixed />
           </View>
         </Page>
@@ -917,16 +959,16 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
       {orderBumps?.personalYearMonths?.active && (
         <Page size="A4" style={styles.page}>
           <View style={styles.header}>
-            <Text style={styles.headerTag}>UPGRADE_02: TIMELINE_2026 // MONTH_BY_MONTH_NAVIGATION</Text>
+            <Text style={styles.headerTag}>UPGRADE_02: TIMELINE_{referenceYear} // MONTH_BY_MONTH_NAVIGATION</Text>
             <Text style={styles.headerName}>{profile.fullName}</Text>
           </View>
 
           <View style={styles.heroCard}>
             <View style={styles.heroBadge}>
-              <Text style={{ fontSize: 13, fontWeight: "bold", color: "#DAA520" }}>2026</Text>
+              <Text style={{ fontSize: 13, fontWeight: "bold", color: "#DAA520" }}>{referenceYear}</Text>
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={styles.heroTitle}>Strategic Guide 2026 Month by Month</Text>
+              <Text style={styles.heroTitle}>Strategic Guide {referenceYear} Month by Month</Text>
               <Text style={{ fontSize: 11, fontWeight: "bold", color: "#DAA520", marginTop: 1 }}>
                 PERSONAL YEAR {orderBumps.personalYearMonths.personalYear} — {orderBumps.personalYearMonths.yearArchetype}
               </Text>
@@ -980,7 +1022,7 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
           </View>
 
           <View style={styles.footer} fixed>
-            <Text style={styles.footerText}>DESTINYVOX // PYTHAGOREAN PROTOCOL © 2026</Text>
+            <Text style={styles.footerText}>DESTINYVOX // PYTHAGOREAN PROTOCOL © {referenceYear}</Text>
             <Text style={styles.pageNumber} render={({ pageNumber, totalPages }) => `PAGE ${pageNumber} OF ${totalPages}`} fixed />
           </View>
         </Page>
@@ -1009,7 +1051,7 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
             {activation.abundanceCode}
           </Text>
           <Text style={{ fontSize: 7.8, color: "#d8d8e8", textAlign: "center", lineHeight: 1.4, paddingHorizontal: 16 }}>
-            Intone or visualize this 7-digit numeric sequence upon waking or before making critical financial decisions. It synthesizes the harmonic resonance between your Life Path and your Expression Potential.
+            This combination brings together your Life Path, Expression, and Soul Urge numbers. Use it as a personal reflection prompt when setting intentions and considering the themes explored in this reading.
           </Text>
         </View>
 
@@ -1030,13 +1072,13 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
             This document represents the complete analytical mapping of {profile.fullName}'s vibrational matrix, rigorously calculated from the Pythagorean table and the laws of hermetic correspondence. Keep this dossier as a permanent compass for your major decisions.
           </Text>
           <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 8, paddingTop: 6, borderTop: "0.5pt solid #252542" }}>
-            <Text style={{ fontSize: 7, color: "#606078" }}>AUTHENTICATION KEY: DVX-PYTHAGORAS-2026-OK</Text>
+            <Text style={{ fontSize: 7, color: "#606078" }}>AUTHENTICATION KEY: DVX-PYTHAGORAS-{referenceYear}-OK</Text>
             <Text style={{ fontSize: 7, color: "#DAA520", fontWeight: "bold" }}>STATUS: ACTIVATED & HOMOLOGATED</Text>
           </View>
         </View>
 
         <View style={styles.footer} fixed>
-          <Text style={styles.footerText}>DESTINYVOX // PYTHAGOREAN PROTOCOL © 2026</Text>
+          <Text style={styles.footerText}>DESTINYVOX // PYTHAGOREAN PROTOCOL © {referenceYear}</Text>
           <Text style={styles.pageNumber} render={({ pageNumber, totalPages }) => `PAGE ${pageNumber} OF ${totalPages}`} fixed />
         </View>
       </Page>

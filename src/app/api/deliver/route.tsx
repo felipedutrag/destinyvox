@@ -6,6 +6,79 @@ import { renderToBuffer } from "@react-pdf/renderer";
 import React from "react";
 import { NumerologyPDFDocument } from "./PdfTemplate";
 import { getSupabaseAdmin } from "@/lib/supabase";
+import { getStripe } from "@/lib/stripe";
+
+export async function GET(request: Request) {
+  try {
+    const url = new URL(request.url);
+    const sessionId = url.searchParams.get("session_id");
+    if (!sessionId) return NextResponse.json({ error: "Missing checkout session" }, { status: 400 });
+
+    const session = await getStripe().checkout.sessions.retrieve(sessionId);
+    if (session.payment_status !== "paid" || !session.client_reference_id?.startsWith("MAPA_")) {
+      return NextResponse.json({ error: "Payment not confirmed" }, { status: 403 });
+    }
+
+    const supabase = getSupabaseAdmin();
+    const { data: payment, error: paymentError } = await supabase
+      .from("payments")
+      .select("map_id, status")
+      .eq("transaction_id", session.id)
+      .maybeSingle();
+
+    if (paymentError) throw paymentError;
+    if (!payment?.map_id || payment.status !== "PAID") {
+      return NextResponse.json({ status: "preparing" }, { status: 202, headers: { "Cache-Control": "private, no-store" } });
+    }
+
+    const { data: map, error: mapError } = await supabase
+      .from("numerology_maps")
+      .select("id, customer_name, birth_date, full_interpretation")
+      .eq("id", payment.map_id)
+      .maybeSingle();
+
+    if (mapError) throw mapError;
+    if (!map?.full_interpretation) {
+      return NextResponse.json({ status: "preparing" }, { status: 202, headers: { "Cache-Control": "private, no-store" } });
+    }
+
+    if (url.searchParams.get("format") === "pdf") {
+      const birthDate = String(map.birth_date || "");
+      const pdf = await renderToBuffer(React.createElement(NumerologyPDFDocument as any, {
+        name: map.customer_name,
+        birthDate,
+        content: map.full_interpretation,
+      }) as any);
+      return new Response(new Uint8Array(pdf), {
+        headers: {
+          "Content-Type": "application/pdf",
+          "Content-Disposition": 'attachment; filename="DestinyVox-Personal-Reading.pdf"',
+          "Cache-Control": "private, no-store",
+        },
+      });
+    }
+
+    return NextResponse.json({
+      status: "ready",
+      mapId: map.id,
+      name: map.customer_name,
+      birthDate: map.birth_date,
+      content: map.full_interpretation,
+      amount: session.amount_total === null ? null : session.amount_total / (10 ** (new Intl.NumberFormat("en", { style: "currency", currency: session.currency || "usd" }).resolvedOptions().maximumFractionDigits ?? 2)),
+      currency: session.currency || "usd",
+    }, { headers: { "Cache-Control": "private, no-store" } });
+  } catch (error) {
+    console.error("Reading retrieval error:", error);
+    const details = error instanceof Error ? error.message : JSON.stringify(error);
+    if (/fetch failed|ENOTFOUND|ECONNREFUSED|SUPABASE_URL/i.test(details)) {
+      return NextResponse.json(
+        { error: "Your payment was received, but we can’t reach the reading database right now. Please try again shortly." },
+        { status: 503, headers: { "Cache-Control": "private, no-store" } }
+      );
+    }
+    return NextResponse.json({ error: "Unable to load this reading" }, { status: 500, headers: { "Cache-Control": "private, no-store" } });
+  }
+}
 
 import {
   calculateLifePath,

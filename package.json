@@ -8,9 +8,11 @@
     "start": "next start",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
+    "setup:elevenlabs-agent": "node scripts/create-elevenlabs-agent.mjs",
     "commit": "node scripts/autocommit.mjs"
   },
   "dependencies": {
+    "@elevenlabs/react": "^1.15.2",
     "@google/genai": "^2.22.0",
     "@react-pdf/renderer": "^4.9.0",
     "@supabase/supabase-js": "^2.116.0",

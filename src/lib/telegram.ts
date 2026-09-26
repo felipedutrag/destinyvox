@@ -74,6 +74,7 @@ export type TelegramPixAlertParams = {
   transactionId: string;
   externalId?: string;
   plan?: string;
+  currency?: string;
 };
 
 /**
@@ -89,9 +90,11 @@ export async function sendTelegramPixNotification(
     return;
   }
 
-  const valorFormatado = (params.amountCents / 100).toLocaleString("pt-BR", {
+  const currency = (params.currency || "BRL").toUpperCase();
+  const fractionDigits = new Intl.NumberFormat("pt-BR", { style: "currency", currency }).resolvedOptions().maximumFractionDigits ?? 2;
+  const valorFormatado = (params.amountCents / (10 ** fractionDigits)).toLocaleString("pt-BR", {
     style: "currency",
-    currency: "BRL",
+    currency,
   });
 
   const lines = [

@@ -3,7 +3,8 @@
 import Script from "next/script";
 
 export default function RedditPixel() {
-  const pixelId = process.env.NEXT_PUBLIC_REDDIT_PIXEL_ID || "a2_destinyvox_dev";
+  const pixelId = process.env.NEXT_PUBLIC_REDDIT_PIXEL_ID;
+  if (!pixelId || pixelId === "a2_destinyvox_dev") return null;
 
   return (
     <Script

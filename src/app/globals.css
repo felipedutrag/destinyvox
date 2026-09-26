@@ -1,5 +1,23 @@
 @import "tailwindcss";
 
+@keyframes journey-fade-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes journey-number-reveal {
+  from { opacity: 0; transform: scale(.88); filter: blur(8px); }
+  to { opacity: 1; transform: scale(1); filter: blur(0); }
+}
+
+.journey-enter { animation: journey-fade-up .55s ease-out both; }
+.number-reveal { animation: journey-number-reveal .8s cubic-bezier(.2,.8,.2,1) both; }
+.journey-glow { background: radial-gradient(ellipse, rgba(188,142,59,.12), transparent 68%); filter: blur(20px); }
+
+@media (prefers-reduced-motion: reduce) {
+  .journey-enter, .number-reveal { animation: none; }
+}
+
 @layer base {
   body {
     background-color: #040404;
