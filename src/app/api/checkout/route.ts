@@ -31,7 +31,7 @@ export async function POST(request: Request) {
           name: "Complete Personal Numerology Reading",
           description: "Your personalized 8-number reading with relationship, work, growth, and personal-year insights, online access, and a downloadable PDF.",
         },
-        unit_amount: totalCents,
+        unit_amount: FULL_READING_PRICE_CENTS,
       },
       quantity: 1,
     }];
