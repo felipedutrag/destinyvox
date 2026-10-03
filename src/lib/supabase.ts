@@ -28,8 +28,8 @@ export function getSupabaseAdmin(): SupabaseClient {
 /**
  * Supabase public client (anon key) — safe for browser and client-side components.
  */
-const DEFAULT_SUPABASE_URL = "https://epxhppjhivpwljpjpznm.supabase.co";
-const DEFAULT_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVweGhwcGpoaXZwd2xqcGpwem5tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk0OTcyMDksImV4cCI6MjEwNTA3MzIwOX0.xsxI2xOlmYk1kO1GqRHTUH4HUWd_VwhM2TZ8811JVfE";
+const DEFAULT_SUPABASE_URL = "https://dcvfpdyjqcxodnhrjuuf.supabase.co";
+const DEFAULT_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRjdmZwZHlqcWN4b2RuaHJqdXVmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEwNTcwMDgsImV4cCI6MjEwNjYzMzAwOH0.xRA8rfQy1cZFsra4IPkBQNkCCgcdjtP66nYwV-dx3lc";
 
 export function getSupabaseClient(): SupabaseClient {
   if (!_supabaseBrowser) {
