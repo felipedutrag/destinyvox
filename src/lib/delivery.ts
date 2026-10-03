@@ -1,5 +1,5 @@
 import { Resend } from "resend";
-import { GoogleGenAI } from "@google/genai";
+import OpenAI from "openai";
 import { renderToBuffer } from "@react-pdf/renderer";
 import React from "react";
 import { NumerologyPDFDocument } from "@/app/api/deliver/PdfTemplate";
@@ -53,10 +53,10 @@ const getResend = () => {
   return new Resend(key);
 };
 
-const getGemini = () => {
-  const key = process.env.GEMINI_API_KEY;
-  if (!key) throw new Error("GEMINI_API_KEY não configurada");
-  return new GoogleGenAI({ apiKey: key });
+const getOpenAI = () => {
+  const key = process.env.OPENAI_API_KEY;
+  if (!key) throw new Error("OPENAI_API_KEY não configurada");
+  return new OpenAI({ apiKey: key });
 };
 
 export async function generateNumerologyContent(name: string, birthDate: string): Promise<NumerologyContent> {
@@ -118,19 +118,27 @@ export async function generateNumerologyContent(name: string, birthDate: string)
   `;
 
   try {
-    const ai = getGemini();
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: prompt,
-      config: {
-        responseMimeType: "application/json",
-      },
+    const openai = getOpenAI();
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        {
+          role: "system",
+          content: "Você é o ARCHITECTUS SUPREMO da Numerologia Pitagórica e Análise Numérica Hermética. Responda estritamente em formato JSON válido conforme solicitado.",
+        },
+        {
+          role: "user",
+          content: prompt,
+        },
+      ],
+      response_format: { type: "json_object" },
+      temperature: 0.7,
     });
 
-    const text = response.text || "";
+    const text = completion.choices[0]?.message?.content || "";
     return JSON.parse(text) as NumerologyContent;
   } catch (error) {
-    console.error("Erro na chamada do Gemini:", error);
+    console.error("Erro na chamada da OpenAI:", error);
     // Fallback estruturado caso a API falhe
     return {
       numeros: {
