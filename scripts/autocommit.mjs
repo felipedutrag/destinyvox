@@ -3,8 +3,8 @@ import { readFileSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 function loadEnvApiKey() {
-  if (process.env.GEMINI_API_KEY) {
-    return process.env.GEMINI_API_KEY;
+  if (process.env.OPENAI_API_KEY) {
+    return process.env.OPENAI_API_KEY;
   }
 
   for (const envFile of ['.env.local', '.env']) {
@@ -13,8 +13,8 @@ function loadEnvApiKey() {
       const envContent = readFileSync(envPath, 'utf8');
       for (const line of envContent.split('\n')) {
         const trimmed = line.trim();
-        if (trimmed.startsWith('GEMINI_API_KEY=')) {
-          return trimmed.replace('GEMINI_API_KEY=', '').trim().replace(/^["']|["']$/g, '');
+        if (trimmed.startsWith('OPENAI_API_KEY=')) {
+          return trimmed.replace('OPENAI_API_KEY=', '').trim().replace(/^["']|["']$/g, '');
         }
       }
     }
@@ -24,7 +24,7 @@ function loadEnvApiKey() {
 }
 
 async function generateCommitMessage(diff, status, apiKey) {
-  const prompt = `Você é um engenheiro de software experiente. Analise o status e o diff das alterações abaixo e gere uma mensagem de commit no padrão Conventional Commits (ex: "feat(client): add new cosmic reading card", "fix(server): resolve json parsing error with gemini").
+  const prompt = `Você é um engenheiro de software experiente. Analise o status e o diff das alterações abaixo e gere uma mensagem de commit no padrão Conventional Commits (ex: "feat(client): add new cosmic reading card", "fix(server): resolve json parsing error").
 
 Regras estritas:
 1. Responda APENAS com a mensagem de commit em uma única linha.
@@ -40,27 +40,36 @@ ${diff.slice(0, 5000)}
 
 Commit message:`;
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-
-  const res = await fetch(url, {
+  const res = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
     body: JSON.stringify({
-      contents: [{ role: 'user', parts: [{ text: prompt }] }],
-      generationConfig: {
-        maxOutputTokens: 500,
-        temperature: 0.2,
-      },
+      model: 'gpt-4o-mini',
+      messages: [
+        {
+          role: 'system',
+          content: 'Você é um engenheiro de software experiente. Responda estritamente com uma única linha de commit seguindo Conventional Commits.',
+        },
+        {
+          role: 'user',
+          content: prompt,
+        },
+      ],
+      max_tokens: 100,
+      temperature: 0.2,
     }),
   });
 
   if (!res.ok) {
     const errText = await res.text().catch(() => '');
-    throw new Error(`Gemini API HTTP ${res.status}: ${errText}`);
+    throw new Error(`OpenAI API HTTP ${res.status}: ${errText}`);
   }
 
   const data = await res.json();
-  let text = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '';
+  let text = data?.choices?.[0]?.message?.content?.trim() || '';
   text = text.replace(/^["'`]|["'`]$/g, '').split('\n')[0].trim();
 
   // Garante que não ficou truncado no prefixo
@@ -93,14 +102,14 @@ async function main() {
 
   if (apiKey) {
     try {
-      console.log('🤖 Solicitando mensagem semântica ao Gemini...');
+      console.log('🤖 Solicitando mensagem semântica ao OpenAI gpt-4o-mini...');
       commitMessage = await generateCommitMessage(diff, status, apiKey);
-      console.log(`💡 Mensagem gerada pelo Gemini: "${commitMessage}"`);
+      console.log(`💡 Mensagem gerada pela OpenAI: "${commitMessage}"`);
     } catch (error) {
-      console.warn('⚠️ Falha ao consultar Gemini. Usando mensagem de fallback:', error);
+      console.warn('⚠️ Falha ao consultar OpenAI. Usando mensagem de fallback:', error);
     }
   } else {
-    console.warn('⚠️ GEMINI_API_KEY não encontrada no .env.local, .env ou variáveis de ambiente.');
+    console.warn('⚠️ OPENAI_API_KEY não encontrada no .env.local, .env ou variáveis de ambiente.');
   }
 
   if (!commitMessage) {

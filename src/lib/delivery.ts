@@ -182,7 +182,7 @@ export interface DeliverMapParams {
 /**
  * Processamento completo e idempotente da entrega do Mapa Pitagórico:
  * 1. Verifica se o mapa já foi gerado para este pagamento (evita duplicidade).
- * 2. Gera os cálculos e a interpretação completa via Gemini.
+ * 2. Gera os cálculos e a interpretação completa via OpenAI (gpt-4o-mini).
  * 3. Cria/recupera o usuário no Supabase Auth e salva em `numerology_maps`.
  * 4. Atualiza `payments` com status PAID e vínculo com o mapa.
  * 5. Compila o PDF estético Dark Tech.
