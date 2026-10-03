@@ -2,10 +2,8 @@ import { NextResponse } from "next/server";
 import { deliverNumerologyMap } from "@/lib/delivery";
 
 export async function POST(request: Request) {
-  console.log("🔔 Pedido de entrega recebido via /api/deliver");
   try {
     const body = await request.json();
-    console.log("Payload de entrega:", JSON.stringify(body));
 
     const customerName = body.name || "Cliente";
     const customerEmail = body.email;
@@ -28,17 +26,16 @@ export async function POST(request: Request) {
       success: true,
       message: result.alreadyDelivered
         ? "Mapa já entregue anteriormente"
-        : "PDF gerado, salvo no Supabase e enviado com sucesso",
-      map_id: result.mapId,
+        : result.delivering ? "Preparando seu acesso" : "Link de acesso enviado por e-mail",
+      delivering: !!result.delivering,
+      email_sent: !!result.emailSent,
       already_delivered: !!result.alreadyDelivered,
     });
   } catch (error) {
     console.error("💥 Erro Fatal na Entrega:", error);
-    const errorMessage = error instanceof Error ? error.message : "Erro desconhecido";
     return NextResponse.json(
       {
         error: "Erro interno no processamento do mapa",
-        details: errorMessage,
       },
       { status: 500 }
     );

@@ -16,6 +16,7 @@ dist-ssr
 .next/
 out/
 *.tsbuildinfo
+tmp/map-tests/
 
 # Editor directories and files
 .vscode/*

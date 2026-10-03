@@ -1,10 +1,8 @@
-import { Resend } from "resend";
 import OpenAI from "openai";
-import { renderToBuffer } from "@react-pdf/renderer";
-import React from "react";
-import { NumerologyPDFDocument } from "@/app/api/deliver/PdfTemplate";
-import { getSupabaseAdmin } from "@/lib/supabase";
+import { buildWebMap } from "@/lib/web-map";
+import { generateMapLink, sendMapAccessEmail } from "@/lib/map-email";
 import { sendTelegramPixNotification } from "@/lib/telegram";
+import { getSupabaseAdmin } from "@/lib/supabase";
 import {
   calculateLifePath,
   calculateExpression,
@@ -19,6 +17,14 @@ import {
   getSoulDictum,
   parseBirthDate,
 } from "@/utils/numerology";
+import {
+  LIFE_PATH_INTERPRETATIONS,
+  EXPRESSION_INTERPRETATIONS,
+  SOUL_URGE_INTERPRETATIONS,
+  PERSONALITY_INTERPRETATIONS,
+  YEARLY_FORECAST_INTERPRETATIONS,
+  interpolateFirstName,
+} from "@/utils/interpretations";
 
 export interface NumerologyContent {
   numeros: {
@@ -28,6 +34,11 @@ export interface NumerologyContent {
     personalidade: string;
     ano_pessoal: string;
     gematria_detalhada: string;
+    caminho_vida_desc?: string;
+    expressao_desc?: string;
+    motivacao_desc?: string;
+    personalidade_desc?: string;
+    ano_pessoal_desc?: string;
   };
   analise: {
     introducao: string;
@@ -44,14 +55,13 @@ export interface NumerologyContent {
     codigo_abundancia: string;
     desafio_2026: string;
     conclusao: string;
+    caminho_vida_analise?: string;
+    expressao_analise?: string;
+    motivacao_analise?: string;
+    personalidade_analise?: string;
+    ano_pessoal_analise?: string;
   };
 }
-
-const getResend = () => {
-  const key = process.env.RESEND_API_KEY;
-  if (!key) throw new Error("RESEND_API_KEY não configurada");
-  return new Resend(key);
-};
 
 const getOpenAI = () => {
   const key = process.env.OPENAI_API_KEY;
@@ -59,7 +69,7 @@ const getOpenAI = () => {
   return new OpenAI({ apiKey: key });
 };
 
-export function normalizeNumerologyContent(data: unknown): NumerologyContent {
+export function normalizeNumerologyContent(data: unknown, fallbackName = ""): NumerologyContent {
   const record = (data && typeof data === "object" ? data : {}) as Record<string, unknown>;
   const numeros = (record.numeros && typeof record.numeros === "object" ? record.numeros : {}) as Record<string, unknown>;
   const analise = (record.analise && typeof record.analise === "object" ? record.analise : {}) as Record<string, unknown>;
@@ -81,17 +91,65 @@ export function normalizeNumerologyContent(data: unknown): NumerologyContent {
     return String(v);
   };
 
+  const lpNum = parseInt(safeStr(numeros.caminho_vida).replace(/\D/g, ""), 10) || 1;
+  const expNum = parseInt(safeStr(numeros.expressao).replace(/\D/g, ""), 10) || 1;
+  const soulNum = parseInt(safeStr(numeros.motivacao).replace(/\D/g, ""), 10) || 1;
+  const persNum = parseInt(safeStr(numeros.personalidade).replace(/\D/g, ""), 10) || 1;
+  const yearNum = parseInt(safeStr(numeros.ano_pessoal).replace(/\D/g, ""), 10) || 1;
+
+  const lpFallback = interpolateFirstName(
+    (LIFE_PATH_INTERPRETATIONS.pt[lpNum] || LIFE_PATH_INTERPRETATIONS.pt[1] || "").split("\n\n").slice(0, 2).join("\n\n"),
+    fallbackName
+  );
+  const expFallback = interpolateFirstName(
+    (EXPRESSION_INTERPRETATIONS.pt[expNum] || EXPRESSION_INTERPRETATIONS.pt[1] || "").split("\n\n").slice(0, 2).join("\n\n"),
+    fallbackName
+  );
+  const soulFallback = interpolateFirstName(
+    (SOUL_URGE_INTERPRETATIONS.pt[soulNum] || SOUL_URGE_INTERPRETATIONS.pt[1] || "").split("\n\n").slice(0, 2).join("\n\n"),
+    fallbackName
+  );
+  const persFallback = interpolateFirstName(
+    (PERSONALITY_INTERPRETATIONS.pt[persNum] || PERSONALITY_INTERPRETATIONS.pt[1] || "").split("\n\n").slice(0, 2).join("\n\n"),
+    fallbackName
+  );
+  const yearFallback = interpolateFirstName(
+    (YEARLY_FORECAST_INTERPRETATIONS.pt[yearNum] || YEARLY_FORECAST_INTERPRETATIONS.pt[1] || "").split("\n\n").slice(0, 2).join("\n\n"),
+    fallbackName
+  );
+
+  const caminho_vida_analise =
+    safeStr(analise.caminho_vida_analise).length > 30 ? safeStr(analise.caminho_vida_analise) : lpFallback;
+  const expressao_analise =
+    safeStr(analise.expressao_analise).length > 30 ? safeStr(analise.expressao_analise) : expFallback;
+  const motivacao_analise =
+    safeStr(analise.motivacao_analise).length > 30 ? safeStr(analise.motivacao_analise) : soulFallback;
+  const personalidade_analise =
+    safeStr(analise.personalidade_analise).length > 30 ? safeStr(analise.personalidade_analise) : persFallback;
+  const ano_pessoal_analise =
+    safeStr(analise.ano_pessoal_analise).length > 30 ? safeStr(analise.ano_pessoal_analise) : yearFallback;
+
   return {
     numeros: {
-      caminho_vida: safeStr(numeros.caminho_vida),
-      expressao: safeStr(numeros.expressao),
-      motivacao: safeStr(numeros.motivacao),
-      personalidade: safeStr(numeros.personalidade),
-      ano_pessoal: safeStr(numeros.ano_pessoal),
+      caminho_vida: safeStr(numeros.caminho_vida) || String(lpNum),
+      expressao: safeStr(numeros.expressao) || String(expNum),
+      motivacao: safeStr(numeros.motivacao) || String(soulNum),
+      personalidade: safeStr(numeros.personalidade) || String(persNum),
+      ano_pessoal: safeStr(numeros.ano_pessoal) || String(yearNum),
       gematria_detalhada: safeStr(numeros.gematria_detalhada),
+      caminho_vida_desc: caminho_vida_analise,
+      expressao_desc: expressao_analise,
+      motivacao_desc: motivacao_analise,
+      personalidade_desc: personalidade_analise,
+      ano_pessoal_desc: ano_pessoal_analise,
     },
     analise: {
       introducao: safeStr(analise.introducao),
+      caminho_vida_analise,
+      expressao_analise,
+      motivacao_analise,
+      personalidade_analise,
+      ano_pessoal_analise,
       tikkun_missao: safeStr(analise.tikkun_missao),
       perfil_financeiro: safeStr(analise.perfil_financeiro),
       sefirot_diagnostico: safeStr(analise.sefirot_diagnostico),
@@ -117,12 +175,14 @@ export async function generateNumerologyContent(name: string, birthDate: string)
   const personalYear = calculatePersonalYear(birthDate, 2026);
 
   const prompt = `
-    Você é o ARCHITECTUS SUPREMO da Numerologia Pitagórica e Análise Numérica Hermética.
-    Sua missão é gerar um RELATÓRIO TÉCNICO DE ENGENHARIA ESPIRITUAL (Mapa Pitagórico do Destino) para:
+    Você é o ARCHITECTUS SUPREMO da Numerologia Pitagórica e Geometria Sagrada.
+    Sua missão é gerar um RELATÓRIO TÉCNICO DE ENGENHARIA PITAGÓRICA (Mapa Pitagórico do Destino) para:
     Nome: ${name}
     Data de Nascimento: ${birthDate}
 
-    ESTE NÃO É UM HORÓSCOPO. É UM DOSSIÊ DE DADOS VIBRACIONAIS.
+    ESTE NÃO É UM HORÓSCOPO. É UM DOSSIÊ DE DADOS VIBRACIONAIS PITAGÓRICOS.
+    REGRA CRÍTICA: NÃO UTILIZE NENHUM CONCEITO OU TERMO DA CABALA (como Tikkun, Sefirot, Árvore da Vida ou Cabala). Baseie-se estritamente na tradição de Pitágoras, na Tetraktys Sagrada e nos quatro planos fundamentais (Mental, Físico, Emocional e Espiritual).
+
     OS CÁLCULOS MATEMÁTICOS JÁ FORAM FEITOS COM PRECISÃO ABSOLUTA. USE ESTES NÚMEROS:
     - Caminho de Vida (Destino): ${lifePath}
     - Expressão (Nome Completo): ${expression}
@@ -131,12 +191,13 @@ export async function generateNumerologyContent(name: string, birthDate: string)
     - Ano Pessoal (2026): ${personalYear}
 
     INSTRUÇÕES DE CONTEÚDO (CRÍTICAS):
-    1. EXTENSÃO EXTREMA: Cada seção da "analise" DEVE ser um ensaio profundo (800-1200 palavras por item).
-    2. ESTÉTICA TÉCNICA: Use termos como "Matriz Vibracional", "Algoritmo Kármico", "Frequência de Ressonância", "Protocolo de Retificação".
-    3. TIKKUN: Explique o conceito de Tikkun (correção da alma) e missão evolutiva e como ele afeta a prosperidade de ${name}.
-    4. SEFIROT: Analise a estrutura vibracional e arquétipos baseados nos números pitagóricos fornecidos.
-    5. GEMATRIA DETALHADA: Decomponha o nome ${name} em seus valores numéricos e mostre a soma absoluta em formato de texto.
-    6. TOM: Sombrio, autoritário, revelador e extremamente preciso.
+    1. EXTENSÃO PROFUNDA: Cada seção da "analise" DEVE ser rica, reveladora e detalhada.
+    2. NUNCA DEIXE NÚMEROS VAZIOS: Preencha "caminho_vida_analise", "expressao_analise", "motivacao_analise", "personalidade_analise" e "ano_pessoal_analise" com a interpretação profunda e completa do significado de cada número correspondente na vida de ${name}.
+    3. ESTÉTICA TÉCNICA: Use termos como "Matriz Vibracional", "Geometria Sagrada Pitagórica", "Frequência de Ressonância", "Tetraktys", "Harmonia dos Planos".
+    4. VETOR EVOLUTIVO: Explique o propósito evolutivo e missão de vida de ${name} através da síntese entre Alma e Expressão.
+    5. TETRAKTYS: Analise a estrutura vibracional e os eixos de consciência baseados na Tetraktys pitagórica.
+    6. DECOMPOSIÇÃO NOMINAL: Decomponha o nome ${name} em seus valores pitagóricos e mostre a soma absoluta em formato de texto.
+    7. TOM: Sombrio, autoritário, revelador e extremamente preciso.
 
     Retorne EXATAMENTE no seguinte formato JSON (com todas as propriedades como strings):
     {
@@ -146,22 +207,27 @@ export async function generateNumerologyContent(name: string, birthDate: string)
         "motivacao": "${soulUrge}",
         "personalidade": "${personality}",
         "ano_pessoal": "${personalYear}",
-        "gematria_detalhada": "Decomposição exata de cada letra de ${name}..."
+        "gematria_detalhada": "Decomposição pitagórica exata de cada letra de ${name}..."
       },
       "analise": {
         "introducao": "Texto denso de abertura...",
-        "tikkun_missao": "Ensaio sobre a correção e propósito...",
+        "caminho_vida_analise": "Interpretação profunda do Caminho de Vida ${lifePath}...",
+        "expressao_analise": "Interpretação profunda da Expressão ${expression}...",
+        "motivacao_analise": "Interpretação profunda da Motivação ${soulUrge}...",
+        "personalidade_analise": "Interpretação profunda da Personalidade ${personality}...",
+        "ano_pessoal_analise": "Interpretação profunda do Ano Pessoal ${personalYear} em 2026...",
+        "tikkun_missao": "Ensaio sobre a missão de vida e vetor evolutivo da alma...",
         "perfil_financeiro": "Análise matemática do fluxo financeiro...",
-        "sefirot_diagnostico": "Equilíbrio vibracional...",
-        "talento_oculto": "Habilidade reprimida de gerar riqueza...",
-        "bloqueio_ancestral": "Padrão herdado limitante...",
+        "sefirot_diagnostico": "Equilíbrio vibracional na Tetraktys Sagrada...",
+        "talento_oculto": "Habilidade reprimida de gerar riqueza e dons natalícios...",
+        "bloqueio_ancestral": "Padrão herdado limitante e sombra...",
         "ciclo_prosperidade": "Mapeamento dos 9 anos...",
         "profissao_ideal": "Vocações de altíssimo impacto...",
-        "sombra_dinheiro": "Comportamentos sabotadores...",
-        "ancora_riqueza": "Elemento prático de estabilização...",
+        "sombra_dinheiro": "Comportamentos sabotadores da abundância...",
+        "ancora_riqueza": "Elemento prático de estabilização material...",
         "intuicao_investimento": "Critérios para tomada de risco...",
-        "codigo_abundancia": "Ex: 777-888-333 (Frequência numérica pessoal)",
-        "desafio_2026": "Ação concreta para o Ano Pessoal ${personalYear}...",
+        "codigo_abundancia": "FREQ-${lifePath}77-${expression}88-${personalYear}99",
+        "desafio_2026": "Ação concreta para o Ano Pessoal ${personalYear} em 2026...",
         "conclusao": "Decreto final de ativação..."
       }
     }
@@ -174,7 +240,7 @@ export async function generateNumerologyContent(name: string, birthDate: string)
       messages: [
         {
           role: "system",
-          content: "Você é o ARCHITECTUS SUPREMO da Numerologia Pitagórica e Análise Numérica Hermética. Responda estritamente em formato JSON válido conforme solicitado.",
+          content: "Você é o ARCHITECTUS SUPREMO da Numerologia Pitagórica e Geometria Sagrada. Responda estritamente em formato JSON válido conforme solicitado, sem qualquer menção à Cabala.",
         },
         {
           role: "user",
@@ -187,10 +253,31 @@ export async function generateNumerologyContent(name: string, birthDate: string)
 
     const text = completion.choices[0]?.message?.content || "";
     const parsed = JSON.parse(text);
-    return normalizeNumerologyContent(parsed);
+    return normalizeNumerologyContent(parsed, name);
   } catch (error) {
     console.error("Erro na chamada da OpenAI:", error);
     // Fallback estruturado caso a API falhe
+    const lpFallback = interpolateFirstName(
+      (LIFE_PATH_INTERPRETATIONS.pt[lifePath] || LIFE_PATH_INTERPRETATIONS.pt[1] || "").split("\n\n").slice(0, 2).join("\n\n"),
+      name
+    );
+    const expFallback = interpolateFirstName(
+      (EXPRESSION_INTERPRETATIONS.pt[expression] || EXPRESSION_INTERPRETATIONS.pt[1] || "").split("\n\n").slice(0, 2).join("\n\n"),
+      name
+    );
+    const soulFallback = interpolateFirstName(
+      (SOUL_URGE_INTERPRETATIONS.pt[soulUrge] || SOUL_URGE_INTERPRETATIONS.pt[1] || "").split("\n\n").slice(0, 2).join("\n\n"),
+      name
+    );
+    const persFallback = interpolateFirstName(
+      (PERSONALITY_INTERPRETATIONS.pt[personality] || PERSONALITY_INTERPRETATIONS.pt[1] || "").split("\n\n").slice(0, 2).join("\n\n"),
+      name
+    );
+    const yearFallback = interpolateFirstName(
+      (YEARLY_FORECAST_INTERPRETATIONS.pt[personalYear] || YEARLY_FORECAST_INTERPRETATIONS.pt[1] || "").split("\n\n").slice(0, 2).join("\n\n"),
+      name
+    );
+
     return {
       numeros: {
         caminho_vida: String(lifePath),
@@ -199,12 +286,22 @@ export async function generateNumerologyContent(name: string, birthDate: string)
         personalidade: String(personality),
         ano_pessoal: String(personalYear),
         gematria_detalhada: `Cálculo Pitagórico Completo para ${name}`,
+        caminho_vida_desc: lpFallback,
+        expressao_desc: expFallback,
+        motivacao_desc: soulFallback,
+        personalidade_desc: persFallback,
+        ano_pessoal_desc: yearFallback,
       },
       analise: {
-        introducao: `A matriz de nascimento ${birthDate} decodifica uma assinatura quântica orientada pelo Caminho de Vida ${lifePath}. Sua estrutura reflete precisão e propósito existencial.`,
-        tikkun_missao: `Sua rota evolutiva demanda integração plena entre o ideal interior (${soulUrge}) e a realização concreta (${expression}). O desafio é transformar potenciais latentes em realizações tangíveis.`,
+        introducao: `A matriz de nascimento ${birthDate} decodifica uma assinatura de geometria sagrada orientada pelo Caminho de Vida ${lifePath}. Sua estrutura reflete precisão matemática e propósito existencial pitagórico.`,
+        caminho_vida_analise: lpFallback,
+        expressao_analise: expFallback,
+        motivacao_analise: soulFallback,
+        personalidade_analise: persFallback,
+        ano_pessoal_analise: yearFallback,
+        tikkun_missao: `Seu vetor evolutivo demanda integração plena entre o ideal interior da alma (${soulUrge}) e a realização concreta da expressão (${expression}). O desafio é harmonizar a vontade íntima com a ação no mundo material através da disciplina pitagórica.`,
         perfil_financeiro: `O fluxo de recursos responde diretamente à disciplina e à autoridade material emanada pela vibração ${expression}.`,
-        sefirot_diagnostico: `Pilar central alinhado com a estabilidade e o discernimento superior.`,
+        sefirot_diagnostico: `Alinhamento dos planos fundamentais da Tetraktys pitagórica (Mônada, Díade, Tríade e Tétrade) com a estabilidade e o discernimento superior.`,
         talento_oculto: `Capacidade ímpar de síntese intuitiva e liderança estratégica em momentos de inflexão.`,
         bloqueio_ancestral: `Tendência à autossabotagem em momentos de grande prosperidade. Superar pelo desapego a padrões rígidos herdados.`,
         ciclo_prosperidade: `O ciclo de 9 anos aponta o Ano Pessoal ${personalYear} como catalisador de alinhamento com seus objetivos fundamentais.`,
@@ -231,311 +328,70 @@ export interface DeliverMapParams {
 }
 
 /**
- * Processamento completo e idempotente da entrega do Mapa Pitagórico:
- * 1. Verifica se o pagamento já possui e-mail enviado com sucesso.
- * 2. Gera os cálculos e a interpretação completa via OpenAI (gpt-4o-mini).
- * 3. Cria/recupera o usuário no Supabase Auth e salva em `numerology_maps`.
- * 4. Atualiza `payments` com status PAID e vínculo com o mapa.
- * 5. Compila o PDF estético Dark Tech.
- * 6. Envia por e-mail com Resend para o cliente real.
- * 7. Envia notificação em tempo real no Telegram.
+ * Entrega do mapa web após confirmação do pagamento.
+ * Salva nove interpretações, vincula o dono e envia acesso web via Resend.
+ * Os dados da compra vêm exclusivamente do pagamento confirmado no servidor.
  */
 export async function deliverNumerologyMap(params: DeliverMapParams) {
-  const customerName = params.name.trim() || "Cliente";
-  const customerEmail = params.email.trim().toLowerCase();
-  const birthDateRaw = params.birthDate.trim();
-
-  if (!customerEmail) {
-    throw new Error("E-mail do cliente é obrigatório");
-  }
-
   const supabase = getSupabaseAdmin();
-
-  interface PaymentRecord {
-    id: string;
-    map_id: string | null;
-    status: string;
-    metadata: Record<string, unknown> | null;
+  if (!params.transactionId && !params.externalId) throw new Error("Pagamento não identificado");
+  const query = supabase.from("payments").select("id, map_id, status, metadata, payer_name, payer_email, amount_cents, external_id, transaction_id");
+  if (params.transactionId) query.eq("transaction_id", String(params.transactionId));
+  else query.eq("external_id", params.externalId!);
+  const { data: payment, error: paymentError } = await query.maybeSingle();
+  if (paymentError || !payment || payment.status !== "PAID") throw new Error("Pagamento ainda não confirmado");
+  const meta = (payment.metadata || {}) as Record<string, unknown>;
+  if (meta.web_access_sent === true && payment.map_id) return { success: true, alreadyDelivered: true, mapId: payment.map_id, emailSent: true };
+  if (meta.delivering === true && Date.now() - Date.parse(String(meta.delivery_started_at)) < 300_000) {
+    return { success: true, delivering: true, mapId: payment.map_id, emailSent: false };
   }
-
-  let matchedPaymentId: string | null = null;
-  let existingPayment: PaymentRecord | null = null;
-
-  if (params.transactionId || params.externalId) {
-    const query = supabase.from("payments").select("id, map_id, status, metadata");
-    if (params.transactionId) {
-      query.eq("transaction_id", String(params.transactionId));
-    } else if (params.externalId) {
-      query.eq("external_id", params.externalId);
-    }
-    const { data } = await query.maybeSingle();
-    existingPayment = data ? ((data as unknown) as PaymentRecord) : null;
-
-    if (existingPayment) {
-      matchedPaymentId = existingPayment.id;
-      const meta = (existingPayment.metadata || {}) as Record<string, unknown>;
-
-      // Apenas ignora se o e-mail JÁ FOI ENVIADO com sucesso para este pagamento
-      if (meta.email_sent === true) {
-        console.log(`[Deliver] 🛑 E-mail já enviado com sucesso para o pagamento ${existingPayment.id}.`);
-        return {
-          success: true,
-          alreadyDelivered: true,
-          mapId: existingPayment.map_id,
-        };
-      }
-
-      // Trava de concorrência com expiração de 60s (evita webhook e front chamando ao mesmo tempo)
-      if (meta.delivering === true && meta.delivery_started_at) {
-        const started = new Date(meta.delivery_started_at as string).getTime();
-        const diffSeconds = (Date.now() - started) / 1000;
-        if (diffSeconds < 60) {
-          console.log(`[Deliver] ⏳ Entrega já em andamento há ${Math.round(diffSeconds)}s para ${existingPayment.id}. Aguardando processo atual.`);
-          return {
-            success: true,
-            delivering: true,
-            mapId: existingPayment.map_id,
-          };
-        }
-      }
-
-      // Registra a trava imediata
-      await supabase
-        .from("payments")
-        .update({
-          metadata: {
-            ...meta,
-            delivering: true,
-            delivery_started_at: new Date().toISOString(),
-          },
-        })
-        .eq("id", existingPayment.id);
-    }
-  }
-
-  // Formatar data para exibição e cálculos estritamente no padrão brasileiro (DD/MM/AAAA)
-  const parsedBirth = parseBirthDate(birthDateRaw || "01/01/1990");
-  const birthDate = `${String(parsedBirth.day).padStart(2, "0")}/${String(parsedBirth.month).padStart(2, "0")}/${parsedBirth.year}`;
-
-  let numerologyData: NumerologyContent;
-  let mapId: string | null = existingPayment?.map_id || null;
-
-  // 2. Reutilizar mapa se já foi gerado para este pagamento, ou gerar um novo via OpenAI
-  if (mapId) {
-    console.log(`✨ [Deliver] Recuperando mapa existente ${mapId} para envio do PDF...`);
-    const { data: existingMap } = await supabase
-      .from("numerology_maps")
-      .select("full_interpretation")
-      .eq("id", mapId)
-      .maybeSingle();
-
-    if (existingMap?.full_interpretation) {
-      numerologyData = normalizeNumerologyContent(existingMap.full_interpretation);
-    } else {
-      numerologyData = await generateNumerologyContent(customerName, birthDate);
-    }
-  } else {
-    console.log(`✨ [Deliver] Gerando novo conteúdo do Mapa Pitagórico via OpenAI para ${customerName}...`);
-    numerologyData = await generateNumerologyContent(customerName, birthDate);
-  }
-
-  // Cálculos numéricos completos
-  const lifePath = calculateLifePath(birthDate);
-  const expression = calculateExpression(customerName);
-  const soulUrge = calculateSoulUrge(customerName);
-  const personality = calculatePersonality(customerName);
-  const birthday = calculateBirthday(birthDate);
-  const maturity = calculateMaturity(lifePath, expression);
-  const personalYear = calculatePersonalYear(birthDate, 2026);
-  const personalMonth = calculatePersonalMonth(personalYear);
-  const personalDay = calculatePersonalDay(personalMonth);
-  const archetype = getArchetype(lifePath, "pt");
-  const dictum = getSoulDictum(lifePath, "pt");
-
-  let emailSentSuccessfully = false;
-
+  // Compare-and-set: only one webhook/client request can acquire this payment.
+  let lock = supabase.from("payments").update({ metadata: { ...meta, delivering: true, delivery_started_at: new Date().toISOString() } }).eq("id", payment.id).eq("status", "PAID");
+  lock = payment.metadata === null ? lock.is("metadata", null) : lock.eq("metadata", JSON.stringify(payment.metadata));
+  const { data: acquired, error: lockError } = await lock.select("id").maybeSingle();
+  if (lockError) throw lockError;
+  if (!acquired) return { success: true, delivering: true, mapId: payment.map_id, emailSent: false };
+  let sent = false;
   try {
-    // 3. Criar ou Vincular Usuário no Supabase Auth
-    let userId: string | null = null;
+    // Never trust the name, birth date or delivery address supplied by the browser.
+    const name = String(payment.payer_name).trim();
+    const email = String(payment.payer_email).trim().toLowerCase();
+    const rawBirthDate = typeof meta.birthDate === "string" ? meta.birthDate : "";
+    if (!name || !email || !rawBirthDate) throw new Error("Dados do pagamento incompletos");
+    const parsed = parseBirthDate(rawBirthDate);
+    const birthDate = `${parsed.year}-${String(parsed.month).padStart(2, "0")}-${String(parsed.day).padStart(2, "0")}`;
+    const content = buildWebMap(name, birthDate);
+    const access = await generateMapLink(email);
+    const { error: profileError } = await supabase.from("profiles").upsert({ id: access.userId, email, full_name: name }, { onConflict: "id", ignoreDuplicates: true });
+    if (profileError) throw profileError;
+    // A stable UUID per payment makes retries reuse the same map, even after a crash.
+    const mapId = payment.map_id || payment.id;
+    const values = Object.fromEntries(content.readings.map(r => [r.id, r.value]));
+    const { error: mapError } = await supabase.from("numerology_maps").upsert({
+      id: mapId, user_id: access.userId, customer_name: name, customer_email: email, birth_date: birthDate,
+      life_path: values.caminho, expression: values.expressao, soul_urge: values.alma,
+      personality: values.personalidade, birthday: values.aniversario, maturity: values.maturidade,
+      personal_year: values.ano, personal_month: values.mes, personal_day: values.dia,
+      archetype: getArchetype(values.caminho, "pt"), dictum: content.dictum,
+      full_interpretation: content, status: "completed",
+    }, { onConflict: "id" });
+    if (mapError) throw mapError;
+    const { error: linkError } = await supabase.from("payments").update({ map_id: mapId, user_id: access.userId }).eq("id", payment.id);
+    if (linkError) throw linkError;
+    const emailId = await sendMapAccessEmail(name, email, mapId, access.token);
+    const { error: sentError } = await supabase.from("payments").update({ metadata: {
+      ...meta, delivering: false, email_sent: true, web_access_sent: true,
+      email_sent_at: new Date().toISOString(), email_id: emailId,
+    } }).eq("id", payment.id);
+    if (sentError) throw sentError;
+    sent = true;
     try {
-      const { data: authUsers, error: listErr } = await supabase.auth.admin.listUsers();
-      if (!listErr && authUsers && authUsers.users) {
-        const found = authUsers.users.find((u) => u.email?.toLowerCase() === customerEmail);
-        if (found) {
-          userId = found.id;
-          console.log(`[Supabase Auth] Usuário existente localizado: ${userId}`);
-        }
-      }
-
-      if (!userId) {
-        const dummyPassword = `Destiny_${Date.now()}_${Math.random().toString(36).substring(2, 8)}!`;
-        const { data: newUser, error: createErr } = await supabase.auth.admin.createUser({
-          email: customerEmail,
-          password: dummyPassword,
-          email_confirm: true,
-          user_metadata: {
-            full_name: customerName,
-            birth_date: birthDate,
-          },
-        });
-
-        if (!createErr && newUser && newUser.user) {
-          userId = newUser.user.id;
-          console.log(`[Supabase Auth] Novo usuário criado automaticamente: ${userId}`);
-        } else if (createErr) {
-          console.warn("[Supabase Auth] Aviso ao criar usuário:", createErr.message);
-        }
-      }
-    } catch (authError) {
-      console.warn("[Supabase Auth] Falha não impeditiva no gerenciamento de Auth:", authError);
+      await sendTelegramPixNotification({ payerName: name, payerEmail: email, amountCents: payment.amount_cents, transactionId: payment.transaction_id, externalId: payment.external_id, plan: String(meta.plan || "30_questions") });
+    } catch (notificationError) {
+      console.warn("[Deliver] Falha na notificação operacional", notificationError);
     }
-
-    // Gravar mapa no banco de dados se ainda não tiver ID
-    const dbBirthDate = `${parsedBirth.year}-${String(parsedBirth.month).padStart(2, "0")}-${String(parsedBirth.day).padStart(2, "0")}`;
-
-    if (!mapId) {
-      const { data: mapRecord, error: mapErr } = await supabase
-        .from("numerology_maps")
-        .insert({
-          user_id: userId,
-          customer_name: customerName,
-          customer_email: customerEmail,
-          birth_date: dbBirthDate,
-          life_path: lifePath,
-          expression: expression,
-          soul_urge: soulUrge,
-          personality: personality,
-          birthday: birthday,
-          maturity: maturity,
-          personal_year: personalYear,
-          personal_month: personalMonth,
-          personal_day: personalDay,
-          archetype: archetype,
-          dictum: dictum,
-          full_interpretation: numerologyData,
-          status: "completed",
-        })
-        .select("id")
-        .single();
-
-      if (mapRecord) {
-        mapId = mapRecord.id;
-        console.log(`[Supabase] ✅ Mapa ${mapId} gravado com sucesso no banco!`);
-
-        // Vincular ao pagamento GGPIX
-        if (params.transactionId) {
-          await supabase
-            .from("payments")
-            .update({ map_id: mapId, user_id: userId, status: "PAID", paid_at: new Date().toISOString() })
-            .eq("transaction_id", String(params.transactionId));
-        } else if (params.externalId) {
-          await supabase
-            .from("payments")
-            .update({ map_id: mapId, user_id: userId, status: "PAID", paid_at: new Date().toISOString() })
-            .eq("external_id", params.externalId);
-        }
-      } else if (mapErr) {
-        console.error("[Supabase] ❌ Erro ao salvar mapa numerológico:", mapErr);
-      }
-    }
-
-    // 4. Montar PDF com tratamento robusto
-    console.log(`📄 [Deliver] Renderizando PDF para ${customerName}...`);
-    const pdfBuffer = await renderToBuffer(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      React.createElement(NumerologyPDFDocument as any, {
-        name: customerName,
-        birthDate: birthDate,
-        content: numerologyData,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      }) as any
-    );
-
-    // 5. Enviar e-mail via Resend diretamente para o cliente
-    console.log(`📧 [Deliver] Enviando e-mail para ${customerEmail}...`);
-    const htmlContent = `
-      <div style="font-family: sans-serif; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #222; background: #0c0c0c; color: #eee; padding: 25px; border-radius: 8px;">
-        <h2 style="color: #f59e0b; margin-top: 0;">Olá, ${customerName}!</h2>
-        <p>Seu pagamento via PIX foi confirmado com sucesso. O seu portal de sabedoria cósmica está ativo. ✨</p>
-        <p>Os números revelaram as frequências da sua alma. Em anexo, você encontrará o seu <strong>Mapa Pitagórico do Destino</strong> completo, calculado e gerado com exclusividade para você.</p>
-        <p>Prepare um ambiente tranquilo, abra o PDF anexo e descubra as diretrizes para alinhar suas decisões ao fluxo de abundância e timing cósmico.</p>
-        <br/>
-        <p style="color: #999;">Com reverência,</p>
-        <p><strong style="color: #fff;">Oráculo DestinyVox</strong></p>
-      </div>
-    `;
-
-    const fileNameStr = `Mapa_DestinyVox_${customerName.replace(/\s+/g, "_")}.pdf`;
-    const fromEmail = process.env.RESEND_FROM_EMAIL || "DestinyVox <contato@destinyvox.online>";
-
-    const resend = getResend();
-    const { data: emailData, error: emailError } = await resend.emails.send({
-      from: fromEmail,
-      to: customerEmail,
-      subject: "Seu Mapa Pitagórico do Destino ✨ — DestinyVox",
-      html: htmlContent,
-      attachments: [
-        {
-          filename: fileNameStr,
-          content: Buffer.from(pdfBuffer),
-        },
-      ],
-    });
-
-    if (emailError) {
-      console.error("[Deliver] ❌ Erro retornado pela API Resend:", emailError);
-    } else {
-      emailSentSuccessfully = true;
-      console.log(`[Deliver] ✅ E-mail enviado com sucesso (ID: ${emailData?.id}) para ${customerEmail}`);
-
-      // Registrar flag de e-mail enviado no pagamento para idempotência absoluta
-      if (matchedPaymentId) {
-        await supabase
-          .from("payments")
-          .update({
-            metadata: {
-              ...(existingPayment?.metadata || {}),
-              email_sent: true,
-              email_sent_at: new Date().toISOString(),
-              email_id: emailData?.id,
-              delivering: false,
-            },
-          })
-          .eq("id", matchedPaymentId);
-      }
-    }
-
-    // 6. Enviar Alerta ao Telegram
-    try {
-      await sendTelegramPixNotification({
-        payerName: customerName,
-        payerEmail: customerEmail,
-        amountCents: params.amountCents || 3990,
-        transactionId: params.transactionId || "N/A",
-        externalId: params.externalId || undefined,
-        plan: params.plan,
-      });
-    } catch (tgErr) {
-      console.warn("[Deliver] Aviso: Falha ao enviar alerta Telegram:", tgErr);
-    }
-
-    return {
-      success: true,
-      mapId,
-      emailSent: emailSentSuccessfully,
-    };
+    return { success: true, mapId, emailSent: true };
   } finally {
-    // Se falhou antes de enviar o e-mail, libera a trava para permitir retentativa
-    if (matchedPaymentId && !emailSentSuccessfully) {
-      await supabase
-        .from("payments")
-        .update({
-          metadata: {
-            ...(existingPayment?.metadata || {}),
-            delivering: false,
-          },
-        })
-        .eq("id", matchedPaymentId);
-    }
+    if (!sent) await supabase.from("payments").update({ metadata: { ...meta, delivering: false } }).eq("id", payment.id);
   }
 }

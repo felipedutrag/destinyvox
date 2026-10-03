@@ -105,43 +105,43 @@ const TRANSLATIONS = {
     modalCancel: "Cancel",
   },
   pt: {
-    badge: "DESTINYVOX ORACLE AI",
-    badgeDesktop: "ORÁCULO DESTINYVOX • INTELIGÊNCIA ARTIFICIAL HERMÉTICA",
-    syncNote: "• O Oráculo no Reddit será desbloqueado imediatamente após a ativação",
-    subBrand: "ORÁCULO IA",
-    navCta: "CONSULTAR ORÁCULO ⟶",
-    heroTitleLine1: "Pergunte qualquer coisa",
-    heroTitleLine2: "ao seu próprio cosmos.",
+    badge: "SEU MAPA NUMEROLÓGICO ONLINE",
+    badgeDesktop: "NUMEROLOGIA PITAGÓRICA • NOVE NÚMEROS SOBRE VOCÊ",
+    syncNote: "• Seu mapa digital será enviado por e-mail após a confirmação do Pix",
+    subBrand: "NUMEROLOGIA",
+    navCta: "GERAR MEU MAPA ⟶",
+    heroTitleLine1: "Seu nome e sua data de nascimento",
+    heroTitleLine2: "têm uma história para contar.",
     heroDescription:
-      "Você já calculou os números da sua alma. Agora, dialogue diretamente com o Oráculo DestinyVox: respostas ultra-personalizadas sobre decisões de vida, amor, carreira, desafios ocultos e o tempo exato de cada movimento.",
-    ctaMain: "DESBLOQUEAR O ORÁCULO IA",
-    ctaSub: "Ativação imediata no app do Reddit",
-    featureTag: "RESPOSTAS PROFUNDAS EM TEMPO REAL",
-    howItWorksTitle: "COMO O ORÁCULO FUNCIONA COM SEU MAPA",
-    howItWorksHeading: "Uma mente alimentada pelas suas coordenadas pitagóricas",
-    howItWorksDesc: (user: string) =>
-      `Diferente de IAs genéricas, o Oráculo DestinyVox cruza seu Caminho de Vida, Desejo da Alma e Ano Pessoal a cada pergunta. Ele entende seus bloqueios inconscientes e entrega direcionamentos cirúrgicos no app do Reddit para ${user ? `u/${user}` : "você"}:`,
+      "Descubra o que a numerologia revela sobre seus talentos, motivações e o ciclo que você está vivendo. Explore nove números em um mapa online só seu. Receba o link por e-mail e se conheça por uma nova perspectiva.",
+    ctaMain: "GERAR MEU MAPA",
+    ctaSub: "Pagamento único • Sem assinatura",
+    featureTag: "100% DIGITAL",
+    howItWorksTitle: "O QUE VOCÊ RECEBE",
+    howItWorksHeading: "Seus números, com interpretação.",
+    howItWorksDesc: (_user: string) =>
+      "Um mapa online calculado a partir do seu nome completo e da sua data de nascimento. Você não precisa entender de numerologia para começar a explorar:",
     features: [
       {
-        title: "✦ DECISÕES & TIMING CÓSMICO",
-        desc: "Saiba exatamente se o momento atual favorece mudanças de carreira, novos negócios ou paciência estratégica.",
+        title: "01 / CAMINHO DE VIDA",
+        desc: "Conheça os temas e aprendizados associados à sua trajetória. Um ponto de partida para refletir sobre suas escolhas.",
       },
       {
-        title: "✦ CONSULTAS CIRÚRGICAS & DIRECIONADAS",
-        desc: "Faça perguntas profundas sobre amor, vocação e dilemas reais. Cada crédito ativa uma resposta hermética densa e personalizada que nunca expira.",
+        title: "02 / TALENTOS E EXPRESSÃO",
+        desc: "Explore as habilidades e os potenciais associados ao seu nome. Olhe com mais atenção para o que você tem a desenvolver.",
       },
       {
-        title: "✦ ANÁLISES DIÁRIAS",
-        desc: "Insights diários personalizados sincronizados com o seu dia pessoal e trânsitos arquetípicos.",
+        title: "03 / MOTIVAÇÃO E PERSONALIDADE",
+        desc: "Reflita sobre o que move você por dentro e a imagem que transmite nas relações.",
       },
       {
-        title: "✦ RESPOSTAS PRIORITÁRIAS",
-        desc: "Processamento com máxima profundidade e raciocínio hermético avançado em cada consulta.",
+        title: "04 / TALENTOS E CICLOS PESSOAIS",
+        desc: "Complete sua leitura com Dia de Nascimento, Maturidade, Ano, Mês e Dia Pessoal. Nove números para explorar no seu ritmo.",
       },
     ],
-    pricingTag: "PLANOS DE CONSULTA",
-    pricingHeading: "Ative o Oráculo da sua jornada",
-    pricingDesc: "Acesso imediato para conversar com a inteligência artificial do seu mapa dentro do Reddit.",
+    pricingTag: "UM MAPA FEITO A PARTIR DE VOCÊ",
+    pricingHeading: "Um novo olhar sobre você começa aqui.",
+    pricingDesc: "Preencha seus dados, pague com Pix e receba o link do seu mapa online por e-mail após a confirmação.",
     plan1: {
       name: "10 PERGUNTAS NO ORÁCULO",
       badge: "10 CRÉDITOS",
@@ -160,27 +160,25 @@ const TRANSLATIONS = {
       buttonLoading: "GERANDO PIX...",
     },
     plan2: {
-      popularTag: "MAIS ESCOLHIDO • 30 CRÉDITOS",
-      name: "30 PERGUNTAS NO ORÁCULO",
-      badge: "ECONOMIZE 30%",
+      popularTag: "SEU ESPAÇO PARA EXPLORAR E REVISITAR",
+      name: "MAPA NUMEROLÓGICO PERSONALIZADO",
+      badge: "WEB",
       price: "R$ 39,90",
       period: "pagamento único via PIX",
-      subText: "Melhor custo-benefício para respostas profundas",
+      subText: "Uma compra. Seu mapa para consultar no seu ritmo.",
       perks: [
-        "30 consultas completas com o Oráculo IA",
-        "Cruzamento direto com seu mapa numerológico",
-        "Raciocínio hermético e análises aprofundadas",
-        "Respostas cirúrgicas sobre amor, carreira e timing",
-        "Desbloqueio imediato no app do Reddit",
-        "Créditos não expiram — use quando desejar",
+        "Nove números com interpretações detalhadas",
+        "Personalizado com seu nome e nascimento",
+        "Link pessoal de acesso enviado por e-mail",
+        "Leia no celular ou computador, sem baixar arquivos",
       ],
-      button: "GERAR PIX (R$ 39,90) ⟶",
+      button: "QUERO MEU MAPA — R$ 39,90 ⟶",
       buttonLoading: "GERANDO PIX...",
     },
-    footerStripe: "Pagamento Instantâneo via PIX (GGPIX)",
-    footerGuarantee: "Garantia Incondicional de 7 Dias",
-    footerSync: "Sincronização Instantânea com o Reddit & Supabase",
-    footerCopyright: `DESTINYVOX ORACLE © ${new Date().getFullYear()} — INTELIGÊNCIA CÓSMICA HERMÉTICA.`,
+    footerStripe: "Pagamento via Pix",
+    footerGuarantee: "Compra única, sem mensalidade",
+    footerSync: "Entrega digital por e-mail",
+    footerCopyright: `DESTINYVOX © ${new Date().getFullYear()} — NUMEROLOGIA E AUTOCONHECIMENTO.`,
     modalTitle: "CONFIRME SEU USUÁRIO DO REDDIT",
     modalDesc: "Para vincular e desbloquear seu Oráculo imediatamente no aplicativo do Reddit, informe seu usuário:",
     modalPlaceholder: "ex: SeuUsuarioReddit",
@@ -290,7 +288,21 @@ export function App() {
   // PIX Checkout State (GGPIX)
   const isDev = process.env.NODE_ENV !== "production";
   const [isPixModalOpen, setIsPixModalOpen] = useState<boolean>(false);
-  const [pixStep, setPixStep] = useState<"FORM" | "QR_CODE" | "PAID" | "DELIVERED">("FORM");
+  const [pixStep, setPixStep] = useState<"FORM" | "QR_CODE" | "PAID" | "DELIVERED" | "DELIVERY_ERROR">("FORM");
+  const deliveryRequest = useRef<RequestInit | null>(null);
+
+  const requestDelivery = async (options: RequestInit) => {
+    deliveryRequest.current = options;
+    for (let attempt = 0; attempt < 20; attempt++) {
+      const response = await fetch("/api/deliver", options);
+      const data = await response.json();
+      if (!response.ok || !data.success) throw new Error(data.error || "Falha no envio do acesso");
+      if (data.email_sent) return;
+      if (!data.delivering) throw new Error("Envio ainda não confirmado");
+      await new Promise(resolve => setTimeout(resolve, 3000));
+    }
+    throw new Error("O envio está demorando mais que o esperado");
+  };
   const [pixPlan, setPixPlan] = useState<PlanKey>("30_questions");
   const [pixForm, setPixForm] = useState({
     name: isDev ? "Felipe Dutra Gonçalves" : "",
@@ -319,45 +331,7 @@ export function App() {
     setPixForm((prev) => ({ ...prev, birthDate: formatted }));
   };
 
-  const handleSkipPayment = async () => {
-    const cleanDate = pixForm.birthDate.replace(/\D/g, "");
-    if (!pixForm.name.trim() || !pixForm.email.trim() || cleanDate.length !== 8) {
-      setPixError("Por favor, preencha Nome, E-mail e Data (DD/MM/AAAA) antes de pular.");
-      return;
-    }
-
-    setPixLoading(true);
-    setPixError(null);
-
-    const transactionId = pixData?.transaction_id || `DEV_SIMULATED_${Date.now()}`;
-    const externalId =
-      pixData?.external_id ||
-      `MAPA_${Date.now()}__||__${encodeURIComponent(pixForm.name)}__||__${encodeURIComponent(pixForm.email)}__||__${pixForm.birthDate}__||__${pixPlan}`;
-
-    if (pollingRef.current) clearInterval(pollingRef.current);
-    setPixStep("PAID");
-
-    try {
-      await fetch("/api/deliver", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: pixForm.name.trim(),
-          email: pixForm.email.trim(),
-          birthDate: pixForm.birthDate,
-          transaction_id: transactionId,
-          external_id: externalId,
-          plan: pixPlan,
-        }),
-      });
-      setPixStep("DELIVERED");
-    } catch (deliverErr) {
-      console.error("[PIX Dev] Erro ao pular pagamento e entregar:", deliverErr);
-      setPixStep("DELIVERED");
-    } finally {
-      setPixLoading(false);
-    }
-  };
+  const previewMap = () => window.open('/mapa/demo', '_blank', 'noopener,noreferrer');
 
   const realtimeRef = useRef<RealtimeChannel | null>(null);
 
@@ -414,7 +388,7 @@ export function App() {
               setPixStep("PAID");
               try {
                 console.log("🚀 [Supabase Realtime] Disparando /api/deliver...");
-                await fetch("/api/deliver", {
+                await requestDelivery({
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({
@@ -429,7 +403,7 @@ export function App() {
                 setPixStep("DELIVERED");
               } catch (deliverErr) {
                 console.error("[Realtime Deliver] Erro na entrega:", deliverErr);
-                setPixStep("DELIVERED");
+                setPixStep("DELIVERY_ERROR");
               }
             }
           }
@@ -514,6 +488,7 @@ export function App() {
   }, [redditUser, userToken, lang, isMounted]);
 
   const t = TRANSLATIONS[lang];
+  const pixPrice = isDev ? "R$ 1,00" : "R$ 39,90";
 
   const proceedToStripe = async (plan: PlanKey, username: string) => {
     setIsRedirecting(true);
@@ -601,7 +576,7 @@ export function App() {
 
           // Disparar entrega do mapa e gravação no Supabase (protegido contra duplicações)
           try {
-            await fetch("/api/deliver", {
+            await requestDelivery({
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
@@ -616,7 +591,7 @@ export function App() {
             setPixStep("DELIVERED");
           } catch (deliverErr) {
             console.error("[PIX] Erro na entrega:", deliverErr);
-            setPixStep("DELIVERED");
+            setPixStep("DELIVERY_ERROR");
           }
         }
       } catch (pollErr) {
@@ -657,7 +632,7 @@ export function App() {
       if (data.status === "PAID" || data.auto_paid) {
         setPixStep("PAID");
         try {
-          await fetch("/api/deliver", {
+          await requestDelivery({
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -672,7 +647,7 @@ export function App() {
           setPixStep("DELIVERED");
         } catch (deliverErr) {
           console.error("[PIX] Erro na entrega:", deliverErr);
-          setPixStep("DELIVERED");
+          setPixStep("DELIVERY_ERROR");
         }
         return;
       }
@@ -756,9 +731,10 @@ export function App() {
 
       {/* Modal PIX Checkout (GGPIX - Brasil) */}
       {isPixModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 overflow-y-auto">
-          <div className="bg-[#0a0a0a] border border-amber-500/30 p-6 sm:p-8 w-full max-w-lg space-y-6 shadow-[0_0_50px_rgba(245,158,11,0.15)] relative">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4">
+          <div role="dialog" aria-modal="true" aria-labelledby="pix-title" className="bg-[#0a0a0a] border border-amber-500/30 p-6 sm:p-8 w-full max-w-lg max-h-[calc(100dvh-2rem)] overflow-y-auto space-y-6 shadow-[0_0_50px_rgba(245,158,11,0.15)] relative">
             <button
+              aria-label="Fechar pagamento"
               onClick={() => {
                 if (pollingRef.current) clearInterval(pollingRef.current);
                 setIsPixModalOpen(false);
@@ -774,53 +750,61 @@ export function App() {
                 <Sparkles className="w-3 h-3 text-amber-400" />
                 DESTINYVOX • PAGAMENTO VIA PIX
               </div>
-              <h3 className="font-editorial text-2xl sm:text-3xl text-white font-normal">
-                30 Consultas & Mapa Pitagórico Completo
+              <h3 id="pix-title" className="font-editorial text-2xl sm:text-3xl text-white font-normal">
+                {pixStep === "FORM" ? "Vamos personalizar seu mapa?" : "Seu mapa numerológico"}
               </h3>
               <p className="font-mono text-xs text-neutral-400">
-                Valor: <span className="text-white font-bold">{isDev ? "R$ 1,00 (DEV)" : "R$ 39,90"}</span> • Liberação Imediata
+                <span className="text-white font-bold">{pixPrice}</span> • Pagamento único • Acesso online por e-mail
               </p>
+              {isDev && <p className="text-xs text-amber-300">Ambiente de desenvolvimento: valor de teste.</p>}
             </div>
 
             {/* ETAPA 1: FORMULÁRIO DE DADOS */}
             {pixStep === "FORM" && (
               <form onSubmit={handleGeneratePix} className="space-y-4">
+                <p className="text-sm leading-relaxed text-neutral-300">Etapa 1 de 2 · Informe seus dados. Na próxima etapa, você recebe o QR Code e o código Pix Copia e Cola.</p>
                 <div className="space-y-1">
-                  <label className="block font-mono text-xs text-neutral-300 uppercase tracking-wider">
-                    Nome Completo (Certidão)
+                  <label htmlFor="pix-name" className="block font-mono text-xs text-neutral-300 uppercase tracking-wider">
+                    Nome completo de nascimento
                   </label>
                   <input
                     type="text"
+                    id="pix-name"
+                    autoComplete="name"
                     required
                     placeholder="ex: João da Silva"
                     value={pixForm.name}
                     onChange={(e) => setPixForm({ ...pixForm, name: e.target.value })}
                     className="w-full bg-neutral-950 border border-neutral-800 p-3 text-white font-mono text-sm focus:outline-none focus:border-amber-400"
                   />
-                  <span className="font-mono text-[10px] text-neutral-500">Usado para o cálculo exato da sua Gematria e Expressão.</span>
+                  <span className="text-xs text-neutral-400">Digite como está na sua certidão, para personalizar os cálculos.</span>
                 </div>
 
                 <div className="space-y-1">
-                  <label className="block font-mono text-xs text-neutral-300 uppercase tracking-wider">
-                    Seu Melhor E-mail
+                  <label htmlFor="pix-email" className="block font-mono text-xs text-neutral-300 uppercase tracking-wider">
+                    E-mail para receber o mapa
                   </label>
                   <input
                     type="email"
+                    id="pix-email"
+                    autoComplete="email"
                     required
                     placeholder="ex: seuemail@gmail.com"
                     value={pixForm.email}
                     onChange={(e) => setPixForm({ ...pixForm, email: e.target.value })}
                     className="w-full bg-neutral-950 border border-neutral-800 p-3 text-white font-mono text-sm focus:outline-none focus:border-amber-400"
                   />
-                  <span className="font-mono text-[10px] text-neutral-500">Onde você receberá o dossiê PDF e o acesso ao Oráculo.</span>
+                  <span className="text-xs text-neutral-400">Confira o endereço: seu link pessoal será enviado para ele.</span>
                 </div>
 
                 <div className="space-y-1">
-                  <label className="block font-mono text-xs text-neutral-300 uppercase tracking-wider">
+                  <label htmlFor="pix-birthdate" className="block font-mono text-xs text-neutral-300 uppercase tracking-wider">
                     Data de Nascimento (DD/MM/AAAA)
                   </label>
                   <input
                     type="text"
+                    id="pix-birthdate"
+                    inputMode="numeric"
                     required
                     placeholder="ex: 04/10/1991"
                     maxLength={10}
@@ -828,7 +812,7 @@ export function App() {
                     onChange={(e) => handleDateChange(e.target.value)}
                     className="w-full bg-neutral-950 border border-neutral-800 p-3 text-white font-mono text-sm focus:outline-none focus:border-amber-400"
                   />
-                  <span className="font-mono text-[10px] text-neutral-500">Formato brasileiro (DD/MM/AAAA). Fundamental para o Caminho de Vida e Ano Pessoal.</span>
+                  <span className="text-xs text-neutral-400">Usada para calcular seu Caminho de Vida e Ano Pessoal.</span>
                 </div>
 
                 {pixError && (
@@ -849,20 +833,21 @@ export function App() {
                     </>
                   ) : (
                     <>
-                      GERAR PAGAMENTO PIX ⟶
+                      GERAR PIX DE {pixPrice} ⟶
                     </>
                   )}
                 </button>
+                <p className="text-center text-xs leading-relaxed text-neutral-400">Gerar o Pix não faz uma cobrança automática. Você confirma o pagamento no aplicativo do seu banco.</p>
 
                 {isDev && (
                   <button
                     type="button"
-                    onClick={handleSkipPayment}
+                    onClick={previewMap}
                     disabled={pixLoading}
                     className="w-full border border-dashed border-amber-500/50 bg-amber-950/20 hover:bg-amber-900/40 text-amber-300 py-3 font-mono text-xs tracking-wider uppercase transition-colors cursor-pointer flex items-center justify-center gap-2 mt-2"
                   >
                     <Zap className="w-3.5 h-3.5 text-amber-400" />
-                    <span>⚡ Pular Pagamento (Modo Dev)</span>
+                    <span>Ver mapa de demonstração</span>
                   </button>
                 )}
               </form>
@@ -871,6 +856,7 @@ export function App() {
             {/* ETAPA 2: QR CODE E CÓDIGO COPIA E COLA */}
             {pixStep === "QR_CODE" && pixData && (
               <div className="space-y-5 text-center">
+                <p className="text-sm leading-relaxed text-neutral-300">Etapa 2 de 2 · Abra o app do seu banco e pague com o QR Code ou cole o código Pix abaixo.</p>
                 {/* QR Code Container */}
                 <div className="flex justify-center py-2">
                   <div className="p-3 bg-white border border-neutral-200 rounded-lg shadow-xl inline-block">
@@ -898,7 +884,8 @@ export function App() {
                       type="text"
                       readOnly
                       value={pixData.pix_copy_paste}
-                      className="flex-1 bg-neutral-950 border border-neutral-800 px-3 py-2 text-xs font-mono text-neutral-300 truncate focus:outline-none"
+                      aria-label="Código Pix Copia e Cola"
+                      className="min-w-0 flex-1 bg-neutral-950 border border-neutral-800 px-3 py-2 text-xs font-mono text-neutral-300 truncate focus:outline-none"
                     />
                     <button
                       type="button"
@@ -926,18 +913,18 @@ export function App() {
                   <span>Aguardando confirmação do banco...</span>
                 </div>
                 <p className="font-mono text-[11px] text-neutral-500">
-                  Assim que o pagamento for feito no seu app, seu mapa será ativado automaticamente aqui.
+                  Após a confirmação do pagamento, vamos enviar seu link de acesso para {pixForm.email}.
                 </p>
 
                 {isDev && (
                   <button
                     type="button"
-                    onClick={handleSkipPayment}
+                    onClick={previewMap}
                     disabled={pixLoading}
                     className="w-full border border-dashed border-amber-500/50 bg-amber-950/20 hover:bg-amber-900/40 text-amber-300 py-3 font-mono text-xs tracking-wider uppercase transition-colors cursor-pointer flex items-center justify-center gap-2 mt-2"
                   >
                     <Zap className="w-3.5 h-3.5 text-amber-400" />
-                    <span>⚡ Pular / Simular Pagamento Aprovado (Modo Dev)</span>
+                    <span>Ver mapa de demonstração</span>
                   </button>
                 )}
               </div>
@@ -952,23 +939,34 @@ export function App() {
                 <h4 className="font-editorial text-2xl text-white">Pagamento Confirmado!</h4>
                 <div className="flex items-center justify-center gap-2 font-mono text-xs text-amber-300">
                   <Loader2 className="w-4 h-4 animate-spin text-amber-400" />
-                  <span>Calculando suas coordenadas e gerando dossiê cósmico...</span>
+                  <span>Preparando seu mapa e enviando o link de acesso...</span>
                 </div>
               </div>
             )}
 
             {/* ETAPA 4: ENTREGUE COM SUCESSO */}
+            {pixStep === "DELIVERY_ERROR" && <div className="space-y-4 text-center">
+              <h4 className="font-editorial text-2xl">Seu pagamento está confirmado.</h4>
+              <p role="alert" className="text-sm leading-6 text-neutral-300">Ainda não conseguimos confirmar o envio do link. Tente novamente; você não será cobrado outra vez.</p>
+              <button className="w-full bg-white py-3 text-black" onClick={async () => {
+                if (!deliveryRequest.current) return;
+                setPixStep("PAID");
+                try { await requestDelivery(deliveryRequest.current); setPixStep("DELIVERED"); }
+                catch { setPixStep("DELIVERY_ERROR"); }
+              }}>Tentar enviar meu acesso novamente</button>
+            </div>}
             {pixStep === "DELIVERED" && (
               <div className="py-6 text-center space-y-5">
                 <div className="w-14 h-14 bg-amber-500/10 border border-amber-500/40 rounded-full flex items-center justify-center mx-auto">
                   <Sparkles className="w-8 h-8 text-amber-400" />
                 </div>
                 <div className="space-y-1">
-                  <h4 className="font-editorial text-2xl text-white">Seu Mapa foi Revelado!</h4>
+                  <h4 className="font-editorial text-2xl text-white">Confira seu e-mail</h4>
                   <p className="font-mono text-xs text-neutral-300 max-w-sm mx-auto leading-relaxed">
-                    O dossiê completo foi gerado, salvo com segurança no banco de dados Supabase e enviado para o e-mail:
+                    O link pessoal para explorar seu mapa online foi enviado para:
                   </p>
                   <p className="font-mono text-sm text-amber-300 font-bold">{pixForm.email}</p>
+                  <p className="text-xs leading-relaxed text-neutral-400">O envio pode levar alguns minutos. Confira também as pastas de spam e promoções.</p>
                 </div>
                 <button
                   onClick={() => setIsPixModalOpen(false)}
@@ -1071,41 +1069,47 @@ export function App() {
       </header>
 
       {/* Hero Section Editorial */}
-      <section className="px-5 sm:px-12 pt-12 sm:pt-20 pb-12 sm:pb-16 max-w-5xl mx-auto text-center space-y-6 sm:space-y-8">
+      <main>
+      <section className="px-5 sm:px-12 pt-10 sm:pt-14 pb-8 sm:pb-10 max-w-5xl mx-auto text-center space-y-6">
         <div className="inline-flex items-center border border-neutral-800 bg-neutral-950/80 px-3.5 py-1.5 font-mono text-[11px] sm:text-xs tracking-[0.2em] sm:tracking-[0.25em] text-neutral-300 uppercase">
           <span className="sm:hidden">{t.badge}</span>
           <span className="hidden sm:inline">{t.badgeDesktop}</span>
         </div>
 
         <div className="space-y-6 sm:space-y-3 md:space-y-3.5">
-          <h1 className="font-editorial text-4xl sm:text-6xl md:text-7xl font-normal leading-[1.12] sm:leading-[1.08] tracking-tight text-white sm:max-w-2xl md:max-w-3xl lg:max-w-4xl mx-auto">
+          <h1 className="font-editorial text-4xl sm:text-5xl md:text-6xl font-normal leading-[1.12] sm:leading-[1.12] tracking-tight text-white max-w-4xl mx-auto">
             {t.heroTitleLine1}{" "}
             <span className="italic text-neutral-400">{t.heroTitleLine2}</span>
           </h1>
 
-          <p className="font-mono font-light text-xs sm:text-base md:text-lg lg:text-xl text-neutral-300 max-w-2xl sm:max-w-3xl md:max-w-4xl mx-auto leading-relaxed">
+          <p className="text-base sm:text-lg text-neutral-300 max-w-3xl mx-auto leading-relaxed">
             {t.heroDescription}
           </p>
         </div>
 
         {/* Dynamic CTA */}
-        <div className="pt-2 sm:pt-4 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
-          <a
+        <div className="pt-2 flex flex-col items-center justify-center gap-3">
+          {lang === "pt" ? (
+            <button onClick={() => handleCheckout("30_questions")} className="w-full sm:w-auto min-h-14 px-5 sm:px-8 bg-amber-300 text-neutral-950 hover:bg-amber-200 font-mono text-sm font-bold transition-colors flex items-center justify-center gap-3 cursor-pointer">
+              {t.ctaMain} — {pixPrice} <ArrowRight className="w-4 h-4 shrink-0" />
+            </button>
+          ) : <a
             href="#pricing"
             className="w-full sm:w-auto h-12 sm:h-14 px-6 sm:px-9 bg-white text-black hover:bg-neutral-200 font-mono text-xs sm:text-sm font-bold tracking-[0.2em] sm:tracking-[0.25em] uppercase transition-all flex items-center justify-center gap-3 shadow-2xl cursor-pointer"
           >
             <span>{t.ctaMain}</span>
             <ArrowRight className="w-4 h-4" />
-          </a>
+          </a>}
           <span className="font-mono text-xs sm:text-xs text-neutral-400">
             {t.ctaSub}
           </span>
         </div>
+        {lang === "pt" && <p className="text-xs sm:text-sm text-neutral-400">1. Informe seus dados <span aria-hidden="true" className="mx-1 sm:mx-2 text-amber-300">→</span> 2. Pague com Pix <span aria-hidden="true" className="mx-1 sm:mx-2 text-amber-300">→</span> 3. Acesse pelo e-mail</p>}
       </section>
 
       {/* Feature Section */}
-      <section className="px-4 sm:px-12 py-8 sm:py-12 max-w-5xl mx-auto">
-        <div className="border border-neutral-800 bg-[#080808] p-5 sm:p-10 relative overflow-hidden">
+      <section className="px-4 sm:px-12 py-5 sm:py-6 max-w-5xl mx-auto">
+        <div className="border border-neutral-800 bg-[#080808] p-5 sm:p-7 relative overflow-hidden">
           <div className="absolute top-0 right-0 bg-amber-500/10 border-b border-l border-amber-500/30 px-3 sm:px-4 py-1 sm:py-1.5 font-mono text-[11px] sm:text-xs text-amber-300 tracking-wider sm:tracking-widest uppercase flex items-center gap-1.5">
             <Lock className="w-3.5 h-3.5 text-amber-400" />
             {t.featureTag}
@@ -1118,7 +1122,7 @@ export function App() {
             <h2 className="font-editorial text-2xl sm:text-3xl md:text-4xl text-white font-normal leading-tight">
               {t.howItWorksHeading}
             </h2>
-            <p className="font-mono font-light text-xs sm:text-sm md:text-base text-neutral-300 leading-relaxed pt-1">
+            <p className="text-sm sm:text-base text-neutral-300 leading-relaxed pt-1 max-w-2xl">
               {t.howItWorksDesc(redditUser)}
             </p>
 
@@ -1126,7 +1130,7 @@ export function App() {
               {t.features.map((f, i) => (
                 <div key={i} className="border border-neutral-800 p-4 sm:p-5 bg-neutral-950 space-y-1.5 sm:space-y-2">
                   <span className="text-white text-xs sm:text-sm md:text-[15px] font-semibold block">{f.title}</span>
-                  <p className="text-neutral-300 text-xs sm:text-xs md:text-sm font-light leading-relaxed">
+                  <p className="text-neutral-300 text-sm font-light leading-relaxed">
                     {f.desc}
                   </p>
                 </div>
@@ -1137,15 +1141,15 @@ export function App() {
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="px-4 sm:px-12 py-12 sm:py-20 max-w-5xl mx-auto space-y-8 sm:space-y-12 text-center">
+      <section id="pricing" className="px-4 sm:px-12 py-10 sm:py-12 max-w-5xl mx-auto space-y-7 text-center scroll-mt-6">
         <div className="space-y-2 sm:space-y-3">
           <span className="font-mono text-xs sm:text-xs md:text-sm tracking-[0.25em] text-neutral-400 uppercase">
             {t.pricingTag}
           </span>
-          <h2 className="font-editorial text-3xl sm:text-5xl md:text-6xl text-white font-normal">
+          <h2 className="font-editorial text-3xl sm:text-4xl text-white font-normal">
             {t.pricingHeading}
           </h2>
-          <p className="font-mono font-light text-xs sm:text-sm md:text-base text-neutral-300 max-w-lg mx-auto leading-relaxed">
+          <p className="text-sm sm:text-base text-neutral-300 max-w-xl mx-auto leading-relaxed">
             {t.pricingDesc}
           </p>
         </div>
@@ -1159,7 +1163,7 @@ export function App() {
             </div>
 
             <div className="space-y-4 sm:space-y-5">
-              <div className="flex justify-between items-center">
+              <div className="flex justify-between items-center gap-3">
                 <span className="font-mono text-xs sm:text-sm tracking-widest text-amber-300 uppercase font-semibold">
                   {t.plan2.name}
                 </span>
@@ -1168,8 +1172,8 @@ export function App() {
                 </span>
               </div>
               <div>
-                <div className="font-editorial text-4xl sm:text-5xl md:text-6xl text-white font-normal flex items-baseline gap-2">
-                  <span>{isDev && lang === "pt" ? "R$ 1,00" : t.plan2.price}</span>
+                <div className="font-editorial text-4xl sm:text-5xl md:text-6xl text-white font-normal flex flex-wrap items-baseline gap-2">
+                  <span>{lang === "pt" ? pixPrice : t.plan2.price}</span>
                   <span className="text-sm sm:text-base md:text-lg font-mono text-neutral-300 capitalize font-light">{t.plan2.period}</span>
                 </div>
                 <span className="font-mono text-xs sm:text-xs md:text-sm text-neutral-300 tracking-wider">
@@ -1190,14 +1194,15 @@ export function App() {
             <button
               onClick={() => handleCheckout("30_questions")}
               disabled={isRedirecting}
-              className="w-full h-12 sm:h-14 bg-white text-black hover:bg-neutral-200 active:bg-neutral-300 font-mono text-xs sm:text-sm font-bold tracking-widest uppercase transition-colors cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50 mt-4"
+              className="w-full min-h-14 px-3 bg-amber-300 text-black hover:bg-amber-200 active:bg-amber-400 font-mono text-xs sm:text-sm font-bold uppercase transition-colors cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50 mt-4"
             >
               <span>
                 {loadingPlan === "30_questions"
                   ? t.plan2.buttonLoading
-                  : t.plan2.button}
+                  : lang === "pt" ? `QUERO MEU MAPA — ${pixPrice} ⟶` : t.plan2.button}
               </span>
             </button>
+            {lang === "pt" && <p className="text-center text-xs text-neutral-400">Você preenche seus dados antes de gerar o Pix. Sem frete e sem mensalidade.</p>}
           </div>
         </div>
 
@@ -1207,9 +1212,10 @@ export function App() {
           </div>
         )}
       </section>
+      </main>
 
       {/* Security & Guarantee */}
-      <footer className="border-t border-neutral-900 py-12 sm:py-16 px-6 sm:px-12 text-center space-y-4 font-mono font-light text-xs sm:text-sm text-neutral-400">
+      <footer className="border-t border-neutral-900 py-7 px-6 sm:px-12 text-center space-y-4 font-mono font-light text-xs sm:text-sm text-neutral-400">
         <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
           <span className="flex items-center gap-1.5">
             <Shield className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> {t.footerStripe}
@@ -1219,6 +1225,7 @@ export function App() {
           <span>•</span>
           <span>{t.footerSync}</span>
         </div>
+        {lang === "pt" && <p className="max-w-2xl mx-auto text-xs leading-relaxed text-neutral-500">Numerologia é uma prática simbólica de autoconhecimento. As interpretações convidam à reflexão e não garantem acontecimentos ou resultados.</p>}
         <div className="text-[11px] sm:text-xs md:text-sm text-neutral-500 font-light">
           {t.footerCopyright}
         </div>

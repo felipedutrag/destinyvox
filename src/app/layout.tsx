@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "DestinyVox VIP — O Dossiê Numerológico Definitivo",
+  title: "Seu Mapa Numerológico Online por R$ 39,90 | DestinyVox",
   description:
-    "Converse diretamente com o Oráculo DestinyVox: respostas ultra-personalizadas sobre decisões de vida, amor, carreira e timing cósmico.",
+    "Explore nove números e suas interpretações em um mapa numerológico online. Receba seu link de acesso por e-mail após a confirmação do Pix. Pagamento único de R$ 39,90.",
 };
 
 export default function RootLayout({

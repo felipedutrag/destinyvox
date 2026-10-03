@@ -177,6 +177,7 @@ export async function POST(request: Request) {
           console.log(`✅ [GGPIX Webhook] Entrega processada com sucesso para ${customerEmail}`);
         } catch (deliveryError) {
           console.error("[GGPIX Webhook] ❌ Falha na entrega do mapa:", deliveryError);
+          return NextResponse.json({ error: "Delivery temporarily unavailable" }, { status: 503 });
         }
       } else {
         console.warn("[GGPIX Webhook] ⚠️ E-mail do cliente não encontrado para disparo automático.");
