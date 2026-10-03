@@ -4,6 +4,23 @@ import { Document, Page, Text, View, StyleSheet, Font } from "@react-pdf/rendere
 // Desativar hifenização automática em inglês que quebra no runtime Node.js
 Font.registerHyphenationCallback((word) => [word]);
 
+function safeVal(val: unknown): string {
+  if (val === null || val === undefined) return "";
+  if (typeof val === "string") return val;
+  if (typeof val === "number" || typeof val === "boolean") return String(val);
+  if (Array.isArray(val)) return val.map(safeVal).join(", ");
+  if (typeof val === "object") {
+    try {
+      return Object.entries(val as Record<string, unknown>)
+        .map(([k, v]) => `${k}: ${v}`)
+        .join(" | ");
+    } catch {
+      return JSON.stringify(val);
+    }
+  }
+  return String(val);
+}
+
 const styles = StyleSheet.create({
   page: {
     padding: 0,
@@ -195,7 +212,7 @@ export const NumerologyPDFDocument = ({ name, birthDate, content }: { name: stri
 
       <View style={{ marginVertical: 20, padding: 15, backgroundColor: "#1a1a2e", border: "1pt solid #DAA520" }}>
         <Text style={[styles.numberLabel, { marginTop: 0 }]}>MATRIZ NOMINAL (GEMATRIA):</Text>
-        <Text style={[styles.bodyText, { fontSize: 11, fontStyle: "italic" }]}>{content.numeros.gematria_detalhada}</Text>
+        <Text style={[styles.bodyText, { fontSize: 11, fontStyle: "italic" }]}>{safeVal(content?.numeros?.gematria_detalhada)}</Text>
       </View>
 
       <Text style={styles.numberLabel}>CAMINHO DE VIDA (DESTINO):</Text>

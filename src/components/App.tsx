@@ -557,6 +557,8 @@ export function App() {
       setPixPlan(plan);
       setPixStep("FORM");
       setPixError(null);
+      setPixData(null);
+      if (pollingRef.current) clearInterval(pollingRef.current);
       setIsPixModalOpen(true);
       return;
     }

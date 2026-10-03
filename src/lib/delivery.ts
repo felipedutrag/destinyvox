@@ -59,6 +59,56 @@ const getOpenAI = () => {
   return new OpenAI({ apiKey: key });
 };
 
+export function normalizeNumerologyContent(data: unknown): NumerologyContent {
+  const record = (data && typeof data === "object" ? data : {}) as Record<string, unknown>;
+  const numeros = (record.numeros && typeof record.numeros === "object" ? record.numeros : {}) as Record<string, unknown>;
+  const analise = (record.analise && typeof record.analise === "object" ? record.analise : {}) as Record<string, unknown>;
+
+  const safeStr = (v: unknown): string => {
+    if (v === null || v === undefined) return "";
+    if (typeof v === "string") return v;
+    if (typeof v === "number" || typeof v === "boolean") return String(v);
+    if (Array.isArray(v)) return v.map(safeStr).join("\n\n");
+    if (typeof v === "object") {
+      try {
+        return Object.entries(v as Record<string, unknown>)
+          .map(([k, val]) => `${k}: ${safeStr(val)}`)
+          .join(" | ");
+      } catch {
+        return JSON.stringify(v);
+      }
+    }
+    return String(v);
+  };
+
+  return {
+    numeros: {
+      caminho_vida: safeStr(numeros.caminho_vida),
+      expressao: safeStr(numeros.expressao),
+      motivacao: safeStr(numeros.motivacao),
+      personalidade: safeStr(numeros.personalidade),
+      ano_pessoal: safeStr(numeros.ano_pessoal),
+      gematria_detalhada: safeStr(numeros.gematria_detalhada),
+    },
+    analise: {
+      introducao: safeStr(analise.introducao),
+      tikkun_missao: safeStr(analise.tikkun_missao),
+      perfil_financeiro: safeStr(analise.perfil_financeiro),
+      sefirot_diagnostico: safeStr(analise.sefirot_diagnostico),
+      talento_oculto: safeStr(analise.talento_oculto),
+      bloqueio_ancestral: safeStr(analise.bloqueio_ancestral),
+      ciclo_prosperidade: safeStr(analise.ciclo_prosperidade),
+      profissao_ideal: safeStr(analise.profissao_ideal),
+      sombra_dinheiro: safeStr(analise.sombra_dinheiro),
+      ancora_riqueza: safeStr(analise.ancora_riqueza),
+      intuicao_investimento: safeStr(analise.intuicao_investimento),
+      codigo_abundancia: safeStr(analise.codigo_abundancia),
+      desafio_2026: safeStr(analise.desafio_2026),
+      conclusao: safeStr(analise.conclusao),
+    },
+  };
+}
+
 export async function generateNumerologyContent(name: string, birthDate: string): Promise<NumerologyContent> {
   const lifePath = calculateLifePath(birthDate);
   const expression = calculateExpression(name);
@@ -85,10 +135,10 @@ export async function generateNumerologyContent(name: string, birthDate: string)
     2. ESTÉTICA TÉCNICA: Use termos como "Matriz Vibracional", "Algoritmo Kármico", "Frequência de Ressonância", "Protocolo de Retificação".
     3. TIKKUN: Explique o conceito de Tikkun (correção da alma) e missão evolutiva e como ele afeta a prosperidade de ${name}.
     4. SEFIROT: Analise a estrutura vibracional e arquétipos baseados nos números pitagóricos fornecidos.
-    5. GEMATRIA DETALHADA: Decomponha o nome ${name} em seus valores numéricos e mostre a soma absoluta.
+    5. GEMATRIA DETALHADA: Decomponha o nome ${name} em seus valores numéricos e mostre a soma absoluta em formato de texto.
     6. TOM: Sombrio, autoritário, revelador e extremamente preciso.
 
-    Retorne EXATAMENTE no seguinte formato JSON (sem markdown em volta do JSON se possível, ou dentro de bloco json):
+    Retorne EXATAMENTE no seguinte formato JSON (com todas as propriedades como strings):
     {
       "numeros": {
         "caminho_vida": "${lifePath}",
@@ -136,7 +186,8 @@ export async function generateNumerologyContent(name: string, birthDate: string)
     });
 
     const text = completion.choices[0]?.message?.content || "";
-    return JSON.parse(text) as NumerologyContent;
+    const parsed = JSON.parse(text);
+    return normalizeNumerologyContent(parsed);
   } catch (error) {
     console.error("Erro na chamada da OpenAI:", error);
     // Fallback estruturado caso a API falhe
@@ -181,12 +232,12 @@ export interface DeliverMapParams {
 
 /**
  * Processamento completo e idempotente da entrega do Mapa Pitagórico:
- * 1. Verifica se o mapa já foi gerado para este pagamento (evita duplicidade).
+ * 1. Verifica se o pagamento já possui e-mail enviado com sucesso.
  * 2. Gera os cálculos e a interpretação completa via OpenAI (gpt-4o-mini).
  * 3. Cria/recupera o usuário no Supabase Auth e salva em `numerology_maps`.
  * 4. Atualiza `payments` com status PAID e vínculo com o mapa.
  * 5. Compila o PDF estético Dark Tech.
- * 6. Envia por e-mail com Resend.
+ * 6. Envia por e-mail com Resend para o cliente real.
  * 7. Envia notificação em tempo real no Telegram.
  */
 export async function deliverNumerologyMap(params: DeliverMapParams) {
@@ -200,8 +251,16 @@ export async function deliverNumerologyMap(params: DeliverMapParams) {
 
   const supabase = getSupabaseAdmin();
 
-  // 1. Verificação de Idempotência: Checar se o pagamento já possui um mapa associado ou e-mail enviado
+  interface PaymentRecord {
+    id: string;
+    map_id: string | null;
+    status: string;
+    metadata: Record<string, unknown> | null;
+  }
+
   let matchedPaymentId: string | null = null;
+  let existingPayment: PaymentRecord | null = null;
+
   if (params.transactionId || params.externalId) {
     const query = supabase.from("payments").select("id, map_id, status, metadata");
     if (params.transactionId) {
@@ -209,14 +268,16 @@ export async function deliverNumerologyMap(params: DeliverMapParams) {
     } else if (params.externalId) {
       query.eq("external_id", params.externalId);
     }
-    const { data: existingPayment } = await query.maybeSingle();
+    const { data } = await query.maybeSingle();
+    existingPayment = data ? ((data as unknown) as PaymentRecord) : null;
 
     if (existingPayment) {
       matchedPaymentId = existingPayment.id;
       const meta = (existingPayment.metadata || {}) as Record<string, unknown>;
 
-      if (existingPayment.map_id || meta.email_sent || meta.delivering) {
-        console.log(`[Deliver] 🛑 Entrega já realizada ou em andamento para o pagamento ${existingPayment.id}. Evitando envio de e-mail duplicado.`);
+      // Apenas ignora se o e-mail JÁ FOI ENVIADO com sucesso para este pagamento
+      if (meta.email_sent === true) {
+        console.log(`[Deliver] 🛑 E-mail já enviado com sucesso para o pagamento ${existingPayment.id}.`);
         return {
           success: true,
           alreadyDelivered: true,
@@ -224,7 +285,21 @@ export async function deliverNumerologyMap(params: DeliverMapParams) {
         };
       }
 
-      // Trava atômica imediata para evitar disparos simultâneos (Webhook + Frontend)
+      // Trava de concorrência com expiração de 60s (evita webhook e front chamando ao mesmo tempo)
+      if (meta.delivering === true && meta.delivery_started_at) {
+        const started = new Date(meta.delivery_started_at as string).getTime();
+        const diffSeconds = (Date.now() - started) / 1000;
+        if (diffSeconds < 60) {
+          console.log(`[Deliver] ⏳ Entrega já em andamento há ${Math.round(diffSeconds)}s para ${existingPayment.id}. Aguardando processo atual.`);
+          return {
+            success: true,
+            delivering: true,
+            mapId: existingPayment.map_id,
+          };
+        }
+      }
+
+      // Registra a trava imediata
       await supabase
         .from("payments")
         .update({
@@ -242,8 +317,27 @@ export async function deliverNumerologyMap(params: DeliverMapParams) {
   const parsedBirth = parseBirthDate(birthDateRaw || "01/01/1990");
   const birthDate = `${String(parsedBirth.day).padStart(2, "0")}/${String(parsedBirth.month).padStart(2, "0")}/${parsedBirth.year}`;
 
-  console.log(`✨ [Deliver] Gerando conteúdo do Mapa Pitagórico para ${customerName}...`);
-  const numerologyData = await generateNumerologyContent(customerName, birthDate);
+  let numerologyData: NumerologyContent;
+  let mapId: string | null = existingPayment?.map_id || null;
+
+  // 2. Reutilizar mapa se já foi gerado para este pagamento, ou gerar um novo via OpenAI
+  if (mapId) {
+    console.log(`✨ [Deliver] Recuperando mapa existente ${mapId} para envio do PDF...`);
+    const { data: existingMap } = await supabase
+      .from("numerology_maps")
+      .select("full_interpretation")
+      .eq("id", mapId)
+      .maybeSingle();
+
+    if (existingMap?.full_interpretation) {
+      numerologyData = normalizeNumerologyContent(existingMap.full_interpretation);
+    } else {
+      numerologyData = await generateNumerologyContent(customerName, birthDate);
+    }
+  } else {
+    console.log(`✨ [Deliver] Gerando novo conteúdo do Mapa Pitagórico via OpenAI para ${customerName}...`);
+    numerologyData = await generateNumerologyContent(customerName, birthDate);
+  }
 
   // Cálculos numéricos completos
   const lifePath = calculateLifePath(birthDate);
@@ -258,131 +352,127 @@ export async function deliverNumerologyMap(params: DeliverMapParams) {
   const archetype = getArchetype(lifePath, "pt");
   const dictum = getSoulDictum(lifePath, "pt");
 
-  // 2. Verificar ou Criar Usuário no Supabase Auth
-  let userId: string | null = null;
-  try {
-    const { data: usersData } = await supabase.auth.admin.listUsers();
-    const existingAuthUser = usersData?.users.find(
-      (u) => u.email?.toLowerCase() === customerEmail
-    );
+  let emailSentSuccessfully = false;
 
-    if (existingAuthUser) {
-      userId = existingAuthUser.id;
-    } else {
-      const { data: newAuthUser, error: authErr } = await supabase.auth.admin.createUser({
-        email: customerEmail,
-        email_confirm: true,
-        user_metadata: {
-          full_name: customerName,
-          birth_date: birthDate,
-        },
-      });
-      if (newAuthUser?.user) {
-        userId = newAuthUser.user.id;
-        console.log(`[Supabase Auth] Novo usuário criado: ${userId}`);
-      } else if (authErr) {
-        console.warn("[Supabase Auth] Aviso ao criar usuário:", authErr.message);
+  try {
+    // 3. Criar ou Vincular Usuário no Supabase Auth
+    let userId: string | null = null;
+    try {
+      const { data: authUsers, error: listErr } = await supabase.auth.admin.listUsers();
+      if (!listErr && authUsers && authUsers.users) {
+        const found = authUsers.users.find((u) => u.email?.toLowerCase() === customerEmail);
+        if (found) {
+          userId = found.id;
+          console.log(`[Supabase Auth] Usuário existente localizado: ${userId}`);
+        }
+      }
+
+      if (!userId) {
+        const dummyPassword = `Destiny_${Date.now()}_${Math.random().toString(36).substring(2, 8)}!`;
+        const { data: newUser, error: createErr } = await supabase.auth.admin.createUser({
+          email: customerEmail,
+          password: dummyPassword,
+          email_confirm: true,
+          user_metadata: {
+            full_name: customerName,
+            birth_date: birthDate,
+          },
+        });
+
+        if (!createErr && newUser && newUser.user) {
+          userId = newUser.user.id;
+          console.log(`[Supabase Auth] Novo usuário criado automaticamente: ${userId}`);
+        } else if (createErr) {
+          console.warn("[Supabase Auth] Aviso ao criar usuário:", createErr.message);
+        }
+      }
+    } catch (authError) {
+      console.warn("[Supabase Auth] Falha não impeditiva no gerenciamento de Auth:", authError);
+    }
+
+    // Gravar mapa no banco de dados se ainda não tiver ID
+    const dbBirthDate = `${parsedBirth.year}-${String(parsedBirth.month).padStart(2, "0")}-${String(parsedBirth.day).padStart(2, "0")}`;
+
+    if (!mapId) {
+      const { data: mapRecord, error: mapErr } = await supabase
+        .from("numerology_maps")
+        .insert({
+          user_id: userId,
+          customer_name: customerName,
+          customer_email: customerEmail,
+          birth_date: dbBirthDate,
+          life_path: lifePath,
+          expression: expression,
+          soul_urge: soulUrge,
+          personality: personality,
+          birthday: birthday,
+          maturity: maturity,
+          personal_year: personalYear,
+          personal_month: personalMonth,
+          personal_day: personalDay,
+          archetype: archetype,
+          dictum: dictum,
+          full_interpretation: numerologyData,
+          status: "completed",
+        })
+        .select("id")
+        .single();
+
+      if (mapRecord) {
+        mapId = mapRecord.id;
+        console.log(`[Supabase] ✅ Mapa ${mapId} gravado com sucesso no banco!`);
+
+        // Vincular ao pagamento GGPIX
+        if (params.transactionId) {
+          await supabase
+            .from("payments")
+            .update({ map_id: mapId, user_id: userId, status: "PAID", paid_at: new Date().toISOString() })
+            .eq("transaction_id", String(params.transactionId));
+        } else if (params.externalId) {
+          await supabase
+            .from("payments")
+            .update({ map_id: mapId, user_id: userId, status: "PAID", paid_at: new Date().toISOString() })
+            .eq("external_id", params.externalId);
+        }
+      } else if (mapErr) {
+        console.error("[Supabase] ❌ Erro ao salvar mapa numerológico:", mapErr);
       }
     }
-  } catch (authError) {
-    console.warn("[Supabase Auth] Erro no provisionamento do usuário:", authError);
-  }
 
-  // Data formatada para campo DATE do PostgreSQL (YYYY-MM-DD)
-  const dbBirthDate = `${parsedBirth.year}-${String(parsedBirth.month).padStart(2, "0")}-${String(parsedBirth.day).padStart(2, "0")}`;
-
-  // 3. Salvar mapa no Supabase
-  let mapId: string | null = null;
-  const { data: mapRecord, error: mapErr } = await supabase
-    .from("numerology_maps")
-    .insert({
-      user_id: userId,
-      customer_name: customerName,
-      customer_email: customerEmail,
-      birth_date: dbBirthDate,
-      life_path: lifePath,
-      expression: expression,
-      soul_urge: soulUrge,
-      personality: personality,
-      birthday: birthday,
-      maturity: maturity,
-      personal_year: personalYear,
-      personal_month: personalMonth,
-      personal_day: personalDay,
-      archetype: archetype,
-      dictum: dictum,
-      full_interpretation: numerologyData,
-      status: "completed",
-    })
-    .select("id")
-    .single();
-
-  if (mapRecord) {
-    mapId = mapRecord.id;
-    console.log(`[Supabase] ✅ Mapa ${mapId} gravado com sucesso no banco!`);
-
-    // Vincular ao pagamento GGPIX
-    if (params.transactionId) {
-      await supabase
-        .from("payments")
-        .update({ map_id: mapId, user_id: userId, status: "PAID", paid_at: new Date().toISOString() })
-        .eq("transaction_id", String(params.transactionId));
-    } else if (params.externalId) {
-      await supabase
-        .from("payments")
-        .update({ map_id: mapId, user_id: userId, status: "PAID", paid_at: new Date().toISOString() })
-        .eq("external_id", params.externalId);
-    }
-  } else if (mapErr) {
-    console.error("[Supabase] ❌ Erro ao salvar mapa numerológico:", mapErr);
-  }
-
-  // 4. Montar PDF
-  console.log(`📄 [Deliver] Renderizando PDF para ${customerName}...`);
-  const pdfBuffer = await renderToBuffer(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    React.createElement(NumerologyPDFDocument as any, {
-      name: customerName,
-      birthDate: birthDate,
-      content: numerologyData,
+    // 4. Montar PDF com tratamento robusto
+    console.log(`📄 [Deliver] Renderizando PDF para ${customerName}...`);
+    const pdfBuffer = await renderToBuffer(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    }) as any
-  );
+      React.createElement(NumerologyPDFDocument as any, {
+        name: customerName,
+        birthDate: birthDate,
+        content: numerologyData,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      }) as any
+    );
 
-  // 5. Enviar e-mail via Resend
-  console.log(`📧 [Deliver] Enviando e-mail para ${customerEmail}...`);
-  const htmlContent = `
-    <div style="font-family: sans-serif; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #222; background: #0c0c0c; color: #eee; padding: 25px; border-radius: 8px;">
-      <h2 style="color: #f59e0b; margin-top: 0;">Olá, ${customerName}!</h2>
-      <p>Seu pagamento via PIX foi confirmado com sucesso. O seu portal de sabedoria cósmica está ativo. ✨</p>
-      <p>Os números revelaram as frequências da sua alma. Em anexo, você encontrará o seu <strong>Mapa Pitagórico do Destino</strong> completo, calculado e gerado com exclusividade para você.</p>
-      <p>Prepare um ambiente tranquilo, abra o PDF anexo e descubra as diretrizes para alinhar suas decisões ao fluxo de abundância e timing cósmico.</p>
-      <br/>
-      <p style="color: #999;">Com reverência,</p>
-      <p><strong style="color: #fff;">Oráculo DestinyVox</strong></p>
-    </div>
-  `;
+    // 5. Enviar e-mail via Resend diretamente para o cliente
+    console.log(`📧 [Deliver] Enviando e-mail para ${customerEmail}...`);
+    const htmlContent = `
+      <div style="font-family: sans-serif; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #222; background: #0c0c0c; color: #eee; padding: 25px; border-radius: 8px;">
+        <h2 style="color: #f59e0b; margin-top: 0;">Olá, ${customerName}!</h2>
+        <p>Seu pagamento via PIX foi confirmado com sucesso. O seu portal de sabedoria cósmica está ativo. ✨</p>
+        <p>Os números revelaram as frequências da sua alma. Em anexo, você encontrará o seu <strong>Mapa Pitagórico do Destino</strong> completo, calculado e gerado com exclusividade para você.</p>
+        <p>Prepare um ambiente tranquilo, abra o PDF anexo e descubra as diretrizes para alinhar suas decisões ao fluxo de abundância e timing cósmico.</p>
+        <br/>
+        <p style="color: #999;">Com reverência,</p>
+        <p><strong style="color: #fff;">Oráculo DestinyVox</strong></p>
+      </div>
+    `;
 
-  const fileNameStr = `Mapa_DestinyVox_${customerName.replace(/\s+/g, "_")}.pdf`;
+    const fileNameStr = `Mapa_DestinyVox_${customerName.replace(/\s+/g, "_")}.pdf`;
+    const fromEmail = process.env.RESEND_FROM_EMAIL || "DestinyVox <contato@destinyvox.online>";
 
-  // 5. Enviar e-mail via Resend
-  const isDev = process.env.NODE_ENV !== "production";
-  // Em modo DEV local, usa delivered@resend.dev para simular sucesso sem gastar quota da conta
-  const targetRecipient = isDev ? "delivered@resend.dev" : customerEmail;
-  const fromEmail = isDev
-    ? "DestinyVox Test <onboarding@resend.dev>"
-    : (process.env.RESEND_FROM_EMAIL || "DestinyVox <contato@destinyvox.online>");
-
-  console.log(`📧 [Deliver] Enviando e-mail para ${targetRecipient} (Modo: ${isDev ? 'DEV/TESTE - delivered@resend.dev (zero quota gasta)' : 'PRODUÇÃO'})...`);
-
-  try {
     const resend = getResend();
     const { data: emailData, error: emailError } = await resend.emails.send({
       from: fromEmail,
-      to: targetRecipient,
-      subject: isDev
-        ? `[TESTE DEV] Seu Mapa Pitagórico do Destino ✨ — ${customerName}`
-        : "Seu Mapa Pitagórico do Destino ✨ — DestinyVox",
+      to: customerEmail,
+      subject: "Seu Mapa Pitagórico do Destino ✨ — DestinyVox",
       html: htmlContent,
       attachments: [
         {
@@ -395,7 +485,8 @@ export async function deliverNumerologyMap(params: DeliverMapParams) {
     if (emailError) {
       console.error("[Deliver] ❌ Erro retornado pela API Resend:", emailError);
     } else {
-      console.log(`[Deliver] ✅ E-mail enviado com sucesso (ID: ${emailData?.id}) para ${targetRecipient}`);
+      emailSentSuccessfully = true;
+      console.log(`[Deliver] ✅ E-mail enviado com sucesso (ID: ${emailData?.id}) para ${customerEmail}`);
 
       // Registrar flag de e-mail enviado no pagamento para idempotência absoluta
       if (matchedPaymentId) {
@@ -403,6 +494,7 @@ export async function deliverNumerologyMap(params: DeliverMapParams) {
           .from("payments")
           .update({
             metadata: {
+              ...(existingPayment?.metadata || {}),
               email_sent: true,
               email_sent_at: new Date().toISOString(),
               email_id: emailData?.id,
@@ -412,26 +504,38 @@ export async function deliverNumerologyMap(params: DeliverMapParams) {
           .eq("id", matchedPaymentId);
       }
     }
-  } catch (emailErr) {
-    console.error("[Deliver] ❌ Erro ao enviar e-mail via Resend:", emailErr);
-  }
 
-  // 6. Enviar Alerta ao Telegram
-  try {
-    await sendTelegramPixNotification({
-      payerName: customerName,
-      payerEmail: customerEmail,
-      amountCents: params.amountCents || 3990,
-      transactionId: params.transactionId || "N/A",
-      externalId: params.externalId || undefined,
-      plan: params.plan,
-    });
-  } catch (tgErr) {
-    console.warn("[Deliver] Aviso: Falha ao enviar alerta Telegram:", tgErr);
-  }
+    // 6. Enviar Alerta ao Telegram
+    try {
+      await sendTelegramPixNotification({
+        payerName: customerName,
+        payerEmail: customerEmail,
+        amountCents: params.amountCents || 3990,
+        transactionId: params.transactionId || "N/A",
+        externalId: params.externalId || undefined,
+        plan: params.plan,
+      });
+    } catch (tgErr) {
+      console.warn("[Deliver] Aviso: Falha ao enviar alerta Telegram:", tgErr);
+    }
 
-  return {
-    success: true,
-    mapId,
-  };
+    return {
+      success: true,
+      mapId,
+      emailSent: emailSentSuccessfully,
+    };
+  } finally {
+    // Se falhou antes de enviar o e-mail, libera a trava para permitir retentativa
+    if (matchedPaymentId && !emailSentSuccessfully) {
+      await supabase
+        .from("payments")
+        .update({
+          metadata: {
+            ...(existingPayment?.metadata || {}),
+            delivering: false,
+          },
+        })
+        .eq("id", matchedPaymentId);
+    }
+  }
 }
