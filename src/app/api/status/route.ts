@@ -1,7 +1,8 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { getGGPIXApiKey } from "@/lib/ggpix";
 import { PRIVATE_HEADERS } from "@/lib/map-auth";
+import { sendRedditPurchase } from "@/lib/reddit-capi";
 
 export async function GET(request: Request) {
   const transactionId = new URL(request.url).searchParams.get("id");
@@ -9,7 +10,7 @@ export async function GET(request: Request) {
   const reply = (status: string) => NextResponse.json({ status }, { headers: PRIVATE_HEADERS });
   try {
     const supabase = getSupabaseAdmin();
-    const { data: payment, error } = await supabase.from("payments").select("id, status, amount_cents").eq("transaction_id", transactionId).maybeSingle();
+    const { data: payment, error } = await supabase.from("payments").select("id, status, amount_cents, payer_email, metadata").eq("transaction_id", transactionId).maybeSingle();
     if (error) throw error;
     if (!payment) return reply("PENDING");
     if (payment.status === "PAID") return reply("PAID");
@@ -24,6 +25,7 @@ export async function GET(request: Request) {
       if (receivedAmount !== undefined && Number(receivedAmount) !== payment.amount_cents) return reply("PENDING");
       const { error: updateError } = await supabase.from("payments").update({ status: "PAID", paid_at: new Date().toISOString() }).eq("id", payment.id);
       if (updateError) throw updateError;
+      after(() => sendRedditPurchase({ conversionId: transactionId, valueCents: payment.amount_cents, email: payment.payer_email, attribution: payment.metadata?.reddit }));
       return reply("PAID");
     }
     return reply("PENDING");

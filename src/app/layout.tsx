@@ -33,7 +33,8 @@ export default function RootLayout({
       <Script id="reddit-pixel" strategy="afterInteractive">
         {`!function(w,d){if(!w.rdt){var p=w.rdt=function(){p.sendEvent?p.sendEvent.apply(p,arguments):p.callQueue.push(arguments)};p.callQueue=[];var t=d.createElement("script");t.src="https://www.redditstatic.com/ads/pixel.js",t.async=!0;var s=d.getElementsByTagName("script")[0];s.parentNode.insertBefore(t,s)}}(window,document);
         rdt('init','a2_jo82q4y3vyus');
-        rdt('track','PageVisit');`}
+        rdt('track','PageVisit');
+        try{var c=new URLSearchParams(location.search).get('rdt_cid');if(c)document.cookie='_rdt_cid='+encodeURIComponent(c)+';path=/;max-age=2592000;SameSite=Lax;Secure'}catch(e){}`}
       </Script>
     </html>
   );

@@ -8,5 +8,7 @@ declare global {
 
 export function trackRedditEvent(event: "AddToCart" | "Purchase", properties: Record<string, unknown> = {}) {
   if (typeof window === "undefined" || !window.rdt) return;
-  window.rdt("track", event, properties);
+  // conversionId lets Reddit deduplicate the same conversion (e.g. polling + webhook, or pixel + Conversions API).
+  const conversionId = properties.conversionId ?? properties.transactionId;
+  window.rdt("track", event, conversionId ? { ...properties, conversionId: String(conversionId) } : properties);
 }

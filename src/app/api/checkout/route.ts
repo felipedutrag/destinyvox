@@ -7,6 +7,8 @@ import { getGGPIXApiKey } from "@/lib/ggpix";
 import { getMapAuth, sameOrigin } from "@/lib/map-auth";
 import { CATALOG, createOrder, validateCustomer, validateSynastryPerson } from "@/lib/catalog";
 import { brazilianDate } from "@/lib/web-map";
+import { sendTelegramPixCreatedAlert } from "@/lib/telegram";
+import { getRedditAttribution } from "@/lib/reddit-capi";
 
 export async function POST(request: Request) {
   if (!sameOrigin(request)) return NextResponse.json({ error: "Origem inválida." }, { status: 403 });
@@ -52,7 +54,8 @@ export async function POST(request: Request) {
     }
     const paymentId = randomUUID(), externalId = `MAPA_${paymentId}`;
     const cpf = generateRandomCPF();
-    const metadata = { ...order, birthDate: customer.birthDate, referenceDate: brazilianDate(), sourceMapId, plan: CATALOG[order.product].name, ...(synastryPerson ? { synastryPerson } : {}) };
+    const reddit = getRedditAttribution(request);
+    const metadata = { ...order, birthDate: customer.birthDate, referenceDate: brazilianDate(), sourceMapId, plan: CATALOG[order.product].name, ...(synastryPerson ? { synastryPerson } : {}), ...(Object.keys(reddit).length ? { reddit } : {}) };
     // Persist before the gateway call so an early webhook finds the order by external_id.
     const { error: insertError } = await supabase.from("payments").insert({ id: paymentId, gateway: "ggpix", external_id: externalId, user_id: userId, payer_name: customer.name, payer_email: customer.email, payer_cpf: cpf, amount_cents: order.amountCents, status: "PENDING", metadata });
     if (insertError) throw insertError;
@@ -68,6 +71,21 @@ export async function POST(request: Request) {
     const qr = (await QRCode.toDataURL(pixCode)).replace(/^data:image\/png;base64,/, "");
     const { error: updateError } = await supabase.from("payments").update({ transaction_id: String(data.id), pix_code: pixCode, pix_qr_code_base64: qr }).eq("id", paymentId);
     if (updateError) throw updateError;
+    try {
+      const bumpNames = order.bumps.map(b => CATALOG[b]?.name || b);
+      await sendTelegramPixCreatedAlert({
+        payerName: customer.name,
+        payerEmail: customer.email,
+        amountCents: order.amountCents,
+        transactionId: String(data.id),
+        externalId,
+        product: CATALOG[order.product].name,
+        bumps: bumpNames,
+        crushName: synastryPerson?.name,
+      });
+    } catch (telegramError) {
+      console.warn("[Checkout] Falha ao enviar notificação de QR Code no Telegram:", telegramError);
+    }
     return NextResponse.json({ success: true, transaction_id: String(data.id), external_id: externalId, qr_code_base64: qr, pix_copy_paste: pixCode, amount_cents: order.amountCents });
   } catch (error) {
     console.error("[Checkout] Falha ao preparar compra", error);

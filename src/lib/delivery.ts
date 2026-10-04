@@ -4,7 +4,7 @@ import { generateMapLink, sendMapAccessEmail } from "@/lib/map-email";
 import { sendTelegramPixNotification } from "@/lib/telegram";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { buildSynastry } from "@/lib/synastry";
-import { validateSynastryPerson } from "@/lib/catalog";
+import { CATALOG, validateSynastryPerson } from "@/lib/catalog";
 import { brazilianDate } from "@/lib/web-map";
 import {
   calculateLifePath,
@@ -408,7 +408,23 @@ export async function deliverNumerologyMap(params: DeliverMapParams) {
     if (sentError) throw sentError;
     sent = true;
     try {
-      await sendTelegramPixNotification({ payerName: name, payerEmail: email, amountCents: payment.amount_cents, transactionId: payment.transaction_id, externalId: payment.external_id, plan: String(meta.plan || "30_questions") });
+      const bumpNames = Array.isArray(meta.bumps)
+        ? (meta.bumps as string[]).map(b => (CATALOG as Record<string, { name: string }>)[b]?.name || b)
+        : [];
+      const crush = meta.synastryPerson as { name?: string } | undefined;
+      const planName = String(
+        meta.plan || (meta.product && (CATALOG as Record<string, { name: string }>)[String(meta.product)]?.name) || "Mapa Numerológico"
+      );
+      await sendTelegramPixNotification({
+        payerName: name,
+        payerEmail: email,
+        amountCents: payment.amount_cents,
+        transactionId: payment.transaction_id,
+        externalId: payment.external_id,
+        plan: planName,
+        bumps: bumpNames,
+        crushName: crush?.name,
+      });
     } catch (notificationError) {
       console.warn("[Deliver] Falha na notificação operacional", notificationError);
     }

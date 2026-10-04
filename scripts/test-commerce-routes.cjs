@@ -50,7 +50,7 @@ const stubs = {
   "qrcode": { toDataURL: async () => "data:image/png;base64,test-qr" },
   "@/lib/delivery": { deliverNumerologyMap: async params => { state.delivery.push(params); return { success: true, emailSent: true }; } },
   "@/lib/map-email": { generateMapLink: async email => ({ userId: "owner", token: "test-token" }), sendMapAccessEmail: async (...args) => { state.delivery.push(args); return "test-email"; } },
-  "@/lib/telegram": { sendTelegramPixNotification: async () => {} },
+  "@/lib/telegram": { sendTelegramPixNotification: async () => {}, sendTelegramPixCreatedAlert: async () => {} },
   "@/utils/numerology": require("../tmp/map-tests/utils/numerology.js"),
   "@/utils/interpretations": require("../tmp/map-tests/utils/interpretations/index.js"),
 };
