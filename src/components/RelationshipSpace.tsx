@@ -31,7 +31,14 @@ export function RelationshipSpace({ map, mapId, demo = false }: { map: WebMap; m
   const [personId, setPersonId] = useState("");
   const [adding, setAdding] = useState(false);
   const [name, setName] = useState("");
-  const [birthDate, setBirthDate] = useState("2000-01-01");
+  const [birthDate, setBirthDate] = useState("");
+
+  const maskDate = (val: string) => {
+    let v = val.replace(/\D/g, "").slice(0, 8);
+    if (v.length > 4) return `${v.slice(0, 2)}/${v.slice(2, 4)}/${v.slice(4)}`;
+    if (v.length > 2) return `${v.slice(0, 2)}/${v.slice(2)}`;
+    return v;
+  };
   const [checkout, setCheckout] = useState(false);
   const [active, setActive] = useState<SynastryReport | null>(demo ? buildSynastry(map, { name: "Rafael Almeida", birthDate: "1992-09-23" }, map.referenceDate) : null);
   const endpoint = `/api/maps/${encodeURIComponent(mapId || "")}/relationships`;
@@ -87,7 +94,7 @@ export function RelationshipSpace({ map, mapId, demo = false }: { map: WebMap; m
           <p className="map-eyebrow" role="status">{loading ? "Atualizando suas sinastrias…" : space ? `${space.credits} crédito${space.credits === 1 ? " disponível" : "s disponíveis"} neste mapa` : "Seu espaço de sinastria"}</p>
           {space && <>
             {space.people.length > 0 && <label className="block text-sm">Pessoa para comparar<select className="landing-input" value={personId} onChange={e => setPersonId(e.target.value)} disabled={busy}><option value="">Selecione uma pessoa</option>{space.people.map(p => <option key={p.id} value={p.id}>{p.name} · {p.birth_date.split("-").reverse().join("/")}</option>)}</select></label>}
-            {(!space.people.length || adding) ? <form onSubmit={savePerson} className="space-y-4"><label className="block text-sm">Nome completo de nascimento<input className="landing-input" value={name} onChange={e => setName(e.target.value)} required maxLength={150} disabled={busy} /></label><label className="block text-sm">Data de nascimento<input className="landing-input" type="date" value={birthDate} onChange={e => setBirthDate(e.target.value)} required min="1900-01-01" max={map.referenceDate} disabled={busy} /></label><Button type="submit" variant="outline" disabled={busy}>{busy ? <Loader2 className="animate-spin" /> : <Plus />} Salvar pessoa · gratuito</Button>{adding && <button type="button" onClick={() => setAdding(false)} className="ml-4 text-sm underline">Cancelar</button>}</form> : <Button variant="outline" onClick={() => setAdding(true)} disabled={busy}><Plus /> Cadastrar outra pessoa</Button>}
+            {(!space.people.length || adding) ? <form onSubmit={savePerson} className="space-y-4"><label className="block text-sm">Nome completo de nascimento<input className="landing-input" value={name} onChange={e => setName(e.target.value)} required maxLength={150} disabled={busy} /></label><label className="block text-sm">Data de nascimento<input className="landing-input" type="text" inputMode="numeric" placeholder="DD/MM/AAAA" minLength={10} maxLength={10} value={birthDate} onChange={e => setBirthDate(maskDate(e.target.value))} required disabled={busy} /></label><Button type="submit" variant="outline" disabled={busy}>{busy ? <Loader2 className="animate-spin" /> : <Plus />} Salvar pessoa · gratuito</Button>{adding && <button type="button" onClick={() => setAdding(false)} className="ml-4 text-sm underline">Cancelar</button>}</form> : <Button variant="outline" onClick={() => setAdding(true)} disabled={busy}><Plus /> Cadastrar outra pessoa</Button>}
             {personId && <div><Button className="h-auto min-h-12 w-full whitespace-normal" disabled={busy || loading || (!alreadyRead && space.credits === 0)} onClick={compare}>{busy ? <Loader2 className="animate-spin" /> : <Heart />}{alreadyRead ? "Reler sinastria · sem custo" : "Gerar sinastria · usar 1 crédito"}</Button>{!alreadyRead && <p className="mt-2 text-xs leading-6 text-muted-foreground">Confira os dados antes de gerar. O crédito será usado nesta comparação.</p>}</div>}
             {space.credits === 0 && !checkout && <div className="border-t border-black/20 pt-5"><p className="text-sm leading-7">Uma nova comparação por <strong>{brl(CATALOG.synastry_credit.price)}</strong>. Sem assinatura. O crédito fica vinculado a este mapa.</p><Button className="mt-4 h-auto min-h-12 w-full whitespace-normal" onClick={() => setCheckout(true)}>Comprar 1 crédito · {brl(CATALOG.synastry_credit.price)}</Button></div>}
             {checkout && <div className="border-t border-black/20 pt-5"><PixCheckout product="synastry_credit" sourceMapId={mapId} onDelivered={() => { setCheckout(false); void load(); }} /></div>}

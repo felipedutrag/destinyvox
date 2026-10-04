@@ -10,10 +10,17 @@ type Payment = { transaction_id: string; external_id: string; qr_code_base64: st
 type Phase = "waiting" | "delivering" | "delivered" | "failed" | "paused";
 
 export function PixCheckout({ product = "map", sourceMapId, onDelivered, relationship = false }: { product?: ProductId; sourceMapId?: string; onDelivered?: () => void; relationship?: boolean }) {
-  const [customer, setCustomer] = useState({ name: "", email: "", birthDate: "2000-01-01" });
+  const [customer, setCustomer] = useState({ name: "", email: "", birthDate: "" });
   const [bumps, setBumps] = useState<BumpId[]>(relationship && product === "map" ? ["synastry"] : []);
-  const [synastryPerson, setSynastryPerson] = useState({ name: "", birthDate: "2000-01-01" });
+  const [synastryPerson, setSynastryPerson] = useState({ name: "", birthDate: "" });
   const [payment, setPayment] = useState<Payment | null>(null);
+
+  const maskDate = (val: string) => {
+    let v = val.replace(/\D/g, "").slice(0, 8);
+    if (v.length > 4) return `${v.slice(0, 2)}/${v.slice(2, 4)}/${v.slice(4)}`;
+    if (v.length > 2) return `${v.slice(0, 2)}/${v.slice(2)}`;
+    return v;
+  };
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [phase, setPhase] = useState<Phase>("waiting");
@@ -138,7 +145,7 @@ export function PixCheckout({ product = "map", sourceMapId, onDelivered, relatio
       <legend className="map-eyebrow mb-4">01 / Os dados da sua leitura</legend>
       <label className="block text-sm font-medium" htmlFor="customer-name">Nome completo de nascimento<input id="customer-name" name="name" autoComplete="name" required maxLength={150} value={customer.name} onChange={e => setCustomer({ ...customer, name: e.target.value })} placeholder="Como aparece na sua certidão" className="landing-input" /></label>
       <div className="grid gap-4 sm:grid-cols-[1.3fr_1fr]"><label className="block min-w-0 text-sm font-medium" htmlFor="customer-email">Seu e-mail<input id="customer-email" name="email" type="email" autoComplete="email" required maxLength={254} value={customer.email} onChange={e => setCustomer({ ...customer, email: e.target.value })} placeholder="Para receber seu mapa" className="landing-input" /></label>
-      <label className="block min-w-0 text-sm font-medium" htmlFor="customer-birth">Data de nascimento<input id="customer-birth" name="birthDate" type="date" autoComplete="bday" required min="1900-01-01" value={customer.birthDate} onChange={e => setCustomer({ ...customer, birthDate: e.target.value })} className="landing-input" /></label></div>
+      <label className="block min-w-0 text-sm font-medium" htmlFor="customer-birth">Data de nascimento<input id="customer-birth" name="birthDate" type="text" inputMode="numeric" placeholder="DD/MM/AAAA" autoComplete="bday" required minLength={10} maxLength={10} value={customer.birthDate} onChange={e => setCustomer({ ...customer, birthDate: maskDate(e.target.value) })} className="landing-input" /></label></div>
       <p className="text-xs leading-5 text-muted-foreground">Nome e nascimento entram nos cálculos. Seu e-mail recebe o link de acesso.</p>
     </fieldset>}
     {product === "map" && <fieldset disabled={busy} className="space-y-3">
@@ -151,7 +158,7 @@ export function PixCheckout({ product = "map", sourceMapId, onDelivered, relatio
         </label>
         {id === "synastry" && bumps.includes("synastry") && <div className="mt-4 space-y-4 border-t border-black/15 pt-4">
           <label htmlFor="crush-name" className="block text-sm font-medium">Nome completo de nascimento do crush<input id="crush-name" name="crushName" autoComplete="off" required maxLength={150} value={synastryPerson.name} onChange={e => setSynastryPerson({ ...synastryPerson, name: e.target.value })} placeholder="Nome completo, como na certidão" className="landing-input" /></label>
-          <label htmlFor="crush-birth" className="block text-sm font-medium">Data de nascimento do crush<input id="crush-birth" name="crushBirthDate" type="date" autoComplete="off" required min="1900-01-01" value={synastryPerson.birthDate} onChange={e => setSynastryPerson({ ...synastryPerson, birthDate: e.target.value })} className="landing-input" /></label>
+          <label htmlFor="crush-birth" className="block text-sm font-medium">Data de nascimento do crush<input id="crush-birth" name="crushBirthDate" type="text" inputMode="numeric" placeholder="DD/MM/AAAA" autoComplete="off" required minLength={10} maxLength={10} value={synastryPerson.birthDate} onChange={e => setSynastryPerson({ ...synastryPerson, birthDate: maskDate(e.target.value) })} className="landing-input" /></label>
           <p className="text-xs leading-6 text-muted-foreground">Após o Pix, seu mapa e a sinastria serão preparados juntos. Este adicional custa R$ 9,90; desmarque acima se quiser apenas o mapa.</p>
         </div>}
       </div>)}
