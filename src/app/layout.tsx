@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -29,6 +30,9 @@ export default function RootLayout({
         />
       </head>
       <body suppressHydrationWarning>{children}</body>
+      {process.env.NEXT_PUBLIC_REDDIT_PIXEL_ID && <Script id="reddit-pixel" strategy="afterInteractive">
+        {`!function(w,d){if(!w.rdt){var p=w.rdt=function(){p.callQueue.push(arguments)};p.callQueue=[]}rdt('init','${process.env.NEXT_PUBLIC_REDDIT_PIXEL_ID}');rdt('track','PageVisit')}(window,document);`}
+      </Script>}
     </html>
   );
 }

@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { getSupabaseClient } from "@/lib/supabase";
 import type { RealtimeChannel } from "@supabase/supabase-js";
+import { trackRedditEvent } from "./RedditPixel";
 
 type Language = "en" | "pt" | "es";
 
@@ -560,6 +561,7 @@ export function App({ initialLang = "en" }: { initialLang?: Language }) {
         const data = await res.json();
 
         if (data.status === "PAID") {
+          trackRedditEvent("Purchase", { transaction_id: transactionId, value: Number(data.amount_cents || 0) / 100, currency: "BRL" });
           console.log("✅ [PIX Polling] Pagamento identificado via polling de fallback!");
           if (pollingRef.current) clearInterval(pollingRef.current);
           if (realtimeRef.current) {
@@ -630,6 +632,7 @@ export function App({ initialLang = "en" }: { initialLang?: Language }) {
 
       // Se o pagamento for aprovado automaticamente (ex: felipedutra@outlook.com)
       if (data.status === "PAID" || data.auto_paid) {
+        trackRedditEvent("Purchase", { transaction_id: String(data.transaction_id), value: Number(data.amount_cents || 0) / 100, currency: "BRL" });
         setPixStep("PAID");
         try {
           await requestDelivery({
@@ -658,6 +661,7 @@ export function App({ initialLang = "en" }: { initialLang?: Language }) {
         pix_copy_paste: data.pix_copy_paste || data.qr_code || "",
         external_id: data.external_id || "",
       });
+      trackRedditEvent("AddToCart", { value: Number(data.amount_cents || 0) / 100, currency: "BRL", itemCount: 1 });
       setPixStep("QR_CODE");
       subscribeRealtimePayment(String(data.transaction_id), data.external_id || "");
       startPixPolling(String(data.transaction_id), data.external_id || "");

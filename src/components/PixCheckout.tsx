@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { ArrowRight, Check, Copy, Loader2, Lock, Mail } from "lucide-react";
 import { Button } from "./ui/button";
 import { BUMP_IDS, CATALOG, brl, createOrder, type BumpId, type ProductId } from "@/lib/catalog";
+import { trackRedditEvent } from "./RedditPixel";
 
 type Payment = { transaction_id: string; external_id: string; qr_code_base64: string; pix_copy_paste: string; amount_cents: number };
 type Phase = "waiting" | "delivering" | "delivered" | "failed" | "paused";
@@ -18,6 +19,7 @@ export function PixCheckout({ product = "map", sourceMapId, onDelivered }: { pro
   const [copied, setCopied] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   const [attempt, setAttempt] = useState(0);
+  const purchaseTracked = useRef<string | null>(null);
   const statusRef = useRef<HTMLDivElement>(null);
   const doneRef = useRef(onDelivered);
   doneRef.current = onDelivered;
@@ -47,6 +49,10 @@ export function PixCheckout({ product = "map", sourceMapId, onDelivered }: { pro
         if (controller.signal.aborted) return;
         setError("");
         if (data.status === "PAID") {
+          if (purchaseTracked.current !== payment.transaction_id) {
+            purchaseTracked.current = payment.transaction_id;
+            trackRedditEvent("Purchase", { transaction_id: payment.transaction_id, value: payment.amount_cents / 100, currency: "BRL" });
+          }
           setPhase("delivering");
           const delivery = await fetch("/api/deliver", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ transaction_id: payment.transaction_id, external_id: payment.external_id }), signal: controller.signal });
           const result = await delivery.json();
@@ -86,6 +92,7 @@ export function PixCheckout({ product = "map", sourceMapId, onDelivered }: { pro
       const data = await response.json();
       if (!response.ok || !data.success) throw new Error(data.error || "Não foi possível gerar o Pix.");
       setPayment(data); setPhase("waiting");
+      trackRedditEvent("AddToCart", { value: data.amount_cents / 100, currency: "BRL", itemCount: 1 });
       try { sessionStorage.setItem(storageKey, JSON.stringify({ payment: data, bumps, savedAt: Date.now() })); } catch { /* optional */ }
       requestAnimationFrame(() => { statusRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }); statusRef.current?.focus({ preventScroll: true }); });
     } catch (err) { setError(err instanceof Error ? err.message : "Tente novamente em instantes."); }
