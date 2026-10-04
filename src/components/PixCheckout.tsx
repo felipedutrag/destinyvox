@@ -51,10 +51,10 @@ export function PixCheckout({ product = "map", sourceMapId, onDelivered }: { pro
         if (data.status === "PAID") {
           if (purchaseTracked.current !== payment.transaction_id) {
             purchaseTracked.current = payment.transaction_id;
-            trackRedditEvent("Purchase", { transaction_id: payment.transaction_id, value: payment.amount_cents / 100, currency: "BRL" });
+            trackRedditEvent("Purchase", { transactionId: payment.transaction_id, value: payment.amount_cents / 100, currency: "BRL" });
           }
           setPhase("delivering");
-          const delivery = await fetch("/api/deliver", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ transaction_id: payment.transaction_id, external_id: payment.external_id }), signal: controller.signal });
+          const delivery = await fetch("/api/deliver", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ transactionId: payment.transaction_id, external_id: payment.external_id }), signal: controller.signal });
           const result = await delivery.json();
           if (!delivery.ok || !result.success) throw new Error("Seu pagamento foi confirmado. Estamos tentando enviar seu acesso; você não precisa pagar novamente.");
           if (controller.signal.aborted) return;

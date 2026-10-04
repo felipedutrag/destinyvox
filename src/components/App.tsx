@@ -561,7 +561,7 @@ export function App({ initialLang = "en" }: { initialLang?: Language }) {
         const data = await res.json();
 
         if (data.status === "PAID") {
-          trackRedditEvent("Purchase", { transaction_id: transactionId, value: Number(data.amount_cents || 0) / 100, currency: "BRL" });
+          trackRedditEvent("Purchase", { transactionId: transactionId, value: Number(data.amount_cents || 0) / 100, currency: "BRL" });
           console.log("✅ [PIX Polling] Pagamento identificado via polling de fallback!");
           if (pollingRef.current) clearInterval(pollingRef.current);
           if (realtimeRef.current) {
@@ -632,7 +632,7 @@ export function App({ initialLang = "en" }: { initialLang?: Language }) {
 
       // Se o pagamento for aprovado automaticamente (ex: felipedutra@outlook.com)
       if (data.status === "PAID" || data.auto_paid) {
-        trackRedditEvent("Purchase", { transaction_id: String(data.transaction_id), value: Number(data.amount_cents || 0) / 100, currency: "BRL" });
+        trackRedditEvent("Purchase", { transactionId: String(data.transaction_id), value: Number(data.amount_cents || 0) / 100, currency: "BRL" });
         setPixStep("PAID");
         try {
           await requestDelivery({
