@@ -19,17 +19,19 @@ export async function POST(request: Request) {
     let customerInput = body;
     let sourceMapId: string | null = null;
     let userId: string | null = null;
-    if (order.product === "atlas") {
+    if (order.product !== "map") {
       const client = await getMapAuth();
       const { data: { user }, error: authError } = await client.auth.getUser();
-      if (authError || !user) return NextResponse.json({ error: "Entre no seu mapa para adquirir o Atlas." }, { status: 401 });
+      if (authError || !user) return NextResponse.json({ error: "Entre no seu mapa para adquirir este produto." }, { status: 401 });
       if (typeof body.sourceMapId !== "string" || !/^[a-f0-9-]{36}$/i.test(body.sourceMapId)) return NextResponse.json({ error: "Mapa inválido." }, { status: 400 });
       const { data: map, error } = await client.from("numerology_maps").select("id, customer_name, customer_email, birth_date, full_interpretation").eq("id", body.sourceMapId).eq("user_id", user.id).eq("status", "completed").maybeSingle();
       if (error) throw error;
       if (!map || map.full_interpretation?.purchase?.product === "atlas") return NextResponse.json({ error: "Mapa de origem não encontrado." }, { status: 404 });
-      const { data: existing, error: existingError } = await client.from("payments").select("id").eq("user_id", user.id).eq("status", "PAID").contains("metadata", { sourceMapId: map.id, product: "atlas" }).limit(1);
-      if (existingError) throw existingError;
-      if (existing?.length) return NextResponse.json({ error: "Você já adquiriu este Atlas. Atualize seu mapa ou consulte seu e-mail para acessá-lo." }, { status: 409 });
+      if (order.product === "atlas") {
+        const { data: existing, error: existingError } = await client.from("payments").select("id").eq("user_id", user.id).eq("status", "PAID").contains("metadata", { sourceMapId: map.id, product: "atlas" }).limit(1);
+        if (existingError) throw existingError;
+        if (existing?.length) return NextResponse.json({ error: "Você já adquiriu este Atlas. Atualize seu mapa ou consulte seu e-mail para acessá-lo." }, { status: 409 });
+      }
       customerInput = { name: map.customer_name, email: map.customer_email, birthDate: map.birth_date };
       sourceMapId = map.id; userId = user.id;
     }
@@ -38,6 +40,11 @@ export async function POST(request: Request) {
     const apiKey = getGGPIXApiKey();
     if (!apiKey) throw new Error("Gateway indisponível");
     const supabase = getSupabaseAdmin();
+    if (order.product === "synastry_credit" || order.bumps.includes("synastry")) {
+      // Do not sell a feature before its database setup is available.
+      const { error: readinessError } = await supabase.from("synastry_reports").select("id").limit(1);
+      if (readinessError) return NextResponse.json({ error: "A sinastria está sendo preparada. Tente novamente em breve ou compre apenas seu mapa." }, { status: 503 });
+    }
     const paymentId = randomUUID(), externalId = `MAPA_${paymentId}`;
     const cpf = generateRandomCPF();
     const metadata = { ...order, birthDate: customer.birthDate, referenceDate: brazilianDate(), sourceMapId, plan: CATALOG[order.product].name };

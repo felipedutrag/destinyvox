@@ -29,6 +29,7 @@ function query(table) {
     }
     if (table === "numerology_maps") return { data: state.map, error: null };
     if (table === "payments") return { data: single ? state.payment : state.existing, error: null };
+    if (table === "synastry_reports") return { data: [], error: state.schemaError || null };
     return { data: null, error: null };
   }
   return methods;
@@ -105,6 +106,23 @@ const customer = { name: "Marina Costa", email: "marina@example.com", birthDate:
   assert.equal(state.writes[0].value.metadata.sourceMapId, mapId);
   state.existing = [{ id: "already-paid" }];
   assert.equal((await checkout(request({ product: "atlas", sourceMapId: mapId }))).status, 409);
+  reset();
+  assert.equal((await checkout(request({ product: "synastry_credit", sourceMapId: mapId }))).status, 401);
+  state.user = { id: "owner" };
+  assert.equal((await checkout(request({ product: "synastry_credit", sourceMapId: mapId }))).status, 404);
+  state.map = { id: mapId, customer_name: customer.name, customer_email: customer.email, birth_date: customer.birthDate };
+  state.existing = [{ id: "already-paid-atlas" }];
+  assert.equal((await checkout(request({ product: "synastry_credit", sourceMapId: mapId, email: "forged@example.com", amountCents: 1 }))).status, 200);
+  assert.equal(state.gatewayCalls[0].body.amountCents, 1490);
+  assert.equal(state.gatewayCalls[0].body.customerEmail, customer.email);
+  assert.equal(state.writes[0].value.user_id, "owner");
+  assert.equal(state.writes[0].value.metadata.sourceMapId, mapId);
+  reset();
+  assert.equal((await checkout(request({ ...customer, bumps: ["synastry"] }))).status, 200);
+  assert.equal(state.gatewayCalls[0].body.amountCents, 2980);
+  reset(); state.schemaError = new Error("missing schema");
+  assert.equal((await checkout(request({ ...customer, bumps: ["synastry"] }))).status, 503);
+  assert.equal(state.gatewayCalls.length, 0, "never sell a credit before schema is installed");
   reset(); state.payment = { id: "payment", external_id: "stored-id", amount_cents: 1990, payer_name: customer.name, payer_email: customer.email, metadata: { birthDate: customer.birthDate }, status: "PENDING" };
   assert.equal((await webhook(request({ status: "COMPLETE", transactionId: "gateway-id", amount: 1 }))).status, 409);
   assert.equal(state.delivery.length, 0);
@@ -135,5 +153,16 @@ const customer = { name: "Marina Costa", email: "marina@example.com", birthDate:
   reset(); state.payment = { status: "PENDING" };
   await assert.rejects(() => realDelivery({ transactionId: "unpaid" }));
   assert.equal(state.delivery.length, 0);
+  reset();
+  state.map = { id: mapId };
+  state.payment = { id: "credit-payment", status: "PAID", payer_name: customer.name, payer_email: customer.email, amount_cents: 1490, transaction_id: "credit-paid", metadata: { product: "synastry_credit", sourceMapId: mapId, birthDate: customer.birthDate } };
+  const credit = await realDelivery({ transactionId: "credit-paid" });
+  assert.equal(credit.mapId, mapId);
+  assert.equal(credit.emailSent, true);
+  assert.equal(state.writes.filter(w => w.table === "numerology_maps").length, 0, "a new credit cannot overwrite the source map or create a duplicate");
+  assert.equal(state.delivery[0][5], "synastry_credit");
+  state.payment.map_id = mapId; state.payment.metadata.web_access_sent = true;
+  assert.equal((await realDelivery({ transactionId: "credit-paid" })).alreadyDelivered, true);
+  assert.equal(state.delivery.length, 1);
   console.log("PASS: checkout totals, tamper resistance, no VIP bypass, database/gateway failures, owned-map upsell, duplicate upsell, webhook amount check, late events, paid-only delivery, purchased modules, stored customer identity, idempotent delivery, product email.");
 })().catch(error => { console.error(error); process.exitCode = 1; });

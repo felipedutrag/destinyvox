@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import type { WebMap } from "@/lib/web-map";
 import { cn } from "@/lib/utils";
 import { AtlasOffer, ProductChapters } from "./ProductChapters";
+import { RelationshipSpace } from "./RelationshipSpace";
 
 export function MapReader({ mapId, demo }: { mapId?: string; demo?: WebMap }) {
   const [map, setMap] = useState<WebMap | null>(demo || null);
@@ -75,6 +76,7 @@ export function MapReader({ mapId, demo }: { mapId?: string; demo?: WebMap }) {
           <h1 className="font-editorial text-5xl leading-[1.06] tracking-tight sm:text-7xl">Você não cabe<br />em uma definição.<br /><em className="text-[#77766e]">Comece por nove.</em></h1>
           <p className="mt-7 max-w-md text-sm leading-7 text-muted-foreground">Seu nome. Sua história. O momento que você vive. Explore as diferentes partes de si, um número de cada vez.</p>
           <a href="#numeros" className="mt-7 inline-flex items-center gap-3 border-b border-black pb-2 text-sm">Explorar meus números <ArrowDown className="size-4" /></a>
+          <div className="mt-5"><a href="#relacionamentos" className="inline-flex items-center gap-3 border-b border-[#875f54]/50 pb-2 text-sm text-[#875f54]">Relacionamentos e sinastrias <ArrowDown className="size-4" /></a></div>
         </div>
         <div className="flex flex-col justify-between border border-black/20 p-6 sm:p-8">
           <div className="flex items-center justify-between"><span className="map-eyebrow">Sua assinatura</span><span className="text-xs text-muted-foreground">01 / 09</span></div>
@@ -128,6 +130,7 @@ export function MapReader({ mapId, demo }: { mapId?: string; demo?: WebMap }) {
 
       </>}
       <ProductChapters modules={map.modules || []} />
+      {!isAtlas && <RelationshipSpace map={map} mapId={mapId} demo={!!demo} />}
       {!isAtlas && <AtlasOffer mapId={mapId} demo={!!demo} upgradeMapId={map.upgradeMapId} onDelivered={() => setAttempt(n => n + 1)} />}
       <section className="grid gap-7 py-10 sm:grid-cols-[1fr_2fr] sm:py-12">
         <p className="map-eyebrow">Você continua sendo<br className="hidden sm:block" /> a pessoa que escolhe.</p>

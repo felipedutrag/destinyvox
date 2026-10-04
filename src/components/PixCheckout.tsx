@@ -9,7 +9,7 @@ import { trackRedditEvent } from "./RedditPixel";
 type Payment = { transaction_id: string; external_id: string; qr_code_base64: string; pix_copy_paste: string; amount_cents: number };
 type Phase = "waiting" | "delivering" | "delivered" | "failed" | "paused";
 
-export function PixCheckout({ product = "map", sourceMapId, onDelivered }: { product?: ProductId; sourceMapId?: string; onDelivered?: () => void }) {
+export function PixCheckout({ product = "map", sourceMapId, onDelivered, relationship = false }: { product?: ProductId; sourceMapId?: string; onDelivered?: () => void; relationship?: boolean }) {
   const [customer, setCustomer] = useState({ name: "", email: "", birthDate: "" });
   const [bumps, setBumps] = useState<BumpId[]>([]);
   const [payment, setPayment] = useState<Payment | null>(null);
@@ -23,7 +23,7 @@ export function PixCheckout({ product = "map", sourceMapId, onDelivered }: { pro
   const statusRef = useRef<HTMLDivElement>(null);
   const doneRef = useRef(onDelivered);
   doneRef.current = onDelivered;
-  const storageKey = `destinyvox:pix:${product}:${sourceMapId || "new"}`;
+  const storageKey = `destinyvox:pix:${product}:${sourceMapId || (relationship ? "relationship" : "new")}`;
   const order = createOrder(product, bumps);
 
   useEffect(() => {
@@ -101,7 +101,7 @@ export function PixCheckout({ product = "map", sourceMapId, onDelivered }: { pro
 
   if (payment) return <div ref={statusRef} tabIndex={-1} className="space-y-5 outline-none">
     <p className="map-eyebrow">{CATALOG[product].name} · {brl(payment.amount_cents)}</p>
-    {phase === "delivered" ? <div className="space-y-4 py-5"><Check className="size-8" /><h3 className="font-editorial text-3xl">Sua leitura está a caminho.</h3><p className="text-sm leading-7 text-muted-foreground">Enviamos o link para o e-mail da compra. Confira também a caixa de spam.</p><Button asChild><a href="/acesso"><Mail /> Acessar minhas leituras</a></Button></div>
+    {phase === "delivered" ? <div className="space-y-4 py-5"><Check className="size-8" /><h3 className="font-editorial text-3xl">{product === "synastry_credit" ? "Seu crédito está disponível." : "Sua leitura está a caminho."}</h3><p className="text-sm leading-7 text-muted-foreground">{product === "synastry_credit" ? "Volte à seção de relacionamentos para gerar sua comparação. Enviamos também o acesso por e-mail." : "Enviamos o link para o e-mail da compra. Confira também a caixa de spam."}</p><Button asChild><a href="/acesso"><Mail /> Acessar minhas leituras</a></Button></div>
       : phase === "failed" ? <div className="space-y-4"><h3 className="font-editorial text-3xl">Este Pix não está mais ativo.</h3><p className="text-sm leading-7">Se você já pagou, acesse suas leituras pelo e-mail. Caso contrário, gere um novo código.</p><Button onClick={() => { setPayment(null); setError(""); try { sessionStorage.removeItem(storageKey); } catch { /* optional */ } }}>Voltar ao pedido</Button></div>
       : <><h3 className="font-editorial text-3xl">{phase === "delivering" ? "Pagamento confirmado." : "Seu mapa começa com este Pix."}</h3>
         {phase !== "delivering" && <><p className="text-sm leading-7 text-muted-foreground">Copie o código para pagar no app do seu banco ou escaneie o QR Code. A confirmação aparece aqui automaticamente.</p>
@@ -129,7 +129,7 @@ export function PixCheckout({ product = "map", sourceMapId, onDelivered }: { pro
     {product === "map" && <fieldset disabled={busy} className="space-y-3">
       <legend className="map-eyebrow mb-1">02 / Quer aprofundar algum tema?</legend>
       <p className="pb-2 text-xs leading-5 text-muted-foreground">Adicionais opcionais. Seu mapa de nove números já está completo sem eles.</p>
-      {BUMP_IDS.map(id => <label key={id} className={`flex cursor-pointer items-start gap-3 rounded-sm border p-4 transition-colors ${bumps.includes(id) ? "border-[#656e50] bg-[#e6e9dd]" : "border-black/15 hover:bg-black/[.025]"}`}>
+      {BUMP_IDS.filter(id => id !== "synastry" || relationship).map(id => <label key={id} className={`flex cursor-pointer items-start gap-3 rounded-sm border p-4 transition-colors ${bumps.includes(id) ? "border-[#656e50] bg-[#e6e9dd]" : "border-black/15 hover:bg-black/[.025]"}`}>
         <input type="checkbox" checked={bumps.includes(id)} onChange={e => setBumps(current => e.target.checked ? [...current, id] : current.filter(bump => bump !== id))} className="mt-1 size-4 shrink-0 accent-[#343e2a]" />
         <span className="min-w-0"><span className="flex flex-wrap justify-between gap-x-3 gap-y-1 text-sm font-semibold"><span>{CATALOG[id].name}</span><span className="whitespace-nowrap">+ {brl(CATALOG[id].price)}</span></span><span className="mt-2 block text-xs leading-6 text-muted-foreground">{CATALOG[id].description}</span></span>
       </label>)}
@@ -140,7 +140,7 @@ export function PixCheckout({ product = "map", sourceMapId, onDelivered }: { pro
       <div className="flex items-baseline justify-between border-t border-black/10 pt-3"><span className="text-sm font-semibold">Total · pagamento único</span><strong className="font-editorial text-3xl font-normal">{brl(order.amountCents)}</strong></div>
     </div>
     {error && <p role="alert" className="text-sm leading-6 text-red-800">{error}</p>}
-    <Button type="submit" disabled={busy} className="h-auto min-h-14 w-full whitespace-normal rounded-sm bg-[#343e2a] px-4 text-base text-white hover:bg-[#455138]">{busy ? <><Loader2 className="animate-spin" /> Gerando seu Pix…</> : <>Quero {product === "atlas" ? "meu Atlas" : "descobrir meus números"} <ArrowRight /></>}</Button>
+    <Button type="submit" disabled={busy} className="h-auto min-h-14 w-full whitespace-normal rounded-sm bg-[#343e2a] px-4 text-base text-white hover:bg-[#455138]">{busy ? <><Loader2 className="animate-spin" /> Gerando seu Pix…</> : <>{product === "synastry_credit" ? "Comprar meu crédito de sinastria" : product === "atlas" ? "Quero meu Atlas" : relationship ? "Quero descobrir meu jeito de amar" : "Quero descobrir meus números"} <ArrowRight /></>}</Button>
     <p className="flex items-center justify-center gap-2 text-center text-xs text-muted-foreground"><Lock className="size-3 shrink-0" /> Pix · Sem assinatura · Acesso por e-mail</p>
   </form>;
 }

@@ -1,21 +1,23 @@
 export const CATALOG = {
   map: { name: "Mapa Numerológico", price: 1990 },
+  synastry: { name: "Minha primeira sinastria", price: 990, description: "Um crédito para comparar seu mapa com o de outra pessoa. Cadastre os dados dela depois, dentro do seu mapa. A comparação fica salva para reler." },
+  synastry_credit: { name: "Crédito de Sinastria", price: 1490, description: "Uma nova comparação entre seu mapa e o de outra pessoa, com leitura dos vínculos, diferenças e propostas de conversa." },
   calendar: { name: "Calendário Pessoal de 12 Meses", price: 990, description: "Veja o número de cada um dos próximos 12 meses, com interpretação e uma proposta de reflexão para cada fase." },
   name: { name: "Forças do Nome", price: 790, description: "Descubra os números que mais aparecem no seu nome e os que estão ausentes, com leituras de potenciais e aprendizados." },
   challenges: { name: "Seus Quatro Desafios", price: 990, description: "Conheça os quatro desafios calculados pela sua data de nascimento e exercícios para observar esses temas na sua vida." },
   atlas: { name: "Atlas dos Ciclos de Vida", price: 2990, description: "Uma leitura das grandes fases da sua trajetória: quatro pináculos, suas faixas de idade, o ciclo atual e um roteiro de reflexão." },
 } as const;
-export const BUMP_IDS = ["calendar", "name", "challenges"] as const;
+export const BUMP_IDS = ["calendar", "name", "challenges", "synastry"] as const;
 export type BumpId = typeof BUMP_IDS[number];
-export type ProductId = "map" | "atlas";
+export type ProductId = "map" | "atlas" | "synastry_credit";
 export type Order = { product: ProductId; bumps: BumpId[]; amountCents: number };
 export const brl = (cents: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(cents / 100);
 
 /** Both browser and server use the catalog; prices from a request are never trusted. */
 export function createOrder(product: unknown = "map", bumps: unknown = []): Order {
-  if (product !== "map" && product !== "atlas") throw new Error("Produto inválido.");
+  if (product !== "map" && product !== "atlas" && product !== "synastry_credit") throw new Error("Produto inválido.");
   if (!Array.isArray(bumps) || bumps.some(id => !BUMP_IDS.includes(id)) || new Set(bumps).size !== bumps.length) throw new Error("Adicionais inválidos.");
-  if (product === "atlas" && bumps.length) throw new Error("O Atlas não possui adicionais.");
+  if (product !== "map" && bumps.length) throw new Error("Este produto não possui adicionais.");
   const selected = BUMP_IDS.filter(id => bumps.includes(id));
   return { product, bumps: selected, amountCents: CATALOG[product].price + selected.reduce((sum, id) => sum + CATALOG[id].price, 0) };
 }

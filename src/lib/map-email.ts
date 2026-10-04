@@ -24,7 +24,7 @@ export function accessEmail(name: string, link: string, product: ProductId = "ma
   const safeName = escapeHtml(name.split(/\s+/)[0]);
   const safeLink = escapeHtml(link);
   const title = CATALOG[product].name;
-  const description = product === "atlas" ? "Explore seus quatro pináculos, as faixas de idade e uma proposta de reflexão para cada capítulo da sua trajetória." : "Explore nove números, suas interpretações e os adicionais que você selecionou na compra.";
+  const description = product === "synastry_credit" ? "Você tem um novo crédito de sinastria. Abra a seção Relacionamentos do seu mapa, cadastre ou escolha uma pessoa e gere sua comparação." : product === "atlas" ? "Explore seus quatro pináculos, as faixas de idade e uma proposta de reflexão para cada capítulo da sua trajetória." : "Explore nove números, suas interpretações e os adicionais que você selecionou na compra.";
   return {
     subject: `Seu ${title} está pronto — DestinyVox`,
     text: `Olá, ${name}! Seu ${title} está pronto. ${description} Acesse: ${link}\nO link é pessoal e de uso único. Após entrar, sua sessão fica salva neste navegador. Suas leituras ficam em ${appOrigin()}/acesso. Se expirar, solicite um novo link nessa página.`,

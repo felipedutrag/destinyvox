@@ -365,20 +365,27 @@ export async function deliverNumerologyMap(params: DeliverMapParams) {
     const { error: profileError } = await supabase.from("profiles").upsert({ id: access.userId, email, full_name: name }, { onConflict: "id", ignoreDuplicates: true });
     if (profileError) throw profileError;
     // A stable UUID per payment makes retries reuse the same map, even after a crash.
-    const mapId = payment.map_id || payment.id;
+    const isCredit = meta.product === "synastry_credit";
+    const mapId = isCredit ? String(meta.sourceMapId || "") : payment.map_id || payment.id;
+    if (isCredit) {
+      const { data: source, error: sourceError } = await supabase.from("numerology_maps").select("id").eq("id", mapId).eq("user_id", access.userId).eq("status", "completed").maybeSingle();
+      if (sourceError || !source) throw new Error("Mapa de origem não encontrado para o crédito");
+    }
     const values = Object.fromEntries(content.readings.map(r => [r.id, r.value]));
-    const { error: mapError } = await supabase.from("numerology_maps").upsert({
-      id: mapId, user_id: access.userId, customer_name: name, customer_email: email, birth_date: birthDate,
-      life_path: values.caminho, expression: values.expressao, soul_urge: values.alma,
-      personality: values.personalidade, birthday: values.aniversario, maturity: values.maturidade,
-      personal_year: values.ano, personal_month: values.mes, personal_day: values.dia,
-      archetype: getArchetype(values.caminho, "pt"), dictum: content.dictum,
-      full_interpretation: content, status: "completed",
-    }, { onConflict: "id" });
-    if (mapError) throw mapError;
+    if (!isCredit) {
+      const { error: mapError } = await supabase.from("numerology_maps").upsert({
+        id: mapId, user_id: access.userId, customer_name: name, customer_email: email, birth_date: birthDate,
+        life_path: values.caminho, expression: values.expressao, soul_urge: values.alma,
+        personality: values.personalidade, birthday: values.aniversario, maturity: values.maturidade,
+        personal_year: values.ano, personal_month: values.mes, personal_day: values.dia,
+        archetype: getArchetype(values.caminho, "pt"), dictum: content.dictum,
+        full_interpretation: content, status: "completed",
+      }, { onConflict: "id" });
+      if (mapError) throw mapError;
+    }
     const { error: linkError } = await supabase.from("payments").update({ map_id: mapId, user_id: access.userId }).eq("id", payment.id);
     if (linkError) throw linkError;
-    const emailId = await sendMapAccessEmail(name, email, mapId, access.token, undefined, content.purchase?.product);
+    const emailId = await sendMapAccessEmail(name, email, mapId, access.token, undefined, isCredit ? "synastry_credit" : content.purchase?.product);
     const { error: sentError } = await supabase.from("payments").update({ metadata: {
       ...meta, delivering: false, email_sent: true, web_access_sent: true,
       email_sent_at: new Date().toISOString(), email_id: emailId,

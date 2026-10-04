@@ -34,3 +34,6 @@ tmp/map-tests/
 .env.local
 .env.production
 .env.development
+
+# Reddit Agent
+reddit-agent/
