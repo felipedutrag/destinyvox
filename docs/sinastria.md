@@ -15,7 +15,7 @@ O SQL foi executado em PostgreSQL isolado via PGlite e, após a aplicação pelo
 - Produto `synastry_credit`: R$ 14,90 por nova comparação. Requer sessão e mapa próprio; valores sempre calculados no servidor.
 - Cadastro gratuito de até 50 pessoas na conta. Dados: nome completo de nascimento e data. Sem conta ou e-mail para a outra pessoa.
 - Crédito vinculado ao mapa de origem. Uma comparação por pessoa cadastrada nesse mapa; releitura gratuita. O cadastro é imutável para preservar as comparações; confira a grafia antes de gerar. Se precisar corrigir os dados, cadastre um novo perfil; uma nova comparação consome outro crédito.
-- A compra do adicional não exige os dados da segunda pessoa no checkout. Ninguém é pré-selecionado, e nenhum adicional vem marcado.
+- Na landing `/sinastria`, o adicional fica em primeiro e já vem selecionado. O nome completo de nascimento e a data do crush são preenchidos no próprio adicional; se ele permanecer selecionado, a comparação é gerada durante a entrega e aparece pronta no mapa. Na home, a sinastria continua fora dos adicionais exibidos.
 
 ## Persistência e autorização
 
