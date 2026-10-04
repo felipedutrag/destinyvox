@@ -614,20 +614,30 @@ export function App({ initialLang = "en" }: { initialLang?: Language }) {
     setPixError(null);
 
     try {
-      const res = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: pixForm.name.trim(),
-          email: pixForm.email.trim(),
-          birthDate: pixForm.birthDate,
-          plan: pixPlan,
-        }),
+      const payload = JSON.stringify({
+        name: pixForm.name.trim(),
+        email: pixForm.email.trim(),
+        birthDate: pixForm.birthDate,
+        plan: pixPlan,
       });
 
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || "Falha ao gerar cobrança PIX");
+      let data;
+      for (let attempt = 1; ; attempt++) {
+        try {
+          const res = await fetch("/api/checkout", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: payload,
+          });
+          const body = await res.json().catch(() => null);
+          if (res.ok && body?.success) { data = body; break; }
+          // 4xx errors are likely validation/user errors, retrying won't help
+          if (res.status >= 400 && res.status < 500) throw Object.assign(new Error(body?.error || "Falha ao gerar cobrança PIX"), { final: true });
+          throw new Error(body?.error || "Falha ao gerar cobrança PIX");
+        } catch (err) {
+          if ((err as { final?: boolean }).final || attempt >= 3) throw err instanceof TypeError ? new Error("Falha de conexão ao gerar o Pix. Verifique sua internet e tente novamente.") : err;
+          await new Promise(resolve => setTimeout(resolve, attempt * 1500));
+        }
       }
 
       // Se o pagamento for aprovado automaticamente (ex: felipedutra@outlook.com)

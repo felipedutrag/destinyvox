@@ -10,9 +10,9 @@ type Payment = { transaction_id: string; external_id: string; qr_code_base64: st
 type Phase = "waiting" | "delivering" | "delivered" | "failed" | "paused";
 
 export function PixCheckout({ product = "map", sourceMapId, onDelivered, relationship = false }: { product?: ProductId; sourceMapId?: string; onDelivered?: () => void; relationship?: boolean }) {
-  const [customer, setCustomer] = useState({ name: "", email: "", birthDate: "" });
+  const [customer, setCustomer] = useState({ name: "", email: "", birthDate: "2000-01-01" });
   const [bumps, setBumps] = useState<BumpId[]>(relationship && product === "map" ? ["synastry"] : []);
-  const [synastryPerson, setSynastryPerson] = useState({ name: "", birthDate: "" });
+  const [synastryPerson, setSynastryPerson] = useState({ name: "", birthDate: "2000-01-01" });
   const [payment, setPayment] = useState<Payment | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -26,7 +26,7 @@ export function PixCheckout({ product = "map", sourceMapId, onDelivered, relatio
   doneRef.current = onDelivered;
   const storageKey = `destinyvox:pix:${product}:${sourceMapId || (relationship ? "relationship" : "new")}`;
   const order = createOrder(product, bumps);
-  const offeredBumps: readonly BumpId[] = relationship ? ["synastry", "calendar", "name", "challenges"] : BUMP_IDS.filter(id => id !== "synastry");
+  const offeredBumps: readonly BumpId[] = relationship ? ["synastry", "calendar", "challenges"] : BUMP_IDS.filter(id => id !== "synastry" && id !== "name");
 
   useEffect(() => {
     try {
@@ -90,9 +90,22 @@ export function PixCheckout({ product = "map", sourceMapId, onDelivered, relatio
     if (busy) return;
     setBusy(true); setError("");
     try {
-      const response = await fetch("/api/checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...customer, product, bumps, sourceMapId, ...(bumps.includes("synastry") ? { synastryPerson } : {}) }) });
-      const data = await response.json();
-      if (!response.ok || !data.success) throw new Error(data.error || "Não foi possível gerar o Pix.");
+      const payload = JSON.stringify({ ...customer, product, bumps, sourceMapId, ...(bumps.includes("synastry") ? { synastryPerson } : {}) });
+      let data;
+      for (let attempt = 1; ; attempt++) {
+        try {
+          const response = await fetch("/api/checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: payload });
+          const body = await response.json().catch(() => null);
+          if (response.ok && body?.success) { data = body; break; }
+          // 4xx are validation/auth errors: retrying would not change the answer.
+          if (response.status < 500) throw Object.assign(new Error(body?.error || "Não foi possível gerar o Pix."), { final: true });
+          throw new Error(body?.error || "Não foi possível gerar o Pix.");
+        } catch (err) {
+          // Network drops ("Failed to fetch"), gateway timeouts and 5xx get retried with a short backoff.
+          if ((err as { final?: boolean }).final || attempt >= 3) throw err instanceof TypeError ? new Error("Falha de conexão ao gerar o Pix. Verifique sua internet e tente novamente.") : err;
+          await new Promise(resolve => setTimeout(resolve, attempt * 1500));
+        }
+      }
       setPayment(data); setPhase("waiting");
       trackRedditEvent("AddToCart", { value: data.amount_cents / 100, currency: "BRL", itemCount: 1 });
       try { sessionStorage.setItem(storageKey, JSON.stringify({ payment: data, bumps, savedAt: Date.now() })); } catch { /* optional */ }
