@@ -58,3 +58,22 @@
   letter-spacing: .14em;
   text-transform: uppercase;
 }
+
+.landing-input {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  margin-top: 8px;
+  padding: 12px;
+  border: 1px solid #bdbeb1;
+  border-radius: 2px;
+  background: #faf9f5;
+  color: #24251f;
+  font-size: 16px;
+  font-weight: 400;
+  color-scheme: light;
+}
+.landing-input:focus-visible { outline: 2px solid #626b51; outline-offset: 2px; }
+.landing-page a:focus-visible, .landing-page summary:focus-visible { outline: 2px solid #626b51; outline-offset: 5px; }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }

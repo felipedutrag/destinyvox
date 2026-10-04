@@ -163,7 +163,7 @@ const TRANSLATIONS = {
       popularTag: "SEU ESPAÇO PARA EXPLORAR E REVISITAR",
       name: "MAPA NUMEROLÓGICO PERSONALIZADO",
       badge: "WEB",
-      price: "R$ 39,90",
+      price: "R$ 19,90",
       period: "pagamento único via PIX",
       subText: "Uma compra. Seu mapa para consultar no seu ritmo.",
       perks: [
@@ -172,7 +172,7 @@ const TRANSLATIONS = {
         "Link pessoal de acesso enviado por e-mail",
         "Leia no celular ou computador, sem baixar arquivos",
       ],
-      button: "QUERO MEU MAPA — R$ 39,90 ⟶",
+      button: "QUERO MEU MAPA — R$ 19,90 ⟶",
       buttonLoading: "GERANDO PIX...",
     },
     footerStripe: "Pagamento via Pix",
@@ -270,8 +270,8 @@ const TRANSLATIONS = {
   },
 };
 
-export function App() {
-  const [lang, setLang] = useState<Language>("pt");
+export function App({ initialLang = "en" }: { initialLang?: Language }) {
+  const [lang, setLang] = useState<Language>(initialLang);
   const [redditUser, setRedditUser] = useState<string>("");
   const [userToken, setUserToken] = useState<string>("");
   const [isMounted, setIsMounted] = useState<boolean>(false);
@@ -488,7 +488,7 @@ export function App() {
   }, [redditUser, userToken, lang, isMounted]);
 
   const t = TRANSLATIONS[lang];
-  const pixPrice = isDev ? "R$ 1,00" : "R$ 39,90";
+  const pixPrice = "R$ 19,90";
 
   const proceedToStripe = async (plan: PlanKey, username: string) => {
     setIsRedirecting(true);
@@ -1047,7 +1047,7 @@ export function App() {
             {(["pt", "en", "es"] as const).map((l) => (
               <button
                 key={l}
-                onClick={() => setLang(l)}
+                onClick={() => l === "pt" ? window.location.assign("/") : setLang(l)}
                 className={`px-1.5 py-0.5 text-[11px] sm:text-xs tracking-wider uppercase transition-colors cursor-pointer ${
                   lang === l
                     ? "text-white font-bold border-b border-white"

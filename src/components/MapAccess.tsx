@@ -11,11 +11,17 @@ export function MapAccess() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const [maps, setMaps] = useState<{ id: string; name: string; title: string }[]>([]);
   useEffect(() => {
     const params = new URLSearchParams(window.location.hash.slice(1));
     const token = params.get("token_hash");
     const mapId = params.get("mapa");
     if (token && mapId) setLink({ token_hash: token, mapId });
+    else {
+      fetch("/api/maps", { cache: "no-store" }).then(async response => {
+        if (response.ok) { const data = await response.json(); setMaps(data.maps || []); }
+      }).catch(() => { /* The access form remains available. */ });
+    }
     // Keep the secret out of history, referrers and subsequent navigation.
     if (window.location.hash) window.history.replaceState(null, "", window.location.pathname);
   }, []);
@@ -51,6 +57,7 @@ export function MapAccess() {
           <p className="pt-3 text-sm leading-7 text-muted-foreground">{link ? "Seu acesso está pronto. Confirme abaixo para abrir sua leitura, sem criar senha." : "Informe o e-mail usado na compra para receber um novo link de acesso."}</p>
         </CardHeader>
         <CardContent className="space-y-6 p-8 pt-3">
+          {!link && maps.length > 0 && <nav aria-label="Minhas leituras" className="space-y-3"><p className="map-eyebrow">Suas leituras disponíveis</p>{maps.map(map => <a key={map.id} href={`/mapa/${map.id}`} className="flex items-center justify-between gap-3 rounded-sm border border-black/20 p-4 hover:bg-black/5"><span><span className="block text-sm font-medium">{map.title}</span><span className="mt-1 block text-xs text-muted-foreground">{map.name}</span></span><ArrowRight className="size-4 shrink-0" /></a>)}</nav>}
           {link && <Button className="w-full" onClick={enter} disabled={busy}>{busy ? <Loader2 className="animate-spin" /> : <ArrowRight />} Acessar meu mapa</Button>}
           {error && <p role="alert" className="text-sm text-red-800">{error}</p>}
           {(!link || error) && <form onSubmit={requestLink} className="space-y-3">

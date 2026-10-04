@@ -1,5 +1,5 @@
 import OpenAI from "openai";
-import { buildWebMap } from "@/lib/web-map";
+import { buildPurchasedMap, readPurchase } from "@/lib/map-products";
 import { generateMapLink, sendMapAccessEmail } from "@/lib/map-email";
 import { sendTelegramPixNotification } from "@/lib/telegram";
 import { getSupabaseAdmin } from "@/lib/supabase";
@@ -360,7 +360,7 @@ export async function deliverNumerologyMap(params: DeliverMapParams) {
     if (!name || !email || !rawBirthDate) throw new Error("Dados do pagamento incompletos");
     const parsed = parseBirthDate(rawBirthDate);
     const birthDate = `${parsed.year}-${String(parsed.month).padStart(2, "0")}-${String(parsed.day).padStart(2, "0")}`;
-    const content = buildWebMap(name, birthDate);
+    const content = buildPurchasedMap(name, birthDate, readPurchase(meta));
     const access = await generateMapLink(email);
     const { error: profileError } = await supabase.from("profiles").upsert({ id: access.userId, email, full_name: name }, { onConflict: "id", ignoreDuplicates: true });
     if (profileError) throw profileError;
@@ -378,7 +378,7 @@ export async function deliverNumerologyMap(params: DeliverMapParams) {
     if (mapError) throw mapError;
     const { error: linkError } = await supabase.from("payments").update({ map_id: mapId, user_id: access.userId }).eq("id", payment.id);
     if (linkError) throw linkError;
-    const emailId = await sendMapAccessEmail(name, email, mapId, access.token);
+    const emailId = await sendMapAccessEmail(name, email, mapId, access.token, undefined, content.purchase?.product);
     const { error: sentError } = await supabase.from("payments").update({ metadata: {
       ...meta, delivering: false, email_sent: true, web_access_sent: true,
       email_sent_at: new Date().toISOString(), email_id: emailId,

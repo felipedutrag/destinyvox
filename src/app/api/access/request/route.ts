@@ -40,7 +40,7 @@ export async function POST(request: Request) {
     const { data: owned, error: ownerError } = await admin.from("numerology_maps")
       .update({ user_id: access.userId }).eq("id", payment.map_id).eq("customer_email", normalized).select("id").maybeSingle();
     if (ownerError || !owned) throw new Error("Mapa indisponível");
-    await sendMapAccessEmail(payment.payer_name, normalized, payment.map_id, access.token);
+    await sendMapAccessEmail(payment.payer_name, normalized, payment.map_id, access.token, undefined, meta.product === "atlas" ? "atlas" : "map");
     return reply();
   } catch {
     // Do not reveal whether an address has purchased a reading.

@@ -1,81 +1,34 @@
 import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { getGGPIXApiKey } from "@/lib/ggpix";
+import { PRIVATE_HEADERS } from "@/lib/map-auth";
 
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const transactionId = searchParams.get("id");
-
-  if (!transactionId) {
-    return NextResponse.json({ error: "ID de transação não fornecido" }, { status: 400 });
-  }
-
+  const transactionId = new URL(request.url).searchParams.get("id");
+  if (!transactionId || transactionId.length > 150) return NextResponse.json({ error: "Transação inválida." }, { status: 400 });
+  const reply = (status: string) => NextResponse.json({ status }, { headers: PRIVATE_HEADERS });
   try {
     const supabase = getSupabaseAdmin();
-
-    if (process.env.NODE_ENV === "production" && transactionId.includes("FELIPEDUTRA")) {
-      return NextResponse.json({ status: "PAID" });
-    }
-
-    // 1. Se o Webhook ou VIP já confirmou e gravou no banco, responde imediatamente com PAID
-    try {
-      const { data: dbPayment } = await supabase
-        .from("payments")
-        .select("status, payer_email")
-        .eq("transaction_id", transactionId)
-        .maybeSingle();
-
-      const isSpecialVip = process.env.NODE_ENV === "production" && dbPayment?.payer_email?.toLowerCase() === "felipedutra@outlook.com";
-
-      if (
-        dbPayment?.status === "PAID" ||
-        isSpecialVip
-      ) {
-        return NextResponse.json({ status: "PAID" });
-      }
-    } catch (dbErr) {
-      console.warn("[Status] Falha ao consultar Supabase:", dbErr);
-    }
-
+    const { data: payment, error } = await supabase.from("payments").select("id, status, amount_cents").eq("transaction_id", transactionId).maybeSingle();
+    if (error) throw error;
+    if (!payment) return reply("PENDING");
+    if (payment.status === "PAID") return reply("PAID");
+    if (["FAILED", "CANCELED", "EXPIRED"].includes(payment.status)) return reply(payment.status);
     const apiKey = getGGPIXApiKey();
-    if (!apiKey) {
-      console.warn("⚠️ GGPIX_KEY_FINAL não configurada. Respondendo PENDING.");
-      return NextResponse.json({ status: "PENDING" });
-    }
-
-    // 2. Busca na API GGPIX o status exato da transação
-    const ggpixResponse = await fetch(`https://ggpixapi.com/api/v1/transactions/${transactionId}`, {
-      method: "GET",
-      headers: {
-        "X-API-Key": apiKey,
-      },
-    });
-
-    const data = await ggpixResponse.json();
-
-    if (!ggpixResponse.ok || data.error) {
-      return NextResponse.json({ status: "PENDING" });
-    }
-
+    if (!apiKey) return reply("PENDING");
+    const response = await fetch(`https://ggpixapi.com/api/v1/transactions/${encodeURIComponent(transactionId)}`, { headers: { "X-API-Key": apiKey }, cache: "no-store", signal: AbortSignal.timeout(10000) });
+    const data = await response.json();
+    if (!response.ok || data.error) return reply("PENDING");
     if (data.status === "COMPLETE" || data.status === "paid") {
-      try {
-        await supabase
-          .from("payments")
-          .update({
-            status: "PAID",
-            paid_at: new Date().toISOString(),
-          })
-          .eq("transaction_id", transactionId);
-      } catch (dbErr) {
-        console.error("[Supabase] Falha ao atualizar pagamento para PAID:", dbErr);
-      }
-      return NextResponse.json({ status: "PAID" });
+      const receivedAmount = data.amountCents ?? data.amount;
+      if (receivedAmount !== undefined && Number(receivedAmount) !== payment.amount_cents) return reply("PENDING");
+      const { error: updateError } = await supabase.from("payments").update({ status: "PAID", paid_at: new Date().toISOString() }).eq("id", payment.id);
+      if (updateError) throw updateError;
+      return reply("PAID");
     }
-
-    return NextResponse.json({ status: "PENDING" });
+    return reply("PENDING");
   } catch (error) {
-    console.error("Erro ao checar status na GGPIX:", error);
-    return NextResponse.json({ status: "PENDING" });
+    console.error("[Status] Falha ao consultar pagamento", error);
+    return NextResponse.json({ error: "Não foi possível verificar agora." }, { status: 503, headers: PRIVATE_HEADERS });
   }
 }
-

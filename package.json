@@ -9,6 +9,7 @@
     "lint": "next lint",
     "type-check": "tsc --noEmit",
     "test:map": "tsc --ignoreConfig src/lib/web-map.ts --outDir tmp/map-tests --module commonjs --target es2020 --esModuleInterop --skipLibCheck && node scripts/test-web-map.cjs",
+    "test:products": "tsc --ignoreConfig src/lib/map-products.ts --outDir tmp/map-tests --module commonjs --target es2020 --esModuleInterop --skipLibCheck && node scripts/test-products.cjs && node scripts/test-commerce-routes.cjs",
     "commit": "node scripts/autocommit.mjs"
   },
   "dependencies": {

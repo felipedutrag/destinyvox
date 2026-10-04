@@ -9,13 +9,13 @@ export async function POST(request: Request) {
     const customerEmail = body.email;
     const birthDateRaw = body.birthDate || "";
 
-    if (!customerEmail) {
-      return NextResponse.json({ error: "E-mail não fornecido" }, { status: 400 });
+    if (!body.transaction_id && !body.external_id) {
+      return NextResponse.json({ error: "Pagamento não informado" }, { status: 400 });
     }
 
     const result = await deliverNumerologyMap({
       name: customerName,
-      email: customerEmail,
+      email: customerEmail || "",
       birthDate: birthDateRaw,
       transactionId: body.transaction_id,
       externalId: body.external_id,

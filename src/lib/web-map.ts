@@ -8,6 +8,7 @@ import {
   YEARLY_FORECAST_INTERPRETATIONS, MONTHLY_FORECAST_INTERPRETATIONS,
   DAILY_FORECAST_INTERPRETATIONS, interpolateFirstName,
 } from "../utils/interpretations";
+import type { ProductModule, Purchase } from "./map-products";
 
 export type NumberReading = {
   id: string;
@@ -21,6 +22,9 @@ export type NumberReading = {
 };
 
 export type WebMap = {
+  purchase?: Purchase;
+  modules?: ProductModule[];
+  upgradeMapId?: string;
   version: 2;
   name: string;
   birthDate: string;

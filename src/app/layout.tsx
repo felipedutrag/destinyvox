@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Seu Mapa Numerológico Online por R$ 39,90 | DestinyVox",
+  title: "O que os números dizem sobre seu destino | DestinyVox — R$ 19,90",
   description:
-    "Explore nove números e suas interpretações em um mapa numerológico online. Receba seu link de acesso por e-mail após a confirmação do Pix. Pagamento único de R$ 39,90.",
+    "Descubra o que os números dizem sobre o seu destino. Seu nome e nascimento em um mapa com nove números interpretados. Acesso online por R$ 19,90, sem assinatura.",
 };
 
 export default function RootLayout({

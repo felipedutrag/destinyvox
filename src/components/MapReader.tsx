@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import type { WebMap } from "@/lib/web-map";
 import { cn } from "@/lib/utils";
+import { AtlasOffer, ProductChapters } from "./ProductChapters";
 
 export function MapReader({ mapId, demo }: { mapId?: string; demo?: WebMap }) {
   const [map, setMap] = useState<WebMap | null>(demo || null);
@@ -41,6 +42,7 @@ export function MapReader({ mapId, demo }: { mapId?: string; demo?: WebMap }) {
   </main>;
 
   const active = map.readings.find(r => r.id === selected) || map.readings[0];
+  const isAtlas = map.purchase?.product === "atlas";
   const firstName = map.name.split(" ")[0];
   const dateLabel = new Intl.DateTimeFormat("pt-BR", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(`${map.referenceDate}T12:00:00Z`));
   const visibleReadings = map.readings.filter(r => filter === "all" || r.group === filter);
@@ -65,6 +67,8 @@ export function MapReader({ mapId, demo }: { mapId?: string; demo?: WebMap }) {
       <div className="flex items-center gap-5"><span className="hidden sm:block map-eyebrow text-muted-foreground">Seu espaço pessoal</span>{!demo && <Button variant="ghost" size="sm" onClick={logout} disabled={logoutBusy}><LogOut /> Sair</Button>}</div>
     </header>
     <main className="mx-auto max-w-7xl px-5 sm:px-10">
+      {isAtlas && <section className="grid gap-8 border-b border-black/20 py-12 sm:py-16 lg:grid-cols-[1.3fr_1fr]"><div><p className="map-eyebrow text-muted-foreground">O Atlas de {firstName} / Ciclos de Vida</p><h1 className="mt-6 font-editorial text-5xl leading-tight sm:text-6xl">Sua história tem fases.<br /><em className="text-[#77766e]">Cada uma, um convite.</em></h1><p className="mt-6 max-w-lg text-sm leading-7 text-muted-foreground">Explore os quatro pináculos calculados com seu nascimento. Releia o caminho percorrido, observe o capítulo atual e escolha o que deseja cultivar daqui para a frente.</p><a href={demo ? "/mapa/demo" : "/acesso"} className="mt-6 inline-flex items-center gap-2 border-b border-black/30 pb-1 text-sm">Voltar às minhas leituras <ArrowUpRight className="size-4" /></a></div><div className="flex flex-col justify-center border border-black/20 p-8"><p className="map-eyebrow">Seu pináculo atual</p><span className="my-5 font-editorial text-8xl">{map.modules?.find(m => m.id === "atlas")?.entries.find(e => e.current)?.number}</span><p className="font-editorial text-2xl">{map.modules?.find(m => m.id === "atlas")?.entries.find(e => e.current)?.title}</p><p className="mt-4 text-xs leading-6 text-muted-foreground">Referência: {dateLabel}. A etapa é atualizada conforme sua idade.</p></div></section>}
+      {!isAtlas && <>
       <section className="grid gap-10 border-b border-black/20 py-10 sm:py-14 lg:grid-cols-[1.35fr_1fr] lg:gap-16">
         <div>
           <p className="map-eyebrow mb-6">O mapa de {firstName} <span className="mx-2">/</span> Numerologia pitagórica</p>
@@ -122,6 +126,9 @@ export function MapReader({ mapId, demo }: { mapId?: string; demo?: WebMap }) {
         </div>
       </section>
 
+      </>}
+      <ProductChapters modules={map.modules || []} />
+      {!isAtlas && <AtlasOffer mapId={mapId} demo={!!demo} upgradeMapId={map.upgradeMapId} onDelivered={() => setAttempt(n => n + 1)} />}
       <section className="grid gap-7 py-10 sm:grid-cols-[1fr_2fr] sm:py-12">
         <p className="map-eyebrow">Você continua sendo<br className="hidden sm:block" /> a pessoa que escolhe.</p>
         <p className="max-w-2xl text-sm leading-7 text-muted-foreground">Leia com curiosidade. Perceba o que ressoa, questione o que não combina com você e volte quando quiser. A numerologia é uma linguagem simbólica de autoconhecimento: estas interpretações não determinam sua personalidade nem preveem acontecimentos.</p>

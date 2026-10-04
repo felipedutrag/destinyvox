@@ -1,163 +1,64 @@
+import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
-import { generateRandomCPF } from "@/utils/cpf";
 import QRCode from "qrcode";
+import { generateRandomCPF } from "@/utils/cpf";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { getGGPIXApiKey } from "@/lib/ggpix";
+import { getMapAuth, sameOrigin } from "@/lib/map-auth";
+import { CATALOG, createOrder, validateCustomer } from "@/lib/catalog";
+import { brazilianDate } from "@/lib/web-map";
 
 export async function POST(request: Request) {
+  if (!sameOrigin(request)) return NextResponse.json({ error: "Origem inválida." }, { status: 403 });
+  let body;
+  try { body = await request.json(); } catch { return NextResponse.json({ error: "Dados inválidos." }, { status: 400 }); }
+  if (!body || typeof body !== "object") return NextResponse.json({ error: "Dados inválidos." }, { status: 400 });
+  let order;
+  try { order = createOrder(body.product, body.bumps); } catch (error) { return NextResponse.json({ error: (error as Error).message }, { status: 400 }); }
   try {
-    const { name, email, birthDate, plan } = await request.json();
-
-    if (!name || !email || !birthDate) {
-      return NextResponse.json({ error: "Dados incompletos" }, { status: 400 });
+    let customerInput = body;
+    let sourceMapId: string | null = null;
+    let userId: string | null = null;
+    if (order.product === "atlas") {
+      const client = await getMapAuth();
+      const { data: { user }, error: authError } = await client.auth.getUser();
+      if (authError || !user) return NextResponse.json({ error: "Entre no seu mapa para adquirir o Atlas." }, { status: 401 });
+      if (typeof body.sourceMapId !== "string" || !/^[a-f0-9-]{36}$/i.test(body.sourceMapId)) return NextResponse.json({ error: "Mapa inválido." }, { status: 400 });
+      const { data: map, error } = await client.from("numerology_maps").select("id, customer_name, customer_email, birth_date, full_interpretation").eq("id", body.sourceMapId).eq("user_id", user.id).eq("status", "completed").maybeSingle();
+      if (error) throw error;
+      if (!map || map.full_interpretation?.purchase?.product === "atlas") return NextResponse.json({ error: "Mapa de origem não encontrado." }, { status: 404 });
+      const { data: existing, error: existingError } = await client.from("payments").select("id").eq("user_id", user.id).eq("status", "PAID").contains("metadata", { sourceMapId: map.id, product: "atlas" }).limit(1);
+      if (existingError) throw existingError;
+      if (existing?.length) return NextResponse.json({ error: "Você já adquiriu este Atlas. Atualize seu mapa ou consulte seu e-mail para acessá-lo." }, { status: 409 });
+      customerInput = { name: map.customer_name, email: map.customer_email, birthDate: map.birth_date };
+      sourceMapId = map.id; userId = user.id;
     }
-
-    const cpf = generateRandomCPF();
-    // Embutindo todos os dados no external_id porque o webhook da GGPIX não retorna dados do cliente
-    const external_id = `MAPA_${Date.now()}__||__${encodeURIComponent(name)}__||__${encodeURIComponent(email)}__||__${birthDate}__||__${plan || "30_questions"}`;
-    const cleanEmail = email.trim().toLowerCase();
-    const isSpecialVip = process.env.NODE_ENV === 'production' && cleanEmail === "felipedutra@outlook.com";
-
-    const amountCents = process.env.NODE_ENV === 'production' 
-      ? 3990 
-      : 100;
-
-    // Se for o e-mail VIP felipedutra@outlook.com, aprova o pagamento imediatamente
-    if (isSpecialVip) {
-      const transactionId = `VIP_FELIPEDUTRA_${Date.now()}`;
-      try {
-        const supabase = getSupabaseAdmin();
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("id")
-          .eq("email", cleanEmail)
-          .maybeSingle();
-
-        await supabase.from("payments").insert({
-          gateway: "ggpix",
-          external_id: external_id,
-          transaction_id: transactionId,
-          user_id: profile?.id || null,
-          payer_name: name,
-          payer_email: cleanEmail,
-          payer_cpf: cpf,
-          amount_cents: amountCents,
-          status: "PAID",
-          paid_at: new Date().toISOString(),
-          pix_code: "VIP_AUTO_APPROVED",
-          pix_qr_code_base64: "",
-          metadata: {
-            birthDate,
-            plan: plan || "30_questions",
-            auto_approved: true,
-          },
-        });
-        console.log(`[Supabase] ⚡ Pagamento VIP aprovado automaticamente para ${cleanEmail}`);
-      } catch (dbErr) {
-        console.error("[Supabase] Erro ao gravar pagamento VIP:", dbErr);
-      }
-
-      return NextResponse.json({
-        success: true,
-        status: "PAID",
-        auto_paid: true,
-        transaction_id: transactionId,
-        external_id: external_id,
-        qr_code: "VIP_AUTO_APPROVED",
-        pix_copy_paste: "VIP_AUTO_APPROVED",
-      });
-    }
-
+    let customer;
+    try { customer = validateCustomer(customerInput, brazilianDate()); } catch (error) { return NextResponse.json({ error: (error as Error).message }, { status: 400 }); }
     const apiKey = getGGPIXApiKey();
-    if (!apiKey) {
-      console.error("❌ ERRO: GGPIX_KEY_FINAL não está configurada na Vercel!");
-      return NextResponse.json({ error: "Configuração do servidor incompleta" }, { status: 500 });
-    }
-
-    console.log(`🚀 [GGPIX-DEBUG] Chave: [${apiKey.substring(0, 5)}...] | Iniciando chamada...`);
-
-    const description = "DestinyVox Oráculo — 30 Consultas & Mapa Pitagórico Completo";
-
+    if (!apiKey) throw new Error("Gateway indisponível");
+    const supabase = getSupabaseAdmin();
+    const paymentId = randomUUID(), externalId = `MAPA_${paymentId}`;
+    const cpf = generateRandomCPF();
+    const metadata = { ...order, birthDate: customer.birthDate, referenceDate: brazilianDate(), sourceMapId, plan: CATALOG[order.product].name };
+    // Persist before the gateway call so an early webhook finds the order by external_id.
+    const { error: insertError } = await supabase.from("payments").insert({ id: paymentId, gateway: "ggpix", external_id: externalId, user_id: userId, payer_name: customer.name, payer_email: customer.email, payer_cpf: cpf, amount_cents: order.amountCents, status: "PENDING", metadata });
+    if (insertError) throw insertError;
     const appUrl = (process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || "https://destinyvox.online").replace(/\/$/, "");
-    const webhookUrl = `${appUrl}/api/webhooks/ggpix`;
-
-    const ggpixResponse = await fetch("https://ggpixapi.com/api/v1/pix/in", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-API-Key": apiKey,
-      },
-      body: JSON.stringify({
-        amountCents,
-        description,
-        externalId: external_id,
-        payerName: name,
-        payerDocument: cpf,
-        customerEmail: email,
-        webhookUrl: webhookUrl,
-      }),
+    const response = await fetch("https://ggpixapi.com/api/v1/pix/in", {
+      method: "POST", headers: { "Content-Type": "application/json", "X-API-Key": apiKey },
+      body: JSON.stringify({ amountCents: order.amountCents, description: `DestinyVox — ${CATALOG[order.product].name}${order.bumps.length ? ` + ${order.bumps.length} adicionais` : ""}`, externalId, payerName: customer.name, payerDocument: cpf, customerEmail: customer.email, webhookUrl: `${appUrl}/api/webhooks/ggpix` }),
+      signal: AbortSignal.timeout(25000),
     });
-
-    const data = await ggpixResponse.json();
-    console.log("Resposta GGPIX completa:", data);
-
-    if (!ggpixResponse.ok) {
-      console.error("Erro GGPIX:", data);
-      return NextResponse.json({ error: "Erro ao gerar PIX" }, { status: 500 });
-    }
-
-    // Gerar o QR Code em base64 caso a API não tenha enviado a imagem pronta
+    const data = await response.json();
     const pixCode = data.pixCopyPaste || data.pixCode;
-    let qrCodeBase64 = "";
-    if (pixCode) {
-      qrCodeBase64 = await QRCode.toDataURL(pixCode);
-      qrCodeBase64 = qrCodeBase64.replace(/^data:image\/png;base64,/, "");
-    }
-
-    // Persistir pagamento no Supabase
-    try {
-      const supabase = getSupabaseAdmin();
-      
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("id")
-        .eq("email", email.trim().toLowerCase())
-        .maybeSingle();
-
-      await supabase.from("payments").insert({
-        gateway: "ggpix",
-        external_id: external_id,
-        transaction_id: String(data.id || ""),
-        user_id: profile?.id || null,
-        payer_name: name,
-        payer_email: email.trim().toLowerCase(),
-        payer_cpf: cpf,
-        amount_cents: amountCents,
-        status: "PENDING",
-        pix_code: pixCode,
-        pix_qr_code_base64: qrCodeBase64,
-        metadata: {
-          birthDate,
-          plan: plan || "30_questions",
-          rawResponse: data,
-        },
-      });
-      console.log(`[Supabase] Pagamento pendente registrado para ${email}`);
-    } catch (dbErr) {
-      console.error("[Supabase] Aviso: Falha ao registrar pagamento pendente:", dbErr);
-    }
-
-    return NextResponse.json({
-      success: true,
-      transaction_id: data.id,
-      qr_code: pixCode,
-      qr_code_base64: qrCodeBase64,
-      pix_copy_paste: pixCode,
-      external_id: external_id
-    });
-
+    if (!response.ok || !data.id || !pixCode) throw new Error("Não foi possível gerar o Pix");
+    const qr = (await QRCode.toDataURL(pixCode)).replace(/^data:image\/png;base64,/, "");
+    const { error: updateError } = await supabase.from("payments").update({ transaction_id: String(data.id), pix_code: pixCode, pix_qr_code_base64: qr }).eq("id", paymentId);
+    if (updateError) throw updateError;
+    return NextResponse.json({ success: true, transaction_id: String(data.id), external_id: externalId, qr_code_base64: qr, pix_copy_paste: pixCode, amount_cents: order.amountCents });
   } catch (error) {
-    console.error("Erro no Checkout:", error);
-    return NextResponse.json({ error: "Erro interno do servidor" }, { status: 500 });
+    console.error("[Checkout] Falha ao preparar compra", error);
+    return NextResponse.json({ error: "Não foi possível gerar seu Pix agora. Tente novamente em instantes." }, { status: 503 });
   }
 }
