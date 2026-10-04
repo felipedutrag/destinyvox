@@ -38,7 +38,7 @@ export function LandingPage() {
             <div className="flex items-center justify-between border-b border-black/15 pb-4"><span className="map-eyebrow">Uma leitura. Muitas descobertas.</span><Sparkles className="size-4 text-[#737b62]" /></div>
             <div className="relative flex h-60 items-center justify-center sm:h-72" aria-hidden="true">
               <svg viewBox="0 0 360 260" className="absolute h-full w-full fill-none stroke-[#7b806d] stroke-[.7]"><circle cx="180" cy="130" r="99" strokeDasharray="2 5" /><ellipse cx="180" cy="130" rx="145" ry="65" transform="rotate(-30 180 130)" /><ellipse cx="180" cy="130" rx="145" ry="65" transform="rotate(30 180 130)" /><path d="M180 10v22m-11-11h22M315 130h22m-11-11v22M26 172h18m-9-9v18" /><circle cx="180" cy="130" r="57" /></svg>
-              <span className="font-editorial text-[110px] text-[#424c35]">9</span>
+              <span className="-translate-y-[0.20em] font-editorial text-[110px] leading-none text-[#424c35]">9</span>
               <span className="absolute bottom-7 right-9 font-editorial text-3xl text-[#777e69]">6</span><span className="absolute left-10 top-8 font-editorial text-3xl text-[#777e69]">5</span>
             </div>
             <p className="map-eyebrow text-[#626b51]">Caminho de Vida / 9</p><h2 className="mt-2 font-editorial text-3xl">Um olhar para o que importa.</h2>
