@@ -6,7 +6,7 @@
 2. Publique esta versão da aplicação. A landing fica em `/sinastria`; a home mantém seus três adicionais anteriores.
 3. Faça uma compra de teste do mapa com o adicional. Entre pelo e-mail, abra **Relacionamentos e sinastrias**, cadastre uma pessoa e use o crédito. Reabra a comparação e confirme que não há consumo adicional.
 
-O SQL foi executado em PostgreSQL isolado via PGlite, incluindo testes de permissões e isolamento. Ainda precisa ser aplicado e validado no Supabase do ambiente publicado. O checkout bloqueia a venda de sinastria se a tabela de relatórios não existir.
+O SQL foi executado em PostgreSQL isolado via PGlite e, após a aplicação pelo usuário, validado no Supabase configurado em `.env.local`. O teste de integração passou com as rotas Next reais, duas contas temporárias, RLS, consumo concorrente e releitura. Pix, e-mail e Telegram foram simulados em um processo separado; o teste não realizou cobranças nem enviou mensagens. Os dados temporários foram removidos ao final. O checkout bloqueia a venda de sinastria se a tabela de relatórios não existir.
 
 ## Oferta
 
@@ -38,5 +38,7 @@ Os números individuais preservam os mestres segundo os cálculos existentes. O 
 `npm run test:synastry`: cálculos, 16 combinações de carrinho, SQL real isolado, RLS, créditos, releitura, rollback, rotas e regressões comerciais. O PGlite executa PostgreSQL em processo único; não substitui um teste de carga com múltiplas conexões no banco publicado.
 
 `npm run type-check` e `npm run build`: tipos e compilação de produção.
+
+Após `npm run build`, execute `node --env-file=.env.local scripts/verify-synastry-live.mjs` para testar a integração com o Supabase configurado. O script inicia um servidor isolado na porta 3005, verifica checkout, QR, webhook autenticado, polling, entrega, crédito inicial e adicional, concorrência, releitura e isolamento real entre contas. Cria e remove somente seus próprios registros temporários. Requer acesso de rede ao Supabase; o gateway e os envios externos são interceptados.
 
 Prévia do produto em desenvolvimento: `/mapa/demo#relacionamentos`, com dois perfis fictícios. Essa rota permanece desativada em produção.

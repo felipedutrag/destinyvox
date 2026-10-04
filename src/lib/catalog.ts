@@ -1,6 +1,6 @@
 export const CATALOG = {
   map: { name: "Mapa Numerológico", price: 1990 },
-  synastry: { name: "Minha primeira sinastria", price: 990, description: "Um crédito para comparar seu mapa com o de outra pessoa. Cadastre os dados dela depois, dentro do seu mapa. A comparação fica salva para reler." },
+  synastry: { name: "Minha primeira sinastria", price: 990, description: "Uma comparação completa entre o seu mapa e o do seu crush: afinidades, necessidades afetivas, diferenças e formas de se conectar em cinco dimensões. Preencha os dados abaixo e receba a sinastria pronta junto do seu mapa, para reler quando quiser." },
   synastry_credit: { name: "Crédito de Sinastria", price: 1490, description: "Uma nova comparação entre seu mapa e o de outra pessoa, com leitura dos vínculos, diferenças e propostas de conversa." },
   calendar: { name: "Calendário Pessoal de 12 Meses", price: 990, description: "Veja o número de cada um dos próximos 12 meses, com interpretação e uma proposta de reflexão para cada fase." },
   name: { name: "Forças do Nome", price: 790, description: "Descubra os números que mais aparecem no seu nome e os que estão ausentes, com leituras de potenciais e aprendizados." },
@@ -32,4 +32,13 @@ export function validateCustomer(input: { name?: unknown; email?: unknown; birth
   const date = new Date(`${birthDate}T12:00:00Z`);
   if (!/^\d{4}-\d{2}-\d{2}$/.test(birthDate) || !Number.isFinite(date.getTime()) || date.toISOString().slice(0, 10) !== birthDate || birthDate < "1900-01-01" || birthDate > today) throw new Error("Confira sua data de nascimento.");
   return { name, email, birthDate };
+}
+
+export function validateSynastryPerson(input: unknown, today: string) {
+  if (!input || typeof input !== "object") throw new Error("Preencha o nome completo e a data de nascimento do seu crush para incluir a sinastria.");
+  const candidate = input as { name?: unknown; birthDate?: unknown };
+  try {
+    const { name, birthDate } = validateCustomer({ name: candidate.name, birthDate: candidate.birthDate, email: "profile@example.invalid" }, today);
+    return { name, birthDate };
+  } catch { throw new Error("Confira o nome completo de nascimento e a data válida do seu crush."); }
 }

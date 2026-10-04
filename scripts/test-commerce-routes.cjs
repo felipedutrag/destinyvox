@@ -19,6 +19,7 @@ function query(table) {
     eq(...filter) { q.filters.push(filter); return methods; }, neq() { return methods; }, is() { return methods; },
     contains() { return methods; }, limit() { return methods; },
     maybeSingle() { return resolve(true); },
+    single() { return resolve(true); },
     then(yes, no) { return resolve(false).then(yes, no); },
   };
   async function resolve(single) {
@@ -34,7 +35,7 @@ function query(table) {
   }
   return methods;
 }
-const db = { from: query, auth: { getUser: async () => ({ data: { user: state.user }, error: null }) } };
+const db = { from: query, auth: { getUser: async () => ({ data: { user: state.user }, error: null }) }, rpc: async (name, args) => { state.synastryCall = { name, args }; return { data: { id: "synastry-report" }, error: state.synastryError || null }; } };
 let realDelivery;
 const stubs = {
   "next/server": { NextResponse: Response },
@@ -43,6 +44,7 @@ const stubs = {
   "@/lib/catalog": catalog,
   "@/lib/web-map": { brazilianDate: () => "2026-10-04", buildWebMap },
   "@/lib/map-products": products,
+  "@/lib/synastry": require("../tmp/map-tests/lib/synastry.js"),
   "@/lib/map-auth": { getMapAuth: async () => db, sameOrigin: request => request.headers.get("origin") === new URL(request.url).origin, PRIVATE_HEADERS: { "Cache-Control": "private, no-store" } },
   "@/utils/cpf": { generateRandomCPF: () => "00000000000" },
   "qrcode": { toDataURL: async () => "data:image/png;base64,test-qr" },
@@ -71,6 +73,7 @@ const status = load("src/app/api/status/route.ts").GET;
 realDelivery = load("src/lib/delivery.ts").deliverNumerologyMap;
 const request = body => new Request("https://example.com/api/checkout", { method: "POST", headers: { origin: "https://example.com", "Content-Type": "application/json" }, body: JSON.stringify(body) });
 const customer = { name: "Marina Costa", email: "marina@example.com", birthDate: "1994-05-17" };
+const partner = { name: "Rafael Almeida", birthDate: "1992-09-23" };
 
 (async () => {
   reset();
@@ -118,10 +121,20 @@ const customer = { name: "Marina Costa", email: "marina@example.com", birthDate:
   assert.equal(state.writes[0].value.user_id, "owner");
   assert.equal(state.writes[0].value.metadata.sourceMapId, mapId);
   reset();
-  assert.equal((await checkout(request({ ...customer, bumps: ["synastry"] }))).status, 200);
+  for (const synastryPerson of [undefined, null, {}, { ...partner, birthDate: "2025-02-29" }, { ...partner, birthDate: "2030-01-01" }, { ...partner, name: "Rafael" }]) {
+    assert.equal((await checkout(request({ ...customer, bumps: ["synastry"], synastryPerson }))).status, 400);
+  }
+  assert.equal(state.gatewayCalls.length, 0, "invalid partner cannot create a charge");
+  assert.equal((await checkout(request({ ...customer, bumps: ["synastry"], synastryPerson: partner }))).status, 200);
   assert.equal(state.gatewayCalls[0].body.amountCents, 2980);
+  assert.equal(state.writes[0].value.metadata.synastryPerson.name, partner.name);
+  assert.equal(state.writes[0].value.metadata.synastryPerson.birthDate, partner.birthDate);
+  reset();
+  assert.equal((await checkout(request({ ...customer, bumps: [], synastryPerson: partner }))).status, 200);
+  assert.equal(state.writes[0].value.metadata.synastryPerson, undefined, "unchecked bump discards partner data");
+  assert.equal(state.gatewayCalls[0].body.amountCents, 1990);
   reset(); state.schemaError = new Error("missing schema");
-  assert.equal((await checkout(request({ ...customer, bumps: ["synastry"] }))).status, 503);
+  assert.equal((await checkout(request({ ...customer, bumps: ["synastry"], synastryPerson: partner }))).status, 503);
   assert.equal(state.gatewayCalls.length, 0, "never sell a credit before schema is installed");
   reset(); state.payment = { id: "payment", external_id: "stored-id", amount_cents: 1990, payer_name: customer.name, payer_email: customer.email, metadata: { birthDate: customer.birthDate }, status: "PENDING" };
   assert.equal((await webhook(request({ status: "COMPLETE", transactionId: "gateway-id", amount: 1 }))).status, 409);
@@ -165,4 +178,16 @@ const customer = { name: "Marina Costa", email: "marina@example.com", birthDate:
   assert.equal((await realDelivery({ transactionId: "credit-paid" })).alreadyDelivered, true);
   assert.equal(state.delivery.length, 1);
   console.log("PASS: checkout totals, tamper resistance, no VIP bypass, database/gateway failures, owned-map upsell, duplicate upsell, webhook amount check, late events, paid-only delivery, purchased modules, stored customer identity, idempotent delivery, product email.");
+  reset();
+  state.payment = { id: "auto-synastry-payment", status: "PAID", payer_name: customer.name, payer_email: customer.email, amount_cents: 2980, transaction_id: "automatic", metadata: { product: "map", bumps: ["synastry"], synastryPerson: partner, birthDate: customer.birthDate, referenceDate: "2026-10-04" } };
+  state.synastryError = new Error("temporary comparison failure");
+  await assert.rejects(() => realDelivery({ transactionId: "automatic" }));
+  assert.equal(state.delivery.length, 0, "do not email access before the comparison is ready");
+  state.synastryError = null;
+  const ready = await realDelivery({ transactionId: "automatic", synastryPerson: { name: "Forged Person" } });
+  assert.equal(ready.emailSent, true);
+  assert.equal(state.synastryCall.name, "create_synastry");
+  assert.equal(state.synastryCall.args.p_report.b.name, partner.name, "delivery uses stored partner only");
+  assert.equal(state.synastryCall.args.p_report.dimensions.length, 5);
+  console.log("PASS: checkout partner validation, deselected bump, automatic comparison, failure before email, safe retry, stored partner identity.");
 })().catch(error => { console.error(error); process.exitCode = 1; });

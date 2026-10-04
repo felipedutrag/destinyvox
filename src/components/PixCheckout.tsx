@@ -11,7 +11,8 @@ type Phase = "waiting" | "delivering" | "delivered" | "failed" | "paused";
 
 export function PixCheckout({ product = "map", sourceMapId, onDelivered, relationship = false }: { product?: ProductId; sourceMapId?: string; onDelivered?: () => void; relationship?: boolean }) {
   const [customer, setCustomer] = useState({ name: "", email: "", birthDate: "" });
-  const [bumps, setBumps] = useState<BumpId[]>([]);
+  const [bumps, setBumps] = useState<BumpId[]>(relationship && product === "map" ? ["synastry"] : []);
+  const [synastryPerson, setSynastryPerson] = useState({ name: "", birthDate: "" });
   const [payment, setPayment] = useState<Payment | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -25,6 +26,7 @@ export function PixCheckout({ product = "map", sourceMapId, onDelivered, relatio
   doneRef.current = onDelivered;
   const storageKey = `destinyvox:pix:${product}:${sourceMapId || (relationship ? "relationship" : "new")}`;
   const order = createOrder(product, bumps);
+  const offeredBumps: readonly BumpId[] = relationship ? ["synastry", "calendar", "name", "challenges"] : BUMP_IDS.filter(id => id !== "synastry");
 
   useEffect(() => {
     try {
@@ -88,7 +90,7 @@ export function PixCheckout({ product = "map", sourceMapId, onDelivered, relatio
     if (busy) return;
     setBusy(true); setError("");
     try {
-      const response = await fetch("/api/checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...customer, product, bumps, sourceMapId }) });
+      const response = await fetch("/api/checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...customer, product, bumps, sourceMapId, ...(bumps.includes("synastry") ? { synastryPerson } : {}) }) });
       const data = await response.json();
       if (!response.ok || !data.success) throw new Error(data.error || "Não foi possível gerar o Pix.");
       setPayment(data); setPhase("waiting");
@@ -129,10 +131,17 @@ export function PixCheckout({ product = "map", sourceMapId, onDelivered, relatio
     {product === "map" && <fieldset disabled={busy} className="space-y-3">
       <legend className="map-eyebrow mb-1">02 / Quer aprofundar algum tema?</legend>
       <p className="pb-2 text-xs leading-5 text-muted-foreground">Adicionais opcionais. Seu mapa de nove números já está completo sem eles.</p>
-      {BUMP_IDS.filter(id => id !== "synastry" || relationship).map(id => <label key={id} className={`flex cursor-pointer items-start gap-3 rounded-sm border p-4 transition-colors ${bumps.includes(id) ? "border-[#656e50] bg-[#e6e9dd]" : "border-black/15 hover:bg-black/[.025]"}`}>
-        <input type="checkbox" checked={bumps.includes(id)} onChange={e => setBumps(current => e.target.checked ? [...current, id] : current.filter(bump => bump !== id))} className="mt-1 size-4 shrink-0 accent-[#343e2a]" />
+      {offeredBumps.map(id => <div key={id} className={`rounded-sm border p-4 transition-colors ${bumps.includes(id) ? "border-[#656e50] bg-[#e6e9dd]" : "border-black/15 hover:bg-black/[.025]"}`}>
+        <label className="flex cursor-pointer items-start gap-3">
+        <input type="checkbox" name={`bump-${id}`} checked={bumps.includes(id)} onChange={e => setBumps(current => e.target.checked ? [...current, id] : current.filter(bump => bump !== id))} className="mt-1 size-4 shrink-0 accent-[#343e2a]" />
         <span className="min-w-0"><span className="flex flex-wrap justify-between gap-x-3 gap-y-1 text-sm font-semibold"><span>{CATALOG[id].name}</span><span className="whitespace-nowrap">+ {brl(CATALOG[id].price)}</span></span><span className="mt-2 block text-xs leading-6 text-muted-foreground">{CATALOG[id].description}</span></span>
-      </label>)}
+        </label>
+        {id === "synastry" && bumps.includes("synastry") && <div className="mt-4 space-y-4 border-t border-black/15 pt-4">
+          <label htmlFor="crush-name" className="block text-sm font-medium">Nome completo de nascimento do crush<input id="crush-name" name="crushName" autoComplete="off" required maxLength={150} value={synastryPerson.name} onChange={e => setSynastryPerson({ ...synastryPerson, name: e.target.value })} placeholder="Nome completo, como na certidão" className="landing-input" /></label>
+          <label htmlFor="crush-birth" className="block text-sm font-medium">Data de nascimento do crush<input id="crush-birth" name="crushBirthDate" type="date" autoComplete="off" required min="1900-01-01" value={synastryPerson.birthDate} onChange={e => setSynastryPerson({ ...synastryPerson, birthDate: e.target.value })} className="landing-input" /></label>
+          <p className="text-xs leading-6 text-muted-foreground">Após o Pix, seu mapa e a sinastria serão preparados juntos. Este adicional custa R$ 9,90; desmarque acima se quiser apenas o mapa.</p>
+        </div>}
+      </div>)}
     </fieldset>}
     <div className="space-y-3 border-t border-black/20 pt-5" aria-live="polite">
       <div className="flex justify-between gap-3 text-sm"><span>{CATALOG[product].name}</span><span className="whitespace-nowrap">{brl(CATALOG[product].price)}</span></div>

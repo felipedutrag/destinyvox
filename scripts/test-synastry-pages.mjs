@@ -8,9 +8,11 @@ for (const [path, count] of [["/", 3], ["/sinastria", 4]]) {
   const inputs = html.match(/<input\b[^>]*>/g) || [];
   const bumps = inputs.filter(tag => tag.includes('type="checkbox"'));
   assert.equal(bumps.length, count);
-  assert.ok(bumps.every(tag => !tag.includes(' checked=')), "no preselected paid bump");
+  assert.equal(bumps.filter(tag => tag.includes(' checked=')).length, path === "/sinastria" ? 1 : 0);
   for (const field of ["customer-name", "customer-email", "customer-birth"]) assert.ok(inputs.some(tag => tag.includes(`id="${field}"`)));
   if (path === "/sinastria") {
+    assert.ok(bumps[0].includes('name="bump-synastry"') && bumps[0].includes(' checked='), "synastry is first and selected");
+    for (const id of ["crush-name", "crush-birth"]) assert.ok(inputs.some(tag => tag.includes(`id="${id}"`) && tag.includes("required")));
     assert.ok(html.includes("Minha primeira sinastria"));
     assert.ok(html.includes("29,80"));
     assert.ok(html.includes("14,90"));

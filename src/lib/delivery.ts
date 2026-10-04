@@ -3,6 +3,9 @@ import { buildPurchasedMap, readPurchase } from "@/lib/map-products";
 import { generateMapLink, sendMapAccessEmail } from "@/lib/map-email";
 import { sendTelegramPixNotification } from "@/lib/telegram";
 import { getSupabaseAdmin } from "@/lib/supabase";
+import { buildSynastry } from "@/lib/synastry";
+import { validateSynastryPerson } from "@/lib/catalog";
+import { brazilianDate } from "@/lib/web-map";
 import {
   calculateLifePath,
   calculateExpression,
@@ -385,6 +388,18 @@ export async function deliverNumerologyMap(params: DeliverMapParams) {
     }
     const { error: linkError } = await supabase.from("payments").update({ map_id: mapId, user_id: access.userId }).eq("id", payment.id);
     if (linkError) throw linkError;
+    // Old orders without partner data keep their unspent credit. New orders are
+    // fulfilled before the access email; the existing RPC makes retries safe.
+    if (!isCredit && content.purchase?.bumps.includes("synastry") && meta.synastryPerson) {
+      const partner = validateSynastryPerson(meta.synastryPerson, brazilianDate());
+      const { data: person, error: personError } = await supabase.from("relationship_people")
+        .upsert({ user_id: access.userId, name: partner.name, birth_date: partner.birthDate }, { onConflict: "user_id,name,birth_date" })
+        .select("id").single();
+      if (personError || !person) throw personError || new Error("Não foi possível preparar a pessoa da sinastria");
+      const report = buildSynastry({ name, birthDate }, partner, content.purchase.referenceDate);
+      const { error: reportError } = await supabase.rpc("create_synastry", { p_user: access.userId, p_map: mapId, p_person: person.id, p_report: report });
+      if (reportError) throw reportError;
+    }
     const emailId = await sendMapAccessEmail(name, email, mapId, access.token, undefined, isCredit ? "synastry_credit" : content.purchase?.product);
     const { error: sentError } = await supabase.from("payments").update({ metadata: {
       ...meta, delivering: false, email_sent: true, web_access_sent: true,

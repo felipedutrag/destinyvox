@@ -5,7 +5,7 @@ import { generateRandomCPF } from "@/utils/cpf";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { getGGPIXApiKey } from "@/lib/ggpix";
 import { getMapAuth, sameOrigin } from "@/lib/map-auth";
-import { CATALOG, createOrder, validateCustomer } from "@/lib/catalog";
+import { CATALOG, createOrder, validateCustomer, validateSynastryPerson } from "@/lib/catalog";
 import { brazilianDate } from "@/lib/web-map";
 
 export async function POST(request: Request) {
@@ -37,6 +37,11 @@ export async function POST(request: Request) {
     }
     let customer;
     try { customer = validateCustomer(customerInput, brazilianDate()); } catch (error) { return NextResponse.json({ error: (error as Error).message }, { status: 400 }); }
+    let synastryPerson;
+    if (order.bumps.includes("synastry")) {
+      try { synastryPerson = validateSynastryPerson(body.synastryPerson, brazilianDate()); }
+      catch (error) { return NextResponse.json({ error: (error as Error).message }, { status: 400 }); }
+    }
     const apiKey = getGGPIXApiKey();
     if (!apiKey) throw new Error("Gateway indisponível");
     const supabase = getSupabaseAdmin();
@@ -47,7 +52,7 @@ export async function POST(request: Request) {
     }
     const paymentId = randomUUID(), externalId = `MAPA_${paymentId}`;
     const cpf = generateRandomCPF();
-    const metadata = { ...order, birthDate: customer.birthDate, referenceDate: brazilianDate(), sourceMapId, plan: CATALOG[order.product].name };
+    const metadata = { ...order, birthDate: customer.birthDate, referenceDate: brazilianDate(), sourceMapId, plan: CATALOG[order.product].name, ...(synastryPerson ? { synastryPerson } : {}) };
     // Persist before the gateway call so an early webhook finds the order by external_id.
     const { error: insertError } = await supabase.from("payments").insert({ id: paymentId, gateway: "ggpix", external_id: externalId, user_id: userId, payer_name: customer.name, payer_email: customer.email, payer_cpf: cpf, amount_cents: order.amountCents, status: "PENDING", metadata });
     if (insertError) throw insertError;

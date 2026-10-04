@@ -42,6 +42,10 @@ export function RelationshipSpace({ map, mapId, demo = false }: { map: WebMap; m
       const data = await response.json();
       if (!response.ok) throw new Error(data.error);
       setSpace(data);
+      if (data.reports?.[0]) {
+        setActive(current => current || data.reports[0].report);
+        setPersonId(current => current || data.reports[0].person_id);
+      }
     } catch (err) { setError(err instanceof Error ? err.message : "Não foi possível carregar suas sinastrias."); }
     finally { setLoading(false); }
   }, [endpoint]);

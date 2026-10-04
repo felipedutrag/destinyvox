@@ -9,7 +9,7 @@
     "lint": "next lint",
     "type-check": "tsc --noEmit",
     "test:map": "tsc --ignoreConfig src/lib/web-map.ts --outDir tmp/map-tests --module commonjs --target es2020 --esModuleInterop --skipLibCheck && node scripts/test-web-map.cjs",
-    "test:products": "tsc --ignoreConfig src/lib/map-products.ts --outDir tmp/map-tests --module commonjs --target es2020 --esModuleInterop --skipLibCheck && node scripts/test-products.cjs && node scripts/test-commerce-routes.cjs",
+    "test:products": "tsc --ignoreConfig src/lib/map-products.ts src/lib/synastry.ts --outDir tmp/map-tests --module commonjs --target es2020 --esModuleInterop --skipLibCheck && node scripts/test-products.cjs && node scripts/test-commerce-routes.cjs",
     "test:synastry": "tsc --ignoreConfig src/lib/synastry.ts --outDir tmp/map-tests --module commonjs --target es2020 --esModuleInterop --skipLibCheck && node scripts/test-synastry.cjs && node scripts/test-synastry-db.mjs && node scripts/test-synastry-routes.cjs && node scripts/test-commerce-routes.cjs",
     "commit": "node scripts/autocommit.mjs"
   },
