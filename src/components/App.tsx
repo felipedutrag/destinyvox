@@ -1225,7 +1225,6 @@ export function App({ initialLang = "en" }: { initialLang?: Language }) {
           <span>•</span>
           <span>{t.footerSync}</span>
         </div>
-        {lang === "pt" && <p className="max-w-2xl mx-auto text-xs leading-relaxed text-neutral-500">Numerologia é uma prática simbólica de autoconhecimento. As interpretações convidam à reflexão e não garantem acontecimentos ou resultados.</p>}
         <div className="text-[11px] sm:text-xs md:text-sm text-neutral-500 font-light">
           {t.footerCopyright}
         </div>

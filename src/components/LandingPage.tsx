@@ -70,6 +70,6 @@ export function LandingPage() {
 
       <section className="mx-auto grid max-w-7xl gap-8 border-t border-black/20 px-5 py-12 sm:px-10 sm:py-16 lg:grid-cols-[.8fr_1.2fr]"><div><p className="map-eyebrow text-muted-foreground">Antes da sua descoberta</p><h2 className="mt-4 font-editorial text-4xl">Ficou alguma dúvida?</h2></div><div>{faqs.map(([question, answer]) => <details key={question} className="group border-b border-black/20 py-5 first:pt-0"><summary className="flex cursor-pointer list-none items-start justify-between gap-4 text-sm font-medium">{question}<span className="text-lg leading-5 transition-transform group-open:rotate-45" aria-hidden="true">+</span></summary><p className="mt-4 pr-5 text-sm leading-7 text-muted-foreground">{answer}</p></details>)}</div></section>
     </main>
-    <footer className="border-t border-black/20 px-5 py-8 sm:px-10"><div className="mx-auto flex max-w-7xl flex-col justify-between gap-5 sm:flex-row"><p className="map-eyebrow">✳ DestinyVox · Um olhar para dentro.</p><p className="max-w-lg text-xs leading-6 text-muted-foreground">Numerologia é uma prática simbólica de autoconhecimento. As interpretações convidam à reflexão e não garantem acontecimentos ou resultados.</p></div></footer>
+    <footer className="border-t border-black/20 px-5 py-8 sm:px-10"><div className="mx-auto flex max-w-7xl justify-between"><p className="map-eyebrow">✳ DestinyVox · Um olhar para dentro.</p></div></footer>
   </div>;
 }
