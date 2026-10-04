@@ -16,6 +16,7 @@ export function PixCheckout({ product = "map", sourceMapId, onDelivered }: { pro
   const [error, setError] = useState("");
   const [phase, setPhase] = useState<Phase>("waiting");
   const [copied, setCopied] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
   const [attempt, setAttempt] = useState(0);
   const statusRef = useRef<HTMLDivElement>(null);
   const doneRef = useRef(onDelivered);
@@ -69,6 +70,13 @@ export function PixCheckout({ product = "map", sourceMapId, onDelivered }: { pro
     return () => { controller.abort(); clearTimeout(timer); };
   }, [payment, attempt, storageKey]);
 
+  useEffect(() => {
+    setShowHelp(false);
+    if (!payment) return;
+    const timer = setTimeout(() => setShowHelp(true), 10000);
+    return () => clearTimeout(timer);
+  }, [payment]);
+
   async function submit(event: FormEvent) {
     event.preventDefault();
     if (busy) return;
@@ -96,7 +104,8 @@ export function PixCheckout({ product = "map", sourceMapId, onDelivered }: { pro
           <label className="block text-xs">Código Pix copia e cola<textarea readOnly value={payment.pix_copy_paste} onFocus={event => event.target.select()} className="mt-2 h-20 w-full resize-none rounded-sm border border-black/25 bg-white/50 p-3 text-xs" /></label>
           <Button className="w-full" onClick={async () => { try { await navigator.clipboard.writeText(payment.pix_copy_paste); setCopied(true); } catch { setError("Selecione o código acima e copie manualmente."); } }}>{copied ? <Check /> : <Copy />}{copied ? "Código copiado" : "Copiar código Pix"}</Button>
         </>}
-        <p role="status" className="flex items-center gap-2 text-sm"><Loader2 className={`size-4 ${phase !== "paused" ? "animate-spin" : ""}`} />{phase === "delivering" ? "Preparando e enviando sua leitura…" : phase === "paused" ? "A verificação automática foi pausada." : "Aguardando confirmação do pagamento…"}</p>
+        <p role="status" className="flex items-center justify-center gap-2 text-center text-sm"><Loader2 className={`size-4 ${phase !== "paused" ? "animate-spin" : ""}`} />{phase === "delivering" ? "Preparando e enviando sua leitura…" : phase === "paused" ? "A verificação automática foi pausada." : "Aguardando confirmação do pagamento…"}</p>
+        {showHelp && phase === "waiting" && <p className="text-center text-sm text-muted-foreground">Precisa de ajuda? <a href="https://wa.me/5513988658518?text=Ol%C3%A1%2C%20preciso%20de%20ajuda%20com%20meu%20Pix%20do%20DestinyVox." target="_blank" rel="noreferrer" className="font-medium text-[#343e2a] underline underline-offset-4">Fale conosco pelo WhatsApp</a></p>}
         {phase === "paused" && <Button variant="outline" onClick={() => { setPhase("waiting"); setAttempt(n => n + 1); }}>Já paguei · verificar novamente</Button>}
       </>}
     {error && <p role="alert" className="text-sm leading-6 text-red-800">{error}</p>}
