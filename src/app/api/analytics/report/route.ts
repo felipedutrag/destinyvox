@@ -13,7 +13,7 @@ export async function GET(request: Request) {
     const events: AnalyticsEvent[] = [], payments: AnalyticsPayment[] = [];
     let truncated = false;
     for (let from = 0; from < 50000; from += 1000) {
-      const { data, error } = await db.from("analytics_events").select("event_id,session_id,occurred_at,name,path,section,target,value,context").gte("occurred_at", start).lt("occurred_at", end).order("occurred_at").order("id").range(from, from + 999);
+      const { data, error } = await db.from("analytics_events").select("event_id,session_id,visitor_id,occurred_at,name,path,section,target,value,context").gte("occurred_at", start).lt("occurred_at", end).order("occurred_at").order("id").range(from, from + 999);
       if (error) throw error;
       events.push(...data as AnalyticsEvent[]);
       if (data.length < 1000) break;
@@ -27,7 +27,14 @@ export async function GET(request: Request) {
       if (data.length < 1000) break;
       if (from === 9000) truncated = true;
     }
-    const report = buildReport(events, payments, { source: q.get("source") || "", campaign: q.get("campaign") || "", device: q.get("device") || "", path: q.get("path") || "", version: q.get("version") || "" });
+    const visitorIds = [...new Set(events.map(e => e.visitor_id).filter((id): id is string => !!id))];
+    const firstSeen: Record<string, string> = {};
+    for (let i = 0; i < visitorIds.length; i += 100) {
+      const { data, error } = await db.from("analytics_visitors").select("id,first_seen_at").in("id", visitorIds.slice(i, i + 100));
+      if (error) throw error;
+      for (const v of data) firstSeen[v.id] = v.first_seen_at;
+    }
+    const report = buildReport(events, payments, { source: q.get("source") || "", campaign: q.get("campaign") || "", device: q.get("device") || "", path: q.get("path") || "", version: q.get("version") || "" }, firstSeen, start);
     return Response.json({ ...report, start, end, truncated, unattributedPaid: payments.filter(p => p.status === "PAID" && !events.some(e => e.session_id === p.analytics?.session_id)).length }, { headers: analyticsHeaders });
-  } catch { return Response.json({ error: "Não foi possível consultar os dados. Confira scripts/analytics-schema.sql e a conexão com o Supabase." }, { status: 503, headers: analyticsHeaders }); }
+  } catch { return Response.json({ error: "Não foi possível consultar os dados. Confira scripts/analytics-schema.sql, scripts/analytics-visitors.sql e a conexão com o Supabase." }, { status: 503, headers: analyticsHeaders }); }
 }

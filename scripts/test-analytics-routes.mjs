@@ -8,11 +8,12 @@ const appPort = 4317, dbPort = 4318;
 const base = `http://localhost:${appPort}`;
 const password = "local-qa-only-not-a-real-password-2026";
 const events = [], payments = [], buckets = new Map();
+const visitorIds = Array.from({ length: 6 }, () => randomUUID());
 const context = { source: "qa-reddit", medium: "paid_social", campaign: "dados-ficticios", content: "imagem_01", device: "mobile", version: "v1" };
 for (let i = 0; i < 12; i++) {
   const session_id = randomUUID();
   const start = Date.now() - 3600000 * (i + 1);
-  const emit = (name, options = {}) => events.push({ event_id: randomUUID(), session_id, occurred_at: new Date(start + events.length * 1000).toISOString(), name, path: "/", section: "", target: "", value: 0, context, ...options });
+  const emit = (name, options = {}) => events.push({ event_id: randomUUID(), session_id, visitor_id: visitorIds[Math.floor(i / 2)], occurred_at: new Date(start + events.length * 1000).toISOString(), name, path: "/", section: "", target: "", value: 0, context, ...options });
   emit("page_view"); emit("section_view", { section: "hero" }); emit("heartbeat", { value: 15000 }); emit("section_time", { section: "hero", value: 8000 });
   if (i < 9) { emit("click", { target: "cta-hero", section: "hero" }); emit("section_view", { section: "seu-mapa" }); emit("form_start", { target: "checkout-map" }); emit("field_focus", { target: "email" }); emit("section_time", { section: "seu-mapa", value: 25000 }); }
   if (i < 6) { emit("checkout_submit", { target: "map", value: 2980 }); emit("bump_toggle", { target: "calendar", value: 1 }); emit("pix_copy", { target: "map" }); payments.push({ id: randomUUID(), created_at: new Date(start + 50000).toISOString(), status: i < 3 ? "PAID" : "PENDING", amount_cents: 2980, transaction_id: `fixture-${i}`, product: "map", bumps: ["calendar"], analytics: { session_id, context } }); }
@@ -22,6 +23,9 @@ const mock = createServer(async (req, res) => {
   const url = new URL(req.url, `http://127.0.0.1:${dbPort}`);
   let raw = ""; for await (const chunk of req) raw += chunk;
   res.setHeader("Content-Type", "application/json");
+  if (url.pathname === "/rest/v1/analytics_visitors") {
+    res.end(JSON.stringify(visitorIds.map(id => ({ id, first_seen_at: new Date(Date.now() - 86400000).toISOString() })))); return;
+  }
   if (url.pathname === "/rest/v1/rpc/analytics_allow") {
     const { p_key, p_limit } = JSON.parse(raw); const hits = (buckets.get(p_key) || 0) + 1; buckets.set(p_key, hits); res.end(JSON.stringify(hits <= p_limit)); return;
   }
@@ -62,6 +66,9 @@ try {
   const report = await response.json();
   assert.equal(report.totals.sessions, 12); assert.equal(report.totals.orders, 3); assert.equal(report.totals.revenue, 8940);
   assert.equal(report.funnel.at(-1).count, 3);
+  assert.equal(report.visitorStats.unique, 6);
+  assert.equal(report.visitorStats.new, 6);
+  assert.equal(report.visitorStats.sessionsPerVisitor, 2);
   assert.match(response.headers.get("cache-control"), /no-store/);
   assert.equal((await fetch(`${base}/api/analytics/report?days=999`, { headers: { cookie: cookie.split(";")[0] } })).status, 400);
   assert.equal((await fetch(`${base}/api/analytics/report`, { headers: { cookie: "dv_analytics_admin=invalid" } })).status, 401);

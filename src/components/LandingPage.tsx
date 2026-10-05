@@ -10,10 +10,9 @@ const benefits = [
 ];
 const faqs = [
   ["Preciso entender de numerologia?", "Não. Cada número vem acompanhado de uma interpretação em português, da explicação do cálculo e de uma pergunta para reflexão. Você pode começar pelo tema que mais chama sua atenção."],
-  ["O que está incluído nos R$ 19,90?", "Seu mapa online com nove números: Caminho de Vida, Expressão, Desejo da Alma, Personalidade, Dia de Nascimento, Maturidade, Ano Pessoal, Mês Pessoal e Dia Pessoal. Os três adicionais do formulário são opcionais e só entram no total se você selecionar."],
+  ["O que está incluído nos R$ 19,90?", "Seu mapa online com nove números: Caminho de Vida, Expressão, Desejo da Alma, Personalidade, Dia de Nascimento, Maturidade, Ano Pessoal, Mês Pessoal e Dia Pessoal. Os dois adicionais do formulário são opcionais e só entram no total se você selecionar."],
   ["Como recebo e acesso minha leitura?", "Após a confirmação do Pix, enviamos um link de acesso para o e-mail informado. Seu mapa abre no navegador do celular ou computador. Para voltar depois, use a opção ‘Já tenho meu mapa’ no topo da página e solicite um novo link."],
   ["Qual nome devo informar?", "Use seu nome completo de nascimento, como aparece na certidão, incluindo os sobrenomes. Confira também a data e o e-mail antes de gerar o Pix. Os cálculos usam exatamente os dados informados."],
-  ["Isso prevê o meu futuro?", "A numerologia é uma prática simbólica de autoconhecimento. A leitura apresenta temas e possibilidades de reflexão; não prevê acontecimentos nem determina suas escolhas. Seu contexto e suas experiências continuam sendo essenciais."],
   ["É uma assinatura?", "Não. O mapa custa R$ 19,90 em pagamento único. Se você escolher algum adicional, o valor aparece discriminado antes de gerar o Pix. Não há cobrança mensal."],
 ];
 
@@ -28,9 +27,9 @@ export function LandingPage() {
         <div>
           <p className="map-eyebrow mb-6 flex items-center gap-2 text-[#626b51]"><span className="size-1.5 rounded-full bg-[#626b51]" /> Numerologia para olhar para dentro</p>
           <h1 className="max-w-2xl font-editorial text-[43px] leading-[1.08] tracking-[-.045em] sm:text-6xl lg:text-[68px]">Descubra o que<br className="hidden sm:block" /> os números dizem<br className="hidden sm:block" /> sobre o <em className="font-normal text-[#737b62]">seu destino.</em></h1>
-          <p className="mt-6 max-w-lg text-[15px] leading-7 text-muted-foreground sm:text-base">Seu nome e sua data de nascimento são o começo. Conheça os talentos, as motivações e os ciclos que a numerologia associa a você — em um mapa feito com os seus números.</p>
+          <p className="mt-6 max-w-lg text-[15px] leading-7 text-muted-foreground sm:text-base">Seu nome e sua data de nascimento são o começo. Conheça os talentos, as motivações e os ciclos que a numerologia associa a você — em um mapa feito sob medida com os seus números.</p>
           <a data-analytics-id="cta-hero" href="#seu-mapa" className="mt-8 inline-flex min-h-14 w-full items-center justify-center gap-4 rounded-sm bg-[#343e2a] px-6 py-4 text-sm font-medium text-white transition-colors hover:bg-[#455138] sm:w-auto">Quero descobrir meus números <ArrowRight className="size-4" /></a>
-          <p className="mt-3 text-xs leading-6 text-muted-foreground">Seu mapa por <strong className="font-semibold text-foreground">{brl(CATALOG.map.price)}</strong> · Pagamento único · Acesso online</p>
+          <p className="mt-3 text-xs leading-6 text-muted-foreground">Seu mapa por <strong className="font-semibold text-foreground">{brl(CATALOG.map.price)}</strong> · Pagamento único<span className="block sm:hidden">Acesso online e imediato</span><span className="hidden sm:inline"> · Acesso online</span></p>
           <div className="mt-8 flex flex-wrap gap-x-5 gap-y-2 text-xs text-muted-foreground"><span className="flex items-center gap-2"><Fingerprint className="size-4" /> Calculado com seus dados</span><span className="flex items-center gap-2"><Mail className="size-4" /> Entrega por e-mail</span></div>
         </div>
         <div className="relative lg:pl-3">
@@ -50,7 +49,7 @@ export function LandingPage() {
         </div>
       </section>
 
-      <div className="border-y border-black/15 bg-[#eae8de]"><div className="mx-auto grid max-w-7xl grid-cols-3 gap-3 px-5 py-5 text-center sm:px-10">{[["09", "números interpretados"], ["Seu", "nome + nascimento"], ["01", "mapa para revisitar"]].map(([number, label]) => <div key={label}><span className="font-editorial text-2xl sm:text-3xl">{number}</span><span className="mt-1 block text-[10px] text-muted-foreground sm:ml-3 sm:inline sm:text-xs">{label}</span></div>)}</div></div>
+      <div className="border-y border-black/15 bg-[#eae8de]"><div className="mx-auto grid max-w-7xl grid-cols-3 gap-3 px-5 py-5 text-center sm:px-10">{[["09", "números interpretados", "interpretações"], ["Seu", "nome + nascimento", "nome + nascimento"], ["01", "mapa para revisitar", "mapa para revisitar"]].map(([number, label, mobileLabel]) => <div key={label}><span className="font-editorial text-2xl sm:text-3xl">{number}</span><span className="mt-1 block text-[10px] text-muted-foreground sm:ml-3 sm:inline sm:text-xs"><span className="sm:hidden">{mobileLabel}</span><span className="hidden sm:inline">{label}</span></span></div>)}</div></div>
 
       <section data-analytics-section="leitura" id="leitura" className="mx-auto max-w-7xl scroll-mt-8 px-5 py-14 sm:px-10 sm:py-20">
         <div className="grid gap-5 lg:grid-cols-2 lg:gap-14"><div><p className="map-eyebrow text-[#626b51]">O que seus números ajudam a explorar</p><h2 className="mt-4 max-w-xl font-editorial text-4xl leading-tight tracking-tight sm:text-5xl">Talvez você já tenha<br />se feito estas perguntas.</h2></div><p className="max-w-lg self-end text-sm leading-7 text-muted-foreground lg:pb-2">Por que certas escolhas parecem tão naturais? O que me move de verdade? Seu mapa reúne nove números em quatro áreas da vida, com interpretações para você conectar à sua própria história.</p></div>

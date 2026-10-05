@@ -2,7 +2,7 @@
 
 ## Ativação
 
-1. Execute **scripts/analytics-schema.sql** no SQL Editor do mesmo Supabase usado pelo checkout. O arquivo é idempotente e não altera pedidos existentes.
+1. Execute **scripts/analytics-schema.sql** e depois **scripts/analytics-visitors.sql** no SQL Editor do mesmo Supabase usado pelo checkout. Se já instalou o primeiro, execute somente o segundo. Os arquivos são idempotentes e não alteram pedidos existentes. Instale o SQL de visitantes antes de publicar o novo coletor/painel.
 2. Configure `ANALYTICS_ADMIN_PASSWORD` no ambiente do servidor, com uma senha aleatória de pelo menos 24 caracteres. Nunca use prefixo `NEXT_PUBLIC_`. Use as variáveis Supabase já existentes: `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY`.
 3. Publique a aplicação e abra `/admin/analytics`. A senha gera um cookie HttpOnly de oito horas. Trocar a senha invalida os acessos anteriores.
 4. Identifique cada anúncio com UTMs, por exemplo: `/?utm_source=reddit&utm_medium=paid_social&utm_campaign=mapa&utm_content=imagem_01`. Use identificadores de campanhas, nunca dados pessoais nesses parâmetros.
@@ -28,7 +28,11 @@ Landings: `hero`, `leitura`, `beneficio-01` a `beneficio-04`, `como-funciona`, `
 
 ## Métricas
 
-Identificador aleatório por sessão/aba; sessão expira após 30 minutos de inatividade. Não há identificação persistente ou ligação entre pessoas/dispositivos. Atribuição à origem da sessão (UTMs ou domínio referenciador). URLs de mapas são reduzidas a `/mapa/:id`.
+Identificador aleatório por sessão/aba; sessão expira após 30 minutos de inatividade. Um segundo UUID em `localStorage` (`dv:analytics:visitor`) identifica o navegador por até 365 dias, compartilhado entre abas da mesma origem. Não há ligação entre dispositivos, domínios ou pessoas. Limpar o armazenamento, usar navegação privada ou expirar o ID cria outro visitante. Armazenamento indisponível mantém a sessão sem visitante persistente. DNT, GPC e opt-out continuam impedindo a coleta e a criação do identificador. Atribuição à origem da sessão (UTMs ou domínio referenciador). URLs de mapas são reduzidas a `/mapa/:id`.
+
+Visitantes únicos são deduplicados entre as sessões filtradas. Novos = primeira visita observada pelo banco dentro do período; recorrentes = primeira visita anterior ao período. As categorias são exclusivas: alguém novo com duas sessões no período continua na categoria novo. Sessões por visitante usa somente sessões com ID, não sessões históricas. A primeira visita vem da tabela `analytics_visitors`, mantida por trigger atômico, inclusive para eventos fora de ordem. Não se deduz a primeira visita do recorte filtrado. Sessões anteriores à atualização não recebem IDs retroativos. Os relatórios exibem a cobertura sem identificação, e exportam o ID junto das sessões. Um visitante com IDs conflitantes na mesma sessão é excluído da contagem dessa sessão.
+
+A tabela de visitantes guarda somente UUID, primeira e última visita; RLS e permissões restringem o acesso ao servidor. Não contém nome ou e-mail. O SQL complementar inclui limpeza opcional após 400 dias sem visitas; não agenda exclusões. Caso essa limpeza seja adotada, a classificação se refere ao histórico ainda disponível. A retenção de eventos não apaga automaticamente o histórico de visitantes.
 
 Receita e compras são calculadas exclusivamente dos registros `payments` com status `PAID`, ligados pelo `metadata.analytics.session_id`. Eventos do navegador nunca confirmam receita. Pedidos sem atribuição são sinalizados e excluídos. O recorte usa eventos e pedidos criados no período móvel; um pagamento confirmado posteriormente pode atualizar o resultado do seu período de criação. Sessões que atravessam a borda do período podem aparecer parcialmente. Datas exibidas em Brasília.
 

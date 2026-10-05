@@ -1,4 +1,5 @@
 -- Execute in the Supabase SQL Editor. Safe to run again. No existing commerce data is changed.
+-- Then execute analytics-visitors.sql to enable the current visitor-aware collector.
 begin;
 create table if not exists public.analytics_events (
   id bigint generated always as identity primary key,

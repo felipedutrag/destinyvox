@@ -10,6 +10,20 @@ export function analyticsEnabled() {
   return typeof window !== "undefined" && !location.pathname.startsWith("/admin") && navigator.doNotTrack !== "1" && !(navigator as Navigator & { globalPrivacyControl?: boolean }).globalPrivacyControl && localStorageSafe("dv:analytics:off") !== "1";
 }
 function localStorageSafe(key: string) { try { return localStorage.getItem(key); } catch { return null; } }
+/** Shared across tabs on this origin. No fingerprint or identity from form data. */
+export function analyticsVisitor(): string | null {
+  if (!analyticsEnabled()) return null;
+  try {
+    const key = "dv:analytics:visitor";
+    let saved;
+    try { saved = JSON.parse(localStorage.getItem(key) || "null"); } catch { /* Replace malformed storage. */ }
+    if (!uuid(saved?.id) || !Number.isFinite(saved?.expires) || saved.expires <= Date.now()) {
+      saved = { id: crypto.randomUUID(), expires: Date.now() + 365 * 86400000 };
+      localStorage.setItem(key, JSON.stringify(saved));
+    }
+    return saved.id;
+  } catch { return null; /* Do not count a unique visitor without persistence. */ }
+}
 export function analyticsSession() {
   if (!analyticsEnabled()) return undefined;
   const now = Date.now();
@@ -27,11 +41,12 @@ export function analyticsSession() {
 export function track(name: EventName, opts: { section?: string; target?: string; value?: number; path?: string } = {}) {
   const s = analyticsSession();
   if (!s) return;
+  const visitor_id = analyticsVisitor();
   if (trackedSession !== s.id) {
     trackedSession = s.id;
-    if (name !== "page_view") queue.push({ event_id: crypto.randomUUID(), session_id: s.id, occurred_at: new Date().toISOString(), name: "page_view", path: safePath(opts.path || location.pathname), section: "", target: "", value: 0, context: s.context });
+    if (name !== "page_view") queue.push({ event_id: crypto.randomUUID(), session_id: s.id, visitor_id, occurred_at: new Date().toISOString(), name: "page_view", path: safePath(opts.path || location.pathname), section: "", target: "", value: 0, context: s.context });
   }
-  queue.push({ event_id: crypto.randomUUID(), session_id: s.id, occurred_at: new Date().toISOString(), name, path: safePath(opts.path || location.pathname), section: token(opts.section), target: token(opts.target), value: Math.max(0, Math.round(opts.value || 0)), context: s.context });
+  queue.push({ event_id: crypto.randomUUID(), session_id: s.id, visitor_id, occurred_at: new Date().toISOString(), name, path: safePath(opts.path || location.pathname), section: token(opts.section), target: token(opts.target), value: Math.max(0, Math.round(opts.value || 0)), context: s.context });
   if (queue.length > 200) queue.shift();
 }
 export async function flushAnalytics(beacon = false) {
