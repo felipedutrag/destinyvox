@@ -9,6 +9,7 @@ import { CATALOG, createOrder, validateCustomer, validateSynastryPerson } from "
 import { brazilianDate } from "@/lib/web-map";
 import { sendTelegramPixCreatedAlert } from "@/lib/telegram";
 import { getRedditAttribution } from "@/lib/reddit-capi";
+import { cleanContext, uuid } from "@/lib/analytics-shared";
 
 export async function POST(request: Request) {
   if (!sameOrigin(request)) return NextResponse.json({ error: "Origem inválida." }, { status: 403 });
@@ -55,7 +56,8 @@ export async function POST(request: Request) {
     const paymentId = randomUUID(), externalId = `MAPA_${paymentId}`;
     const cpf = generateRandomCPF();
     const reddit = getRedditAttribution(request);
-    const metadata = { ...order, birthDate: customer.birthDate, referenceDate: brazilianDate(), sourceMapId, plan: CATALOG[order.product].name, ...(synastryPerson ? { synastryPerson } : {}), ...(Object.keys(reddit).length ? { reddit } : {}) };
+    const analytics = uuid(body.analytics?.session_id) ? { session_id: body.analytics.session_id, context: cleanContext(body.analytics.context) } : undefined;
+    const metadata = { ...order, birthDate: customer.birthDate, referenceDate: brazilianDate(), sourceMapId, plan: CATALOG[order.product].name, ...(analytics ? { analytics } : {}), ...(synastryPerson ? { synastryPerson } : {}), ...(Object.keys(reddit).length ? { reddit } : {}) };
     // Persist before the gateway call so an early webhook finds the order by external_id.
     const { error: insertError } = await supabase.from("payments").insert({ id: paymentId, gateway: "ggpix", external_id: externalId, user_id: userId, payer_name: customer.name, payer_email: customer.email, payer_cpf: cpf, amount_cents: order.amountCents, status: "PENDING", metadata });
     if (insertError) throw insertError;

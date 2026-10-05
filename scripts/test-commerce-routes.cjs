@@ -38,7 +38,7 @@ function query(table) {
 const db = { from: query, auth: { getUser: async () => ({ data: { user: state.user }, error: null }) }, rpc: async (name, args) => { state.synastryCall = { name, args }; return { data: { id: "synastry-report" }, error: state.synastryError || null }; } };
 let realDelivery;
 const stubs = {
-  "next/server": { NextResponse: Response },
+  "next/server": { NextResponse: Response, after: callback => { void callback(); } },
   "@/lib/supabase": { getSupabaseAdmin: () => db },
   "@/lib/ggpix": { getGGPIXApiKey: () => "test-key", verifyGGPIXWebhook: () => ({ valid: true }) },
   "@/lib/catalog": catalog,
@@ -51,6 +51,7 @@ const stubs = {
   "@/lib/delivery": { deliverNumerologyMap: async params => { state.delivery.push(params); return { success: true, emailSent: true }; } },
   "@/lib/map-email": { generateMapLink: async email => ({ userId: "owner", token: "test-token" }), sendMapAccessEmail: async (...args) => { state.delivery.push(args); return "test-email"; } },
   "@/lib/telegram": { sendTelegramPixNotification: async () => {}, sendTelegramPixCreatedAlert: async () => {} },
+  "@/lib/reddit-capi": { getRedditAttribution: () => ({}), sendRedditPurchase: async () => {} },
   "@/utils/numerology": require("../tmp/map-tests/utils/numerology.js"),
   "@/utils/interpretations": require("../tmp/map-tests/utils/interpretations/index.js"),
 };
@@ -67,6 +68,7 @@ function load(file) {
   })(id => Object.hasOwn(stubs, id) ? stubs[id] : require(id), module, module.exports);
   return module.exports;
 }
+stubs["@/lib/analytics-shared"] = load("src/lib/analytics-shared.ts");
 const checkout = load("src/app/api/checkout/route.ts").POST;
 const webhook = load("src/app/api/webhooks/ggpix/route.ts").POST;
 const status = load("src/app/api/status/route.ts").GET;
@@ -85,6 +87,12 @@ const partner = { name: "Rafael Almeida", birthDate: "1992-09-23" };
   assert.deepEqual(Array.from(state.writes[0].value.metadata.bumps), ["calendar", "name"]);
   assert.equal(state.writes[0].value.status, "PENDING");
   assert.ok(!state.writes[0].value.external_id.includes(customer.email));
+  reset();
+  const analyticsId = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+  assert.equal((await checkout(request({ ...customer, analytics: { session_id: analyticsId, context: { source: "reddit", email: "do-not-store@example.com" } } }))).status, 200);
+  assert.equal(state.writes[0].value.metadata.analytics.session_id, analyticsId);
+  assert.equal(state.writes[0].value.metadata.analytics.context.email, undefined);
+  assert.equal(state.writes[0].value.amount_cents, 1990);
   reset();
   assert.equal((await checkout(request({ ...customer, email: "felipedutra@outlook.com" }))).status, 200);
   assert.equal(state.gatewayCalls.length, 1, "email cannot bypass a real charge");

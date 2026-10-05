@@ -1,0 +1,89 @@
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import { createRequire } from "node:module";
+import { PGlite } from "@electric-sql/pglite";
+const require = createRequire(import.meta.url);
+const { validateEvent, safePath, cleanContext } = require("../tmp/analytics-tests/analytics-shared.js");
+const { buildReport } = require("../tmp/analytics-tests/analytics-report.js");
+const uid = n => `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
+const now = Date.now();
+const context = { source: "reddit", medium: "paid_social", campaign: "mapa", content: "image1", device: "mobile", version: "v1" };
+let sequence = 0;
+const event = (name, props = {}) => ({ event_id: uid(++sequence), session_id: uid(100), occurred_at: new Date(now - 3600000 + sequence * 1000).toISOString(), name, path: "/", section: "", target: "", value: 0, context, ...props });
+const valid = event("page_view");
+assert.ok(validateEvent(valid));
+assert.equal(validateEvent({ ...valid, name: "purchase" }), null, "client cannot submit trusted purchases");
+assert.equal(validateEvent({ ...valid, value: -1 }), null);
+assert.equal(validateEvent({ ...valid, session_id: "bad" }), null);
+assert.equal(validateEvent({ ...valid, occurred_at: "1990-01-01" }), null);
+assert.equal(safePath(`/mapa/${uid(99)}`), "/mapa/:id");
+assert.equal(safePath("/acesso?token=secret"), "/other");
+assert.deepEqual(Object.keys(cleanContext({ ...context, email: "private@example.com", birthDate: "1990-01-01" })), Object.keys(context));
+assert.equal(validateEvent({ ...valid, context: { ...context, name: "Secret" }, email: "secret" }).email, undefined);
+
+const events = [valid, event("section_view", { section: "seu-mapa" }), event("form_start", { target: "checkout-map" }), event("checkout_submit", { target: "map" }), event("section_view", { section: "bump-calendar" }), event("bump_toggle", { target: "calendar", value: 1 }), event("heartbeat", { value: 20000, section: "seu-mapa" }), event("section_time", { section: "seu-mapa", value: 12000 }), event("page_exit", { section: "seu-mapa", value: 75 }), event("page_view", { session_id: uid(101) }), event("payment_seen", { session_id: uid(101), value: 99999 }), event("page_view", { session_id: uid(102), context: { ...context, source: "google" } })];
+const order = { id: uid(500), created_at: new Date(now - 3500000).toISOString(), status: "PAID", amount_cents: 2980, transaction_id: "test", product: "map", bumps: ["calendar"], analytics: { session_id: uid(100), context } };
+const filters = { source: "", campaign: "", device: "", path: "", version: "" };
+const report = buildReport(events, [order, { ...order, id: uid(501), status: "PENDING" }], filters);
+assert.equal(report.totals.sessions, 3);
+assert.equal(report.totals.orders, 1, "payment_seen never counts as revenue");
+assert.equal(report.totals.revenue, 2980);
+assert.equal(report.totals.activeSeconds, 7);
+assert.equal(report.funnel.at(-1).count, 1);
+assert.equal(report.bumps.find(b => b.id === "calendar").acceptance, 100);
+assert.equal(report.sections.find(s => s.section === "seu-mapa").seconds, 12);
+assert.equal(buildReport(events, [order], { ...filters, source: "google" }).totals.revenue, 0);
+assert.equal(buildReport([], [], filters).totals.conversion, 0);
+const outOfOrder = [event("page_view"), event("checkout_submit", { target: "map" }), event("form_start", { target: "checkout-map" }), event("section_view", { section: "seu-mapa" })];
+assert.equal(buildReport(outOfOrder, [order], filters).funnel.at(-1).count, 0, "funnel requires chronological steps");
+
+const db = new PGlite();
+try {
+  await db.exec("create role anon; create role authenticated; create role service_role bypassrls; grant usage on schema public to anon, authenticated, service_role;");
+  const sql = fs.readFileSync("scripts/analytics-schema.sql", "utf8");
+  await db.exec(sql); await db.exec(sql);
+  for (const role of ["anon", "authenticated"]) {
+    await db.exec(`set role ${role}`);
+    await assert.rejects(() => db.query("select * from analytics_events"), /permission denied/);
+    await assert.rejects(() => db.query("insert into analytics_events(event_id,session_id,occurred_at,name,path) values ($1,$2,now(),'page_view','/')", [uid(1), uid(2)]), /permission denied/);
+    await assert.rejects(() => db.query("update analytics_events set name='click'"), /permission denied/);
+    await assert.rejects(() => db.query("delete from analytics_events"), /permission denied/);
+    await assert.rejects(() => db.query("select analytics_allow('test',2,60)"), /permission denied/);
+    await db.exec("reset role");
+  }
+  await db.exec("set role service_role");
+  const insert = () => db.query("insert into analytics_events(event_id,session_id,occurred_at,name,path) values ($1,$2,now(),'page_view','/') on conflict(event_id) do nothing", [uid(1), uid(2)]);
+  await insert(); await insert();
+  assert.equal((await db.query("select count(*)::int n from analytics_events")).rows[0].n, 1);
+  const allowed = () => db.query("select analytics_allow('test',2,60) as ok");
+  assert.equal((await allowed()).rows[0].ok, true);
+  assert.equal((await allowed()).rows[0].ok, true);
+  assert.equal((await allowed()).rows[0].ok, false);
+  await db.query("update analytics_limits set window_start=now()-interval '2 minutes'");
+  assert.equal((await allowed()).rows[0].ok, true);
+  await db.exec("reset role");
+  const rls = await db.query("select relrowsecurity from pg_class where relname in ('analytics_events','analytics_limits')");
+  assert.ok(rls.rows.every(r => r.relrowsecurity));
+} finally { await db.close(); }
+
+// Browser collector transport: private inputs never enter its API; retry IDs are stable.
+globalThis.window = {};
+globalThis.location = { pathname: "/", search: "?utm_source=reddit&utm_campaign=test", origin: "https://example.com" };
+globalThis.document = { referrer: "" };
+globalThis.innerWidth = 390;
+const storage = new Map();
+globalThis.localStorage = globalThis.sessionStorage = { getItem: k => storage.get(k) || null, setItem: (k, v) => storage.set(k, v) };
+const client = require("../tmp/analytics-tests/analytics-client.js");
+assert.ok(client.analyticsSession().id);
+const originalSession = client.analyticsSession().id;
+assert.equal(client.analyticsSession().id, originalSession);
+let calls = [];
+globalThis.fetch = async (_url, options) => { calls.push(JSON.parse(options.body)); return { ok: calls.length > 1, status: calls.length > 1 ? 204 : 503 }; };
+client.track("click", { target: "cta-hero" });
+await client.flushAnalytics(); await client.flushAnalytics();
+assert.equal(calls[0][0].event_id, calls[1][0].event_id);
+location.pathname = "/admin/analytics";
+assert.equal(client.analyticsEnabled(), false);
+location.pathname = "/"; storage.set("dv:analytics:off", "1");
+assert.equal(client.analyticsSession(), undefined);
+console.log("Analytics: validation, attribution, ordered funnel, privacy, retry deduplication, SQL idempotency, RLS and rate limits passed.");

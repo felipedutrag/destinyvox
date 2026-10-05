@@ -5,6 +5,7 @@ import { ArrowRight, Check, Copy, Loader2, Lock, Mail } from "lucide-react";
 import { Button } from "./ui/button";
 import { BUMP_IDS, CATALOG, brl, createOrder, type BumpId, type ProductId } from "@/lib/catalog";
 import { trackRedditEvent } from "./RedditPixel";
+import { analyticsSession, track } from "@/lib/analytics-client";
 
 type Payment = { transaction_id: string; external_id: string; qr_code_base64: string; pix_copy_paste: string; amount_cents: number };
 type Phase = "waiting" | "delivering" | "delivered" | "failed" | "paused";
@@ -36,6 +37,10 @@ export function PixCheckout({ product = "map", sourceMapId, onDelivered, relatio
   const offeredBumps: readonly BumpId[] = relationship ? ["synastry", "calendar", "challenges"] : BUMP_IDS.filter(id => id !== "synastry" && id !== "name");
 
   useEffect(() => {
+    if (payment) track("payment_state", { target: `${product}-${phase}` });
+  }, [payment, phase, product]);
+
+  useEffect(() => {
     try {
       const saved = JSON.parse(sessionStorage.getItem(storageKey) || "null");
       if (saved?.payment?.transaction_id && saved?.payment?.external_id && Date.now() - saved.savedAt < 86400000) {
@@ -60,6 +65,7 @@ export function PixCheckout({ product = "map", sourceMapId, onDelivered, relatio
         if (data.status === "PAID") {
           if (purchaseTracked.current !== payment.transaction_id) {
             purchaseTracked.current = payment.transaction_id;
+            track("payment_seen", { target: product, value: payment.amount_cents });
             trackRedditEvent("Purchase", { transactionId: payment.transaction_id, value: payment.amount_cents / 100, currency: "BRL" });
           }
           setPhase("delivering");
@@ -69,6 +75,7 @@ export function PixCheckout({ product = "map", sourceMapId, onDelivered, relatio
           if (controller.signal.aborted) return;
           if (result.email_sent) {
             setPhase("delivered");
+            track("delivery_seen", { target: product });
             try { sessionStorage.removeItem(storageKey); } catch { /* optional */ }
             doneRef.current?.();
             return;
@@ -96,8 +103,10 @@ export function PixCheckout({ product = "map", sourceMapId, onDelivered, relatio
     event.preventDefault();
     if (busy) return;
     setBusy(true); setError("");
+    track("checkout_submit", { target: product, value: order.amountCents });
     try {
-      const payload = JSON.stringify({ ...customer, product, bumps, sourceMapId, ...(bumps.includes("synastry") ? { synastryPerson } : {}) });
+      const analytics = analyticsSession();
+      const payload = JSON.stringify({ ...customer, product, bumps, sourceMapId, analytics: analytics ? { session_id: analytics.id, context: analytics.context } : undefined, ...(bumps.includes("synastry") ? { synastryPerson } : {}) });
       let data;
       for (let attempt = 1; ; attempt++) {
         try {
@@ -114,10 +123,11 @@ export function PixCheckout({ product = "map", sourceMapId, onDelivered, relatio
         }
       }
       setPayment(data); setPhase("waiting");
+      track("pix_created", { target: product, value: data.amount_cents });
       trackRedditEvent("AddToCart", { value: data.amount_cents / 100, currency: "BRL", itemCount: 1 });
       try { sessionStorage.setItem(storageKey, JSON.stringify({ payment: data, bumps, savedAt: Date.now() })); } catch { /* optional */ }
       requestAnimationFrame(() => { statusRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }); statusRef.current?.focus({ preventScroll: true }); });
-    } catch (err) { setError(err instanceof Error ? err.message : "Tente novamente em instantes."); }
+    } catch (err) { track("checkout_error", { target: product }); setError(err instanceof Error ? err.message : "Tente novamente em instantes."); }
     finally { setBusy(false); }
   }
 
@@ -131,16 +141,16 @@ export function PixCheckout({ product = "map", sourceMapId, onDelivered, relatio
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={`data:image/png;base64,${payment.qr_code_base64}`} alt="QR Code para pagar seu pedido com Pix" width={220} height={220} className="mx-auto max-w-full border border-black/15 bg-white p-2" />
           <label className="block text-xs">Código Pix copia e cola<textarea readOnly value={payment.pix_copy_paste} onFocus={event => event.target.select()} className="mt-2 h-20 w-full resize-none rounded-sm border border-black/25 bg-white/50 p-3 text-xs" /></label>
-          <Button className="w-full" onClick={async () => { try { await navigator.clipboard.writeText(payment.pix_copy_paste); setCopied(true); } catch { setError("Selecione o código acima e copie manualmente."); } }}>{copied ? <Check /> : <Copy />}{copied ? "Código copiado" : "Copiar código Pix"}</Button>
+          <Button className="w-full" onClick={async () => { try { await navigator.clipboard.writeText(payment.pix_copy_paste); setCopied(true); track("pix_copy", { target: product }); } catch { setError("Selecione o código acima e copie manualmente."); } }}>{copied ? <Check /> : <Copy />}{copied ? "Código copiado" : "Copiar código Pix"}</Button>
         </>}
         <p role="status" className="flex items-center justify-center gap-2 text-center text-sm"><Loader2 className={`size-4 ${phase !== "paused" ? "animate-spin" : ""}`} />{phase === "delivering" ? "Preparando e enviando sua leitura…" : phase === "paused" ? "A verificação automática foi pausada." : "Aguardando confirmação do pagamento…"}</p>
-        {showHelp && phase === "waiting" && <p className="text-center text-sm text-muted-foreground">Precisa de ajuda? <a href="https://wa.me/5513988658518?text=Ol%C3%A1%2C%20preciso%20de%20ajuda%20com%20meu%20Pix%20do%20DestinyVox." target="_blank" rel="noreferrer" className="font-medium text-[#343e2a] underline underline-offset-4">Fale conosco pelo WhatsApp</a></p>}
+        {showHelp && phase === "waiting" && <p className="text-center text-sm text-muted-foreground">Precisa de ajuda? <a href="https://wa.me/5513988658518?text=Ol%C3%A1%2C%20preciso%20de%20ajuda%20com%20meu%20Pix%20do%20DestinyVox." data-analytics-id="whatsapp-pix-help" target="_blank" rel="noreferrer" className="font-medium text-[#343e2a] underline underline-offset-4">Fale conosco pelo WhatsApp</a></p>}
         {phase === "paused" && <Button variant="outline" onClick={() => { setPhase("waiting"); setAttempt(n => n + 1); }}>Já paguei · verificar novamente</Button>}
       </>}
     {error && <p role="alert" className="text-sm leading-6 text-red-800">{error}</p>}
   </div>;
 
-  return <form onSubmit={submit} className="space-y-6">
+  return <form data-analytics-id={`checkout-${product}`} onSubmit={submit} className="space-y-6">
     {product === "map" && <fieldset disabled={busy} className="space-y-4">
       <legend className="map-eyebrow mb-4">01 / Os dados da sua leitura</legend>
       <label className="block text-sm font-medium" htmlFor="customer-name">Nome completo de nascimento<input id="customer-name" name="name" autoComplete="name" required maxLength={150} value={customer.name} onChange={e => setCustomer({ ...customer, name: e.target.value })} placeholder="Como aparece na sua certidão" className="landing-input" /></label>
@@ -151,9 +161,9 @@ export function PixCheckout({ product = "map", sourceMapId, onDelivered, relatio
     {product === "map" && <fieldset disabled={busy} className="space-y-3">
       <legend className="map-eyebrow mb-1">02 / Quer aprofundar algum tema?</legend>
       <p className="pb-2 text-xs leading-5 text-muted-foreground">Adicionais opcionais. Seu mapa de nove números já está completo sem eles.</p>
-      {offeredBumps.map(id => <div key={id} className={`rounded-sm border p-4 transition-colors ${bumps.includes(id) ? "border-[#656e50] bg-[#e6e9dd]" : "border-black/15 hover:bg-black/[.025]"}`}>
+      {offeredBumps.map(id => <div data-analytics-section={`bump-${id}`} key={id} className={`rounded-sm border p-4 transition-colors ${bumps.includes(id) ? "border-[#656e50] bg-[#e6e9dd]" : "border-black/15 hover:bg-black/[.025]"}`}>
         <label className="flex cursor-pointer items-start gap-3">
-        <input type="checkbox" name={`bump-${id}`} checked={bumps.includes(id)} onChange={e => setBumps(current => e.target.checked ? [...current, id] : current.filter(bump => bump !== id))} className="mt-1 size-4 shrink-0 accent-[#343e2a]" />
+        <input type="checkbox" name={`bump-${id}`} checked={bumps.includes(id)} onChange={e => { track("bump_toggle", { target: id, value: e.target.checked ? 1 : 0 }); setBumps(current => e.target.checked ? [...current, id] : current.filter(bump => bump !== id)); }} className="mt-1 size-4 shrink-0 accent-[#343e2a]" />
         <span className="min-w-0"><span className="flex flex-wrap justify-between gap-x-3 gap-y-1 text-sm font-semibold"><span>{CATALOG[id].name}</span><span className="whitespace-nowrap">+ {brl(CATALOG[id].price)}</span></span><span className="mt-2 block text-xs leading-6 text-muted-foreground">{CATALOG[id].description}</span></span>
         </label>
         {id === "synastry" && bumps.includes("synastry") && <div className="mt-4 space-y-4 border-t border-black/15 pt-4">
@@ -169,7 +179,7 @@ export function PixCheckout({ product = "map", sourceMapId, onDelivered, relatio
       <div className="flex items-baseline justify-between border-t border-black/10 pt-3"><span className="text-sm font-semibold">Total · pagamento único</span><strong className="font-editorial text-3xl font-normal">{brl(order.amountCents)}</strong></div>
     </div>
     {error && <p role="alert" className="text-sm leading-6 text-red-800">{error}</p>}
-    <Button type="submit" disabled={busy} className="h-auto min-h-14 w-full whitespace-normal rounded-sm bg-[#343e2a] px-4 text-base text-white hover:bg-[#455138]">{busy ? <><Loader2 className="animate-spin" /> Gerando seu Pix…</> : <>{product === "synastry_credit" ? "Comprar meu crédito de sinastria" : product === "atlas" ? "Quero meu Atlas" : relationship ? "Quero descobrir meu jeito de amar" : "Quero descobrir meus números"} <ArrowRight /></>}</Button>
+    <Button data-analytics-id={`submit-${product}`} type="submit" disabled={busy} className="h-auto min-h-14 w-full whitespace-normal rounded-sm bg-[#343e2a] px-4 text-base text-white hover:bg-[#455138]">{busy ? <><Loader2 className="animate-spin" /> Gerando seu Pix…</> : <>{product === "synastry_credit" ? "Comprar meu crédito de sinastria" : product === "atlas" ? "Quero meu Atlas" : relationship ? "Quero descobrir meu jeito de amar" : "Quero descobrir meus números"} <ArrowRight /></>}</Button>
     <p className="flex items-center justify-center gap-2 text-center text-xs text-muted-foreground"><Lock className="size-3 shrink-0" /> Pix · Sem assinatura · Acesso por e-mail</p>
   </form>;
 }

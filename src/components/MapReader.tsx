@@ -102,7 +102,7 @@ export function MapReader({ mapId, demo }: { mapId?: string; demo?: WebMap }) {
         </div>
         <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
           {visibleReadings.map(reading => <Card key={reading.id} className={cn("overflow-hidden rounded-sm border-black/20 bg-transparent shadow-none transition-colors", selected === reading.id && "bg-[#e8e5dc] border-black/60")}>
-            <button aria-pressed={selected === reading.id} aria-label={`Ler ${reading.label}, número ${reading.value}`} onClick={() => selectReading(reading.id)} className="flex h-full min-h-44 w-full flex-col items-start p-4 text-left outline-offset-[-4px] transition-colors hover:bg-black/5 focus-visible:outline-2 sm:p-6">
+            <button data-analytics-id={`reading-${reading.id}`} aria-pressed={selected === reading.id} aria-label={`Ler ${reading.label}, número ${reading.value}`} onClick={() => selectReading(reading.id)} className="flex h-full min-h-44 w-full flex-col items-start p-4 text-left outline-offset-[-4px] transition-colors hover:bg-black/5 focus-visible:outline-2 sm:p-6">
               <span className="flex w-full items-start justify-between gap-2"><span className="map-eyebrow text-[10px] sm:text-[11px]">{reading.label}</span>{selected === reading.id ? <Check className="size-3.5 shrink-0" /> : <ArrowUpRight className="size-3.5 shrink-0 text-muted-foreground" />}</span>
               <span className="my-3 font-editorial text-5xl leading-none sm:text-6xl">{reading.value}</span>
               <span className="mt-auto text-xs leading-5 text-muted-foreground sm:text-sm">{reading.subtitle}</span>
@@ -123,7 +123,7 @@ export function MapReader({ mapId, demo }: { mapId?: string; demo?: WebMap }) {
           <article className="min-w-0" aria-live="polite">
             <p className="map-eyebrow mb-6">{firstName}, um convite para se observar.</p>
             <div className="space-y-5 text-[15px] leading-8 text-[#46463f] sm:text-base">{(expanded ? active.paragraphs : active.paragraphs.slice(0, 2)).map((paragraph, index) => <p key={`${active.id}-${index}`}>{paragraph}</p>)}</div>
-            {active.paragraphs.length > 2 && <Button variant="outline" className="mt-7" aria-expanded={expanded} onClick={() => setExpanded(!expanded)}>{expanded ? "Recolher leitura" : "Ler interpretação completa"}<ChevronRight className={expanded ? "-rotate-90" : "rotate-90"} /></Button>}
+            {active.paragraphs.length > 2 && <Button variant="outline" className="mt-7" aria-expanded={expanded} data-analytics-id="reading-expand" onClick={() => setExpanded(!expanded)}>{expanded ? "Recolher leitura" : "Ler interpretação completa"}<ChevronRight className={expanded ? "-rotate-90" : "rotate-90"} /></Button>}
           </article>
         </div>
       </section>

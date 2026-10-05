@@ -17,6 +17,7 @@ dist-ssr
 out/
 *.tsbuildinfo
 tmp/map-tests/
+tmp/analytics-tests/
 
 # Editor directories and files
 .vscode/*
