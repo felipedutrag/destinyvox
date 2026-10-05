@@ -33,18 +33,22 @@ export function buildReport(events: AnalyticsEvent[], payments: AnalyticsPayment
   const identifiedSessions = sessions.filter(s => s.visitorId).length;
   const visitorStats = { unique: visitors.length, new: visitors.filter(v => v.kind === "new").length, returning: visitors.filter(v => v.kind === "returning").length, unknown: visitors.filter(v => v.kind === "unknown").length, unidentifiedSessions: sessions.length - identifiedSessions, sessionsPerVisitor: visitors.length ? Math.round(identifiedSessions / visitors.length * 100) / 100 : 0 };
   const base = sessions.filter(s => ["/", "/sinastria"].includes(s.first.path));
-  // Nested, chronological stages: each denominator is the previous reached stage.
-  let funnelSessions = base.map(s => ({ ...s, after: s.first.occurred_at }));
-  const funnel = [{ label: "Visitou a landing", count: base.length, rate: 100, lost: 0 }];
+  const funnelUnidentifiedSessions = base.filter(s => !s.visitorId).length;
+  const countVisitors = (cohort: typeof base) => new Set(cohort.map(s => s.visitorId).filter(Boolean)).size;
+  // Keep each ordered journey within one session, then deduplicate visitors at each stage.
+  let funnelSessions = base.filter(s => s.visitorId).map(s => ({ ...s, after: s.first.occurred_at }));
+  const funnel = [{ label: "Visitou a landing", count: countVisitors(funnelSessions), rate: 100, lost: 0 }];
   for (const [label, name, target] of [["Viu a oferta", "section_view", "seu-mapa"], ["Começou o formulário", "form_start", "checkout-map"], ["Enviou o pedido", "checkout_submit", "map"]]) {
-    const before = funnelSessions.length;
+    const before = countVisitors(funnelSessions);
     funnelSessions = funnelSessions.flatMap(s => { const e = s.rows.find(e => e.name === name && (e.target === target || e.section === target) && e.occurred_at >= s.after); return e ? [{ ...s, after: e.occurred_at }] : []; });
-    funnel.push({ label, count: funnelSessions.length, rate: pct(funnelSessions.length, before), lost: before - funnelSessions.length });
+    const count = countVisitors(funnelSessions);
+    funnel.push({ label, count, rate: pct(count, before), lost: before - count });
   }
   for (const [label, onlyPaid] of [["Pix gerado (servidor)", false], ["Compra confirmada", true]] as const) {
-    const before = funnelSessions.length;
+    const before = countVisitors(funnelSessions);
     funnelSessions = funnelSessions.filter(s => orders.some(p => p.analytics?.session_id === s.id && p.product === "map" && p.transaction_id && (!onlyPaid || p.status === "PAID")));
-    funnel.push({ label, count: funnelSessions.length, rate: pct(funnelSessions.length, before), lost: before - funnelSessions.length });
+    const count = countVisitors(funnelSessions);
+    funnel.push({ label, count, rate: pct(count, before), lost: before - count });
   }
   const sections = [...new Set(rows.filter(e => e.name === "section_view").map(e => `${e.path}|${e.section}`))].map(key => {
     const [path, section] = key.split("|");
@@ -75,7 +79,7 @@ export function buildReport(events: AnalyticsEvent[], payments: AnalyticsPayment
   const buyers = new Set(paid.map(p => p.analytics?.session_id)).size;
   const lcp = rows.filter(e => e.name === "web_vital" && e.target === "lcp_ms");
   const lcpValues = sessions.map(s => Math.max(0, ...lcp.filter(e => e.session_id === s.id).map(e => e.value))).filter(Boolean).sort((a, b) => a - b);
-  return { options, visitorStats, visitors: visitors.slice(0, 100), totals: { sessions: sessions.length, pageViews: rows.filter(e => e.name === "page_view").length, activeSeconds: sessions.length ? Math.round(sessions.reduce((n, s) => n + s.active, 0) / sessions.length / 1000) : 0, buyers, conversion: pct(buyers, sessions.length), orders: paid.length, revenue, averageOrder: paid.length ? Math.round(revenue / paid.length) : 0, revenuePerSession: sessions.length ? Math.round(revenue / sessions.length) : 0, pix: orders.filter(p => p.transaction_id).length, lcpP75: lcpValues[Math.max(0, Math.ceil(lcpValues.length * .75) - 1)] || 0 }, funnel, sections, interactions, sources, bumps, daily,
+  return { options, visitorStats, visitors: visitors.slice(0, 100), totals: { sessions: sessions.length, pageViews: rows.filter(e => e.name === "page_view").length, activeSeconds: sessions.length ? Math.round(sessions.reduce((n, s) => n + s.active, 0) / sessions.length / 1000) : 0, buyers, conversion: pct(buyers, sessions.length), orders: paid.length, revenue, averageOrder: paid.length ? Math.round(revenue / paid.length) : 0, revenuePerSession: sessions.length ? Math.round(revenue / sessions.length) : 0, pix: orders.filter(p => p.transaction_id).length, lcpP75: lcpValues[Math.max(0, Math.ceil(lcpValues.length * .75) - 1)] || 0 }, funnel, funnelUnidentifiedSessions, sections, interactions, sources, bumps, daily,
     upsell: { views: new Set(rows.filter(e => e.name === "section_view" && e.section === "upsell-atlas").map(e => e.session_id)).size, opens: new Set(rows.filter(e => e.name === "upsell_open").map(e => e.session_id)).size, orders: paid.filter(p => p.product === "atlas").length, revenue: paid.filter(p => p.product === "atlas").reduce((n, p) => n + p.amount_cents, 0) },
     sessions: sessions.slice().sort((a, b) => b.last.occurred_at.localeCompare(a.last.occurred_at)).slice(0, 100).map(s => ({ id: s.id, visitorId: s.visitorId, started: s.first.occurred_at, source: s.first.context.source, campaign: s.first.context.campaign, device: s.first.context.device, path: s.first.path, seconds: Math.round(s.active / 1000), depth: s.depth, lastSection: s.lastSection, lastEvent: s.last.name, ended: Date.now() - Date.parse(s.last.occurred_at) >= 30 * 60000, paid: paid.some(p => p.analytics?.session_id === s.id), timeline: s.rows.filter(e => !["heartbeat", "section_time"].includes(e.name)).slice(-100).map(e => ({ time: e.occurred_at, event: e.name, section: e.section, target: e.target, value: e.value })) })) };
 }

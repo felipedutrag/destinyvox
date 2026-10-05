@@ -65,7 +65,9 @@ try {
   assert.equal(response.status, 200);
   const report = await response.json();
   assert.equal(report.totals.sessions, 12); assert.equal(report.totals.orders, 3); assert.equal(report.totals.revenue, 8940);
-  assert.equal(report.funnel.at(-1).count, 3);
+  assert.deepEqual(report.funnel.map(step => step.count), [6, 5, 5, 3, 3, 2], "funnel counts visitors while purchase totals count orders");
+  assert.deepEqual(report.funnel.map(step => step.rate), [100, 83.3, 100, 60, 100, 66.7]);
+  assert.equal(report.funnelUnidentifiedSessions, 0);
   assert.equal(report.visitorStats.unique, 6);
   assert.equal(report.visitorStats.new, 6);
   assert.equal(report.visitorStats.sessionsPerVisitor, 2);
